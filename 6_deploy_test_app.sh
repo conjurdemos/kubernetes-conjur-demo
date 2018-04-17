@@ -3,6 +3,10 @@ set -eo pipefail
 
 . utils.sh
 
+announce "Deploying test app."
+
+set_namespace $TEST_APP_NAMESPACE_NAME
+
 if ! [ "${DOCKER_EMAIL}" = "" ]; then
   announce "Creating image pull secret."
     
@@ -14,10 +18,6 @@ if ! [ "${DOCKER_EMAIL}" = "" ]; then
     --docker-password=$DOCKER_PASSWORD \
     --docker-email=$DOCKER_EMAIL
 fi
-
-announce "Deploying test app."
-
-set_namespace $TEST_APP_NAMESPACE_NAME
 
 kubectl delete --ignore-not-found deployment test-app
 kubectl delete --ignore-not-found service test-app
