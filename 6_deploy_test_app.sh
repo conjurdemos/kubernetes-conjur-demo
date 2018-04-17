@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eou pipefail
+set -eo pipefail
 
 . utils.sh
 
@@ -18,8 +18,6 @@ fi
 announce "Deploying test app."
 
 set_namespace $TEST_APP_NAMESPACE_NAME
-
-# TODO Set credentials for Docker registry that isn't GKE.
 
 kubectl delete --ignore-not-found deployment test-app
 kubectl delete --ignore-not-found service test-app

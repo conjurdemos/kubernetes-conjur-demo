@@ -5,8 +5,6 @@ set -eou pipefail
 
 announce "Building and pushing test app image."
 
-docker login -u oauth2accesstoken -p "$(gcloud auth application-default print-access-token)" $DOCKER_REGISTRY_URL
-
 pushd test_app/build
   ./build.sh
 popd
