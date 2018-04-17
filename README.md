@@ -35,6 +35,14 @@ export CONJUR_ADMIN_PASSWORD=<admin-password>
 export AUTHENTICATOR_SERVICE_ID=<service-id>
 ```
 
+and optionally (if using a private Docker registry):
+
+```
+export DOCKER_USERNAME=<your-username>
+export DOCKER_PASSWORD=<your-password>
+export DOCKER_EMAIL=<your-email>
+```
+
 # Usage
 
 Run `./start` to execute the numbered scripts, which will step through the

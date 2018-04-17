@@ -3,6 +3,18 @@ set -eou pipefail
 
 . utils.sh
 
+if ! [ "${DOCKER_EMAIL}" = "" ]; then
+  announce "Creating image pull secret."
+    
+  kubectl delete --ignore-not-found secret conjurregcred
+
+  kubectl create secret docker-registry conjurregcred \
+    --docker-server=$DOCKER_REGISTRY_URL \
+    --docker-username=$DOCKER_USERNAME \
+    --docker-password=$DOCKER_PASSWORD \
+    --docker-email=$DOCKER_EMAIL
+fi
+
 announce "Deploying test app."
 
 set_namespace $TEST_APP_NAMESPACE_NAME

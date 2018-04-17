@@ -84,6 +84,8 @@ spec:
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
+      imagePullSecrets:
+        - name: conjurregcred
       volumes:
         - name: conjur-access-token
           emptyDir:
