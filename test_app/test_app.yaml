@@ -52,7 +52,7 @@ spec:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: cyberark/conjur-openshift-authenticator
+      - image: cyberark/conjur-kubernetes-authenticator
         imagePullPolicy: Always
         name: authenticator
         env:
