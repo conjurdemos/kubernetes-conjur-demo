@@ -5,7 +5,7 @@ set -euo pipefail
 
 announce "Building and pushing test app image."
 
-pushd test_app/build
+pushd test_app
   ./build.sh
 popd
   
