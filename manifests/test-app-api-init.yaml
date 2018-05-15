@@ -57,6 +57,8 @@ spec:
         imagePullPolicy: Always
         name: authenticator
         env:
+          - name: CONTAINER_MODE
+            value: init
           - name: MY_POD_NAME
             valueFrom:
               fieldRef:
@@ -76,7 +78,7 @@ spec:
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app
+            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api-init
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:

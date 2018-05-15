@@ -46,12 +46,12 @@
           kubernetes: "true"
       - !host
         id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api-sidecar
-         annotations:
+        annotations:
           kubernetes/authentication-container-name: authenticator
           kubernetes: "true"
       - !host
         id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api-init
-         annotations:
+        annotations:
           kubernetes/authentication-container-name: authenticator
           kubernetes: "true"
 

@@ -52,10 +52,12 @@ spec:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: cyberark/conjur-kubernetes-authenticator
+      - image: us.gcr.io/conjur-gke-dev/conjur-kubernetes-authenticator:conjur-demo
         imagePullPolicy: Always
         name: authenticator
         env:
+          - name: CONTAINER_MODE
+            value: sidecar
           - name: MY_POD_NAME
             valueFrom:
               fieldRef:
