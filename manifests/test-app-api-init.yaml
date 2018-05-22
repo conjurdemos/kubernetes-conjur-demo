@@ -1,39 +1,39 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: test-app
+  name: test-app-api-init
   labels:
-    app: test-app
+    app: test-app-api-init
 spec:
   ports:
   - protocol: TCP
     port: 80
   selector:
-    app: test-app
+    app: test-app-api-init
   type: LoadBalancer
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: test-app
+  name: test-app-api-init
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: test-app
-  name: test-app
+    app: test-app-api-init
+  name: test-app-api-init
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-app
+      app: test-app-api-init
   template:
     metadata:
       labels:
-        app: test-app
+        app: test-app-api-init
     spec:
-      serviceAccountName: test-app
+      serviceAccountName: test-app-api-init
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
@@ -52,10 +52,13 @@ spec:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
+      initContainers:
       - image: cyberark/conjur-kubernetes-authenticator
         imagePullPolicy: Always
         name: authenticator
         env:
+          - name: CONTAINER_MODE
+            value: init
           - name: MY_POD_NAME
             valueFrom:
               fieldRef:
@@ -75,7 +78,7 @@ spec:
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app
+            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api-init
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
