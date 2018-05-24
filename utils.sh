@@ -1,5 +1,15 @@
 #!/bin/bash
 
+if [ $PLATFORM = '' ]; then
+    PLATFORM=kubernetes
+fi
+
+if [ $PLATFORM = 'kubernetes' ]; then
+    cli=kubectl
+elif [ $PLATFORM = 'openshift' ]; then
+    cli=oc
+fi
+
 check_env_var() {
   var_name=$1
 
@@ -17,8 +27,16 @@ announce() {
   echo "++++++++++++++++++++++++++++++++++++++"
 }
 
+platform_image() {
+  if [ $PLATFORM = "openshift" ]; then
+    echo "$DOCKER_REGISTRY_PATH/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
+  else
+    echo "$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
+  fi
+}
+
 has_namespace() {
-  if kubectl get namespace  "$1" > /dev/null; then
+  if $cli get namespace  "$1" > /dev/null; then
     true
   else
     false
@@ -26,13 +44,18 @@ has_namespace() {
 }
 
 docker_tag_and_push() {
-  docker_tag="${DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
+  if [ $PLATFORM = "kubernetes" ]; then
+    docker_tag="$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
+  else
+    docker_tag="$DOCKER_REGISTRY_PATH/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
+  fi
+    
   docker tag $1:$CONJUR_NAMESPACE_NAME $docker_tag
   docker push $docker_tag
 }
 
 get_master_pod_name() {
-  pod_list=$(kubectl get pods -l app=conjur-node,role=master --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods -l app=conjur-node,role=master --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 
@@ -49,14 +72,12 @@ run_conjur_cmd_as_admin() {
 }
 
 set_namespace() {
-  # general utility for switching namespaces in kubernetes
-  # expects exactly 1 argument, a namespace name.
   if [[ $# != 1 ]]; then
     printf "Error in %s/%s - expecting 1 arg.\n" $(pwd) $0
     exit -1
   fi
 
-  kubectl config set-context $(kubectl config current-context) --namespace="$1" > /dev/null
+  $cli config set-context $($cli config current-context) --namespace="$1" > /dev/null
 }
 
 load_policy() {
