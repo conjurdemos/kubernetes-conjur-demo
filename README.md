@@ -1,10 +1,20 @@
 # kubernetes-conjur-demo
 
 This repo demonstrates an app retrieving secrets from a Conjur cluster running
-in Kubernetes. The numbered scripts perform the same steps that a user has to
+in Kubernetes or OpenShift. The numbered scripts perform the same steps that a user has to
 go through when setting up their own applications.
 
 # Setup
+
+### Platform
+
+If you are working with OpenShift, you will need to begin by setting:
+
+```
+export PLATFORM=openshift
+```
+
+Otherwise, this variable will default to `kubernetes`.
 
 ### Deploying Conjur
 

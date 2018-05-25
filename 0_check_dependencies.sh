@@ -5,7 +5,7 @@ set -eo pipefail
 
 check_env_var "CONJUR_NAMESPACE_NAME"
 check_env_var "TEST_APP_NAMESPACE_NAME"
-check_env_var "DOCKER_REGISTRY_URL"
+[[ "$PLATFORM" == "kubernetes" ]] && check_env_var "DOCKER_REGISTRY_URL"
 check_env_var "DOCKER_REGISTRY_PATH"
 check_env_var "CONJUR_ACCOUNT"
 check_env_var "CONJUR_ADMIN_PASSWORD"
