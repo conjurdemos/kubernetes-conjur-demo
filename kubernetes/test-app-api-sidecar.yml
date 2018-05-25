@@ -87,7 +87,7 @@ spec:
           - mountPath: /run/conjur
             name: conjur-access-token
       imagePullSecrets:
-        - name: conjurregcred
+        - name: dockerpullsecret
       volumes:
         - name: conjur-access-token
           emptyDir:

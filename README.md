@@ -32,7 +32,7 @@ export DOCKER_REGISTRY_URL=<registry-domain>
 export DOCKER_REGISTRY_PATH=<registry-domain>/<additional-pathing>
 export CONJUR_ACCOUNT=<account-name>
 export CONJUR_ADMIN_PASSWORD=<admin-password>
-export AUTHENTICATOR_SERVICE_ID=<service-id>
+export AUTHENTICATOR_ID=<service-id>
 ```
 
 and optionally (if using a private Docker registry):

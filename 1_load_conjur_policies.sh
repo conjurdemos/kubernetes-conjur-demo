@@ -15,7 +15,7 @@ $cli exec $conjur_master -- conjur plugin uninstall policy
 $cli exec $conjur_master -- conjur plugin install policy
 
 pushd policy
-  sed -e "s#{{ AUTHENTICATOR_SERVICE_ID }}#$AUTHENTICATOR_ID#g" ./authn-k8s.template.yml |
+  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./authn-k8s.template.yml |
     sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./authn-k8s.yml
 
   sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./apps.template.yml > ./apps.yml
