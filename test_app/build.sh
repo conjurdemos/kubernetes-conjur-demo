@@ -1,4 +1,4 @@
 #!/bin/bash
-set -euo pipefail
+set -eou pipefail
 
 docker build -t test-app:$CONJUR_NAMESPACE_NAME .

@@ -45,19 +45,19 @@
           kubernetes/authentication-container-name: authenticator
           kubernetes: "true"
       - !host
-        id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app
+        id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api
         annotations:
           kubernetes/authentication-container-name: authenticator
           kubernetes: "true"
 
     - !grant
-      role: !layer /test-app
+      role: !layer /{{ TEST_APP_NAMESPACE_NAME }}
       members:
       - !host {{ TEST_APP_NAMESPACE_NAME }}/*/*
-      - !host {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app
+      - !host {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api
 
     - !grant
-      role: !layer      
+      role: !layer
       members: *hosts
 
   - !grant

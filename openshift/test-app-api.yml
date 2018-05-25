@@ -3,26 +3,24 @@ apiVersion: v1
 kind: DeploymentConfig
 metadata:
   labels:
-    app: test-app-summon
-  name: test-app-summon
+    app: test-app-api
+  name: test-app-api
 spec:
   replicas: 1
   selector:
-    app: test-app-summon
+    app: test-app-api
   template:
     metadata:
       labels:
-        app: test-app-summon
+        app: test-app-api
     spec:
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
         name: test-app
         env:
-          - name: CONJUR_MAJOR_VERSION
-            value: '4'
           - name: CONJUR_APPLIANCE_URL
-            value: https://conjur-follower.{{ CONJUR_PROJECT_NAME }}.svc.cluster.local/api
+            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_SSL_CERTIFICATE
@@ -30,8 +28,6 @@ spec:
               configMapKeyRef:
                 name: {{ CONFIG_MAP_NAME }}
                 key: ssl-certificate
-          - name: CONJUR_AUTHN_TOKEN_FILE
-            value: /run/conjur/access-token
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
@@ -53,13 +49,13 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           - name: CONJUR_APPLIANCE_URL
-            value: https://conjur-follower.{{ CONJUR_PROJECT_NAME }}.svc.cluster.local/api
+            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_AUTHN_URL
-            value: https://conjur-follower.{{ CONJUR_PROJECT_NAME }}.svc.cluster.local/api/authn-k8s/{{ SERVICE_ID }}
+            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api/authn-k8s/{{ AUTHENTICATOR_ID }}
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_PROJECT_NAME }}/*/*
+            value: {{ TEST_APP_NAMESPACE_NAME }}/*/*
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:

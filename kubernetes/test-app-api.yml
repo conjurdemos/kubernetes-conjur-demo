@@ -1,6 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-api
+  labels:
+    app: test-app-api
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+  selector:
+    app: test-app-api
+  type: LoadBalancer
 ---
 apiVersion: v1
-kind: DeploymentConfig
+kind: ServiceAccount
+metadata:
+  name: test-app-api
+---
+apiVersion: apps/v1beta1
+kind: Deployment
 metadata:
   labels:
     app: test-app-api
@@ -8,19 +26,21 @@ metadata:
 spec:
   replicas: 1
   selector:
-    app: test-app-api
+    matchLabels:
+      app: test-app-api
   template:
     metadata:
       labels:
         app: test-app-api
     spec:
+      serviceAccountName: test-app-api
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
         name: test-app
         env:
           - name: CONJUR_APPLIANCE_URL
-            value: https://conjur-follower.{{ CONJUR_PROJECT_NAME }}.svc.cluster.local/api
+            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_SSL_CERTIFICATE
@@ -32,7 +52,7 @@ spec:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: cyberark/conjur-openshift-authenticator
+      - image: cyberark/conjur-kubernetes-authenticator
         imagePullPolicy: Always
         name: authenticator
         env:
@@ -49,13 +69,13 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           - name: CONJUR_APPLIANCE_URL
-            value: https://conjur-follower.{{ CONJUR_PROJECT_NAME }}.svc.cluster.local/api
+            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_AUTHN_URL
-            value: https://conjur-follower.{{ CONJUR_PROJECT_NAME }}.svc.cluster.local/api/authn-k8s/{{ SERVICE_ID }}
+            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api/authn-k8s/{{ AUTHENTICATOR_ID }}
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_PROJECT_NAME }}/*/*
+            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
@@ -64,6 +84,8 @@ spec:
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
+      imagePullSecrets:
+        - name: conjurregcred
       volumes:
         - name: conjur-access-token
           emptyDir:

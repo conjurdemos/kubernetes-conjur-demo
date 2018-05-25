@@ -1,44 +1,26 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: test-app
-  labels:
-    app: test-app
-spec:
-  ports:
-  - protocol: TCP
-    port: 80
-  selector:
-    app: test-app
-  type: LoadBalancer
 ---
 apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: test-app
----
-apiVersion: apps/v1beta1
-kind: Deployment
+kind: DeploymentConfig
 metadata:
   labels:
-    app: test-app
-  name: test-app
+    app: test-app-summon
+  name: test-app-summon
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: test-app
+    app: test-app-summon
   template:
     metadata:
       labels:
-        app: test-app
+        app: test-app-summon
     spec:
-      serviceAccountName: test-app
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
         name: test-app
         env:
+          - name: CONJUR_MAJOR_VERSION
+            value: '4'
           - name: CONJUR_APPLIANCE_URL
             value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_ACCOUNT
@@ -48,11 +30,13 @@ spec:
               configMapKeyRef:
                 name: {{ CONFIG_MAP_NAME }}
                 key: ssl-certificate
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: cyberark/conjur-kubernetes-authenticator
+      - image: cyberark/conjur-openshift-authenticator
         imagePullPolicy: Always
         name: authenticator
         env:
@@ -75,7 +59,7 @@ spec:
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app
+            value: {{ TEST_APP_NAMESPACE_NAME }}/*/*
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
@@ -84,8 +68,6 @@ spec:
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
-      imagePullSecrets:
-        - name: conjurregcred
       volumes:
         - name: conjur-access-token
           emptyDir:

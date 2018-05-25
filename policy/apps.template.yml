@@ -1,11 +1,11 @@
 - !policy
-  id: test-app
+  id: {{ TEST_APP_NAMESPACE_NAME }}
   owner: !group developers
   body:
   - !layer
 
 - !policy
-  id: test-app-db
+  id: {{ TEST_APP_NAMESPACE_NAME }}-db
   owner: !group operations
   body:
   - &variables
