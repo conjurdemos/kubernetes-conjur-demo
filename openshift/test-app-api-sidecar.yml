@@ -1,39 +1,19 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: test-app-api
-  labels:
-    app: test-app-api
-spec:
-  ports:
-  - protocol: TCP
-    port: 80
-  selector:
-    app: test-app-api
-  type: LoadBalancer
 ---
 apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: test-app-api
----
-apiVersion: apps/v1beta1
-kind: Deployment
+kind: DeploymentConfig
 metadata:
   labels:
-    app: test-app-api
-  name: test-app-api
+    app: test-app-api-sidecar
+  name: test-app-api-sidecar
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: test-app-api
+    app: test-app-api-sidecar
   template:
     metadata:
       labels:
-        app: test-app-api
+        app: test-app-api-sidecar
     spec:
-      serviceAccountName: test-app-api
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
@@ -52,7 +32,7 @@ spec:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: cyberark/conjur-kubernetes-authenticator
+      - image: cyberark/conjur-openshift-authenticator
         imagePullPolicy: Always
         name: authenticator
         env:
@@ -75,7 +55,7 @@ spec:
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api
+            value: {{ TEST_APP_NAMESPACE_NAME }}/*/*
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
@@ -84,8 +64,6 @@ spec:
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
-      imagePullSecrets:
-        - name: conjurregcred
       volumes:
         - name: conjur-access-token
           emptyDir:

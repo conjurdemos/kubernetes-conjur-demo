@@ -36,7 +36,7 @@ echo "Conjur policy loaded."
 
 password=$(openssl rand -hex 12)
 
-$cli exec $conjur_master -- conjur variable values add test-app-db/password $password
+$cli exec $conjur_master -- conjur variable values add "$TEST_APP_NAMESPACE_NAME-db/password" $password
 
 announce "Added DB password value: $password"
 
