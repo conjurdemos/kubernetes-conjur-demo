@@ -5,6 +5,6 @@ RUN gem install -N conjur-api:"< 5.0" conjur-cli:"< 6.0" sinatra
 
 COPY test_app.rb usr/src/test_app.rb
 
-ENV PORT 80
+ENV PORT 3000
 
 CMD [ "ruby", "/usr/src/test_app.rb" ]

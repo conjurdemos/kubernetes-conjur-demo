@@ -33,13 +33,17 @@ elif [ $PLATFORM = 'openshift' ]; then
   $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull    
 fi
 
-$cli delete --ignore-not-found deployment test-app-api-sidecar
-$cli delete --ignore-not-found service test-app-api-sidecar
-$cli delete --ignore-not-found serviceaccount test-app-api-sidecar
+$cli delete --ignore-not-found \
+  deployment/test-app-api-sidecar \
+  deploymentconfig/test-app-api-sidecar \
+  service/test-app-api-sidecar \
+  serviceaccount/test-app-api-sidecar \
 
-$cli delete --ignore-not-found deployment test-app-api-init
-$cli delete --ignore-not-found service test-app-api-init
-$cli delete --ignore-not-found serviceaccount test-app-api-init
+$cli delete --ignore-not-found \
+  deployment/test-app-api-init \
+  deploymentconfig/test-app-api-init \
+  service/test-app-api-init \
+  serviceaccount/test-app-api-init
 
 sleep 5
 
