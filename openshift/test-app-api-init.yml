@@ -33,7 +33,7 @@ spec:
             name: conjur-access-token
             readOnly: true
       initContainers:
-      - image: cyberark/conjur-openshift-authenticator
+      - image: cyberark/conjur-kubernetes-authenticator:debug
         imagePullPolicy: Always
         name: authenticator
         env:
