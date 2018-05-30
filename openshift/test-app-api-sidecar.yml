@@ -1,24 +1,6 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: test-app-api-sidecar
-  labels:
-    app: test-app-api-sidecar
-spec:
-  ports:
-  - protocol: TCP
-    port: 80
-  selector:
-    app: test-app-api-sidecar
-  type: LoadBalancer
 ---
 apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: test-app-api-sidecar
----
-apiVersion: apps/v1beta1
-kind: Deployment
+kind: DeploymentConfig
 metadata:
   labels:
     app: test-app-api-sidecar
@@ -26,14 +8,12 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: test-app-api-sidecar
+    app: test-app-api-sidecar
   template:
     metadata:
       labels:
         app: test-app-api-sidecar
     spec:
-      serviceAccountName: test-app-api-sidecar
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
@@ -52,12 +32,10 @@ spec:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: us.gcr.io/conjur-gke-dev/conjur-kubernetes-authenticator:conjur-demo
+      - image: cyberark/conjur-kubernetes-authenticator
         imagePullPolicy: Always
         name: authenticator
         env:
-          - name: CONTAINER_MODE
-            value: sidecar
           - name: MY_POD_NAME
             valueFrom:
               fieldRef:
@@ -73,11 +51,11 @@ spec:
           - name: CONJUR_APPLIANCE_URL
             value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_AUTHN_URL
-            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api/authn-k8s/{{ SERVICE_ID }}
+            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api/authn-k8s/{{ AUTHENTICATOR_ID }}
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api-sidecar
+            value: {{ TEST_APP_NAMESPACE_NAME }}/*/*
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
@@ -86,8 +64,6 @@ spec:
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
-      imagePullSecrets:
-        - name: conjurregcred
       volumes:
         - name: conjur-access-token
           emptyDir:

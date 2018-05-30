@@ -12,12 +12,18 @@ if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
   set_namespace $TEST_APP_NAMESPACE_NAME
 else
   echo "Creating '$TEST_APP_NAMESPACE_NAME' namespace."
-  kubectl create namespace $TEST_APP_NAMESPACE_NAME
+
+  if [ $PLATFORM = 'kubernetes' ]; then
+    $cli create namespace $TEST_APP_NAMESPACE_NAME
+  elif [ $PLATFORM = 'openshift' ]; then
+    $cli new-project $TEST_APP_NAMESPACE_NAME
+  fi
+  
   set_namespace $TEST_APP_NAMESPACE_NAME
 fi
 
-kubectl delete --ignore-not-found rolebinding test-app-conjur-authenticator-role-binding
+$cli delete --ignore-not-found rolebinding test-app-conjur-authenticator-role-binding
 
-sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./manifests/test-app-conjur-authenticator-role-binding.yaml |
+sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./$PLATFORM/test-app-conjur-authenticator-role-binding.yml |
   sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
-  kubectl create -f -
+  $cli create -f -
