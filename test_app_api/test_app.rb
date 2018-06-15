@@ -14,23 +14,36 @@ helpers do
   end
   
   def conjur_api
-    # Ideally this would be done only once.
-    # But for testing, it means that if the login fails, the pod is stuck in a bad state
-    # and the tests can't be performed.
+    # Ideally this would be done only once, but if a login fails during testing
+    # the pod ends up stuck in a bad state and the tests can't be performed.
     Conjur.configuration.apply_cert_config!
     
-    token = JSON.parse(File.read("/run/conjur/access-token"))
-    Conjur::API.new_from_token(token)
+    Conjur::API.new_from_token(access_token)
+  end
+
+  def access_token
+    JSON.parse(File.read("/run/conjur/access-token"))
   end
 end
 
 get '/' do
+  variable = "test-app-db/password"
+  value = nil
+
   begin
-    password = conjur_api.variable("test-app-db/password").value
-    "test-app-db password: #{password}"
-  rescue
+    access_token
+  rescue StandardError => e
     $stderr.puts $!
     $stderr.puts $!.backtrace.join("\n")
-    halt 500, "Error: #{$!}"
+    halt 500, "Error: Invalid access token."
   end
+  
+  begin
+    value = conjur_api.variable(variable).value
+  rescue RestClient::Forbidden => e
+    $stderr.puts $!
+    halt 500, "Error: Host #{access_token['data']} does not have access to variable #{variable}."
+  end
+
+  "test-app-db password: #{value}"
 end
