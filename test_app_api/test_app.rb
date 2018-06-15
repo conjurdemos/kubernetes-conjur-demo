@@ -42,6 +42,7 @@ get '/' do
     value = conjur_api.variable(variable).value
   rescue RestClient::Forbidden => e
     $stderr.puts $!
+    $stderr.puts $!.backtrace.join("\n")
     halt 500, "Error: Host #{access_token['data']} does not have access to variable #{variable}."
   end
 
