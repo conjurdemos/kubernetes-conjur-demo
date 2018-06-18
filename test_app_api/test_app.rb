@@ -35,7 +35,7 @@ get '/' do
   rescue StandardError => e
     $stderr.puts $!
     $stderr.puts $!.backtrace.join("\n")
-    halt 500, "Error: Invalid access token."
+    halt 500, "Error: Missing access token."
   end
   
   begin
