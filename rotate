@@ -8,7 +8,10 @@ announce "Rotating password."
 set_namespace $CONJUR_NAMESPACE_NAME
 
 conjur_master=$(get_master_pod_name)
-new_pwd=$(openssl rand -hex 12)
+# By asking the customer/prospect the password, they can inject a true variable
+# This will help with them trusting the returned result more
+echo -n "Enter the password to rotate to and press [ENTER]: "
+read new_pwd
 
 kubectl exec $conjur_master -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
 kubectl exec $conjur_master -- conjur variable values add test-app-db/password $new_pwd
