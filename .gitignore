@@ -1,2 +1,1 @@
-policy/authn-k8s.yml
-policy/apps.yml
+policy/policy.yml

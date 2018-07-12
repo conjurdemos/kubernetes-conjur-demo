@@ -6,6 +6,16 @@ go through when setting up their own applications.
 
 # Setup
 
+### Conjur Version
+
+If you are working with Conjur v4, you will need to set:
+
+```
+export CONJUR_VERSION=4
+```
+
+Otherwise, this variable will default to `5`.
+
 ### Platform
 
 If you are working with OpenShift, you will need to begin by setting:

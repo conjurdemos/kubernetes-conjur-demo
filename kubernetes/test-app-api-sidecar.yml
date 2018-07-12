@@ -40,7 +40,7 @@ spec:
         name: test-app
         env:
           - name: CONJUR_APPLIANCE_URL
-            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
+            value: "{{ CONJUR_APPLIANCE_URL }}"
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_SSL_CERTIFICATE
@@ -56,6 +56,8 @@ spec:
         imagePullPolicy: Always
         name: authenticator
         env:
+          - name: CONJUR_VERSION
+            value: '{{ CONJUR_VERSION }}'
           - name: CONTAINER_MODE
             value: sidecar
           - name: MY_POD_NAME
@@ -70,14 +72,12 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-          - name: CONJUR_APPLIANCE_URL
-            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_AUTHN_URL
-            value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api/authn-k8s/{{ AUTHENTICATOR_ID }}
+            value: "{{ CONJUR_AUTHENTICATOR_URL }}"
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-api-sidecar
+            value: "{{ CONJUR_AUTHN_LOGIN_PREFIX }}/test-app-api-sidecar"
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
