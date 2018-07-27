@@ -57,6 +57,8 @@ spec:
         imagePullPolicy: Always
         name: authenticator
         env:
+          - name: CONJUR_VERSION
+            value: '4'
           - name: CONTAINER_MODE
             value: init
           - name: MY_POD_NAME
