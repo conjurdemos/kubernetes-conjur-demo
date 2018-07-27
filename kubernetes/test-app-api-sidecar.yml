@@ -57,7 +57,7 @@ spec:
         name: authenticator
         env:
           - name: CONJUR_VERSION
-            value: '4'
+            value: {{ CONJUR_VERSION }}
           - name: CONTAINER_MODE
             value: sidecar
           - name: MY_POD_NAME
