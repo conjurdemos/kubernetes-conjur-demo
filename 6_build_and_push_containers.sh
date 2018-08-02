@@ -9,7 +9,7 @@ fi
 
 announce "Building and pushing test app image."
 
-pushd test_app_api
+pushd test_app_api_v$CONJUR_VERSION
   ./build.sh
 popd
 

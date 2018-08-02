@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CONJUR_VERSION=${CONJUR_VERSION:-$CONJUR_MAJOR_VERSION} # default to CONJUR_MAJOR_VERSION if not set
 PLATFORM="${PLATFORM:-kubernetes}"  # default to kubernetes if env var not set
 
 if [ $PLATFORM = 'kubernetes' ]; then
@@ -57,6 +58,11 @@ get_master_pod_name() {
   echo $pod_list | awk '{print $1}'
 }
 
+get_conjur_cli_pod_name() {
+  pod_list=$($cli get pods -l app=conjur-cli --no-headers | awk '{ print $1 }')
+  echo $pod_list | awk '{print $1}'
+}
+
 run_conjur_cmd_as_admin() {
   local command=$(cat $@)
 
@@ -92,4 +98,31 @@ rotate_host_api_key() {
   run_conjur_cmd_as_admin <<CMD
 conjur host rotate_api_key -h $host
 CMD
+}
+
+function wait_for_it() {
+  local timeout=$1
+  local spacer=2
+  shift
+
+  if ! [ $timeout = '-1' ]; then
+    local times_to_run=$((timeout / spacer))
+
+    echo "Waiting for '$@' up to $timeout s"
+    for i in $(seq $times_to_run); do
+      eval $@ > /dev/null && echo 'Success!' && break
+      echo -n .
+      sleep $spacer
+    done
+
+    eval $@
+  else
+    echo "Waiting for '$@' forever"
+
+    while ! eval $@ > /dev/null; do
+      echo -n .
+      sleep $spacer
+    done
+    echo 'Success!'
+  fi
 }
