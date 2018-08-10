@@ -1,22 +1,32 @@
-#!/bin/bash
+#!/bin/bash 
 set -euo pipefail
 
 . utils.sh
 
 announce "Loading Conjur policy."
 
-set_namespace $TEST_APP_NAMESPACE_NAME
 
-conjur_cli_pod=$(get_conjur_cli_pod_name)
 
 pushd policy
-  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./policy.template.yml |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./policy.yml
+  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/cluster-authn-svc.yml
+
+  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
+    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed -e "s#{{ TEST_APP_NAME }}#$TEST_APP_NAME#g" > ./generated/project-authn.yml
+
+  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identity-def.template.yml |
+    sed -e "s#{{ TEST_APP_NAME }}#$TEST_APP_NAME#g" > ./generated/app-identity.yml
+
+  sed -e "s#{{ TEST_APP_NAME }}#$TEST_APP_NAME#g" ./templates/app-access-def.template.yml > ./generated/app-access.yml
 popd
 
 if [ $PLATFORM = 'kubernetes' ]; then
+  set_namespace $TEST_APP_NAMESPACE_NAME
+  conjur_cli_pod=$(get_conjur_cli_pod_name)
   kubectl cp ./policy $conjur_cli_pod:/policy
 elif [ $PLATFORM = 'openshift' ]; then
+  set_namespace $CONJUR_NAMESPACE_NAME
+  conjur_cli_pod=$(get_master_pod_name)
   oc rsync ./policy $conjur_cli_pod:/
 fi
 
@@ -24,6 +34,7 @@ conjur_url="https://conjur-master.$CONJUR_NAMESPACE_NAME.svc.cluster.local"
 
 if [ $CONJUR_VERSION = '4' ]; then
   $cli exec $conjur_cli_pod -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -h $conjur_url"
+  $cli exec $conjur_cli_pod -- touch /opt/conjur/etc/plugins.yml
   $cli exec $conjur_cli_pod -- conjur plugin uninstall policy
   $cli exec $conjur_cli_pod -- conjur plugin install policy
 elif [ $CONJUR_VERSION = '5' ]; then
@@ -32,11 +43,14 @@ fi
 
 $cli exec $conjur_cli_pod -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
 
-if [ $CONJUR_VERSION = '4' ]; then
-  $cli exec $conjur_cli_pod -- conjur policy load --as-group security_admin "/policy/policy.yml"
-elif [ $CONJUR_VERSION = '5' ]; then
-  $cli exec $conjur_cli_pod -- conjur policy load root "/policy/policy.yml"
-fi
+POLICY_FILE_LIST=$(cat policies.txt)
+for i in $POLICY_FILE_LIST; do
+  if [ $CONJUR_VERSION = '4' ]; then
+    $cli exec $conjur_cli_pod -- conjur policy load --as-group security_admin $i
+  elif [ $CONJUR_VERSION = '5' ]; then
+    $cli exec $conjur_cli_pod -- conjur policy load root $i
+  fi
+done
     
 $cli exec $conjur_cli_pod -- rm -rf ./policy
 
@@ -44,7 +58,7 @@ echo "Conjur policy loaded."
 
 password=$(openssl rand -hex 12)
 
-$cli exec $conjur_cli_pod -- conjur variable values add "test-app-db/password" $password
+$cli exec $conjur_cli_pod -- conjur variable values add "secrets/db-password" $password
 
 announce "Added DB password value: $password"
 

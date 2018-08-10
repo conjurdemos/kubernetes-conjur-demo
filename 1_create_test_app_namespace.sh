@@ -24,6 +24,14 @@ fi
 
 $cli delete --ignore-not-found rolebinding test-app-conjur-authenticator-role-binding
 
+if [[ $PLATFORM == openshift ]]; then
+  oc login -u system:admin
+fi
+
 sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./$PLATFORM/test-app-conjur-authenticator-role-binding.yml |
   sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
   $cli create -f -
+
+if [[ $PLATFORM == openshift ]]; then
+  oc login -u $CONJUR_OSHIFT_ADMIN
+fi

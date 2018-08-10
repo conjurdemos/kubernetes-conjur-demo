@@ -53,7 +53,7 @@ fi
 
 sleep 5
 
-test_app_docker_image=$(platform_image test-app)
+test_app_docker_image=$(platform_image $TEST_APP_NAME)
 
 conjur_appliance_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
 conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
