@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-declare VAR_ID=dev-rsrc/db-password
+declare VAR_ID=secrets/db-password
 #declare VAR_ID="DemoVault/CICD/CICD_Secrets/Cloud Service-AWSAccessKeys-ec2_user/username"
 #declare VAR_ID="DemoVault/CICD/CICD_Secrets/Cloud Service-AWSAccessKeys-ec2_user/password"
 

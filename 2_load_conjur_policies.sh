@@ -1,11 +1,9 @@
-#!/bin/bash 
+#!/bin/bash
 set -euo pipefail
 
 . utils.sh
 
 announce "Loading Conjur policy."
-
-
 
 pushd policy
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/cluster-authn-svc.yml
@@ -20,13 +18,13 @@ pushd policy
   sed -e "s#{{ TEST_APP_NAME }}#$TEST_APP_NAME#g" ./templates/app-access-def.template.yml > ./generated/app-access.yml
 popd
 
+
+set_namespace $CONJUR_NAMESPACE_NAME
+conjur_cli_pod=$(get_conjur_cli_pod_name)
+
 if [ $PLATFORM = 'kubernetes' ]; then
-  set_namespace $TEST_APP_NAMESPACE_NAME
-  conjur_cli_pod=$(get_conjur_cli_pod_name)
   kubectl cp ./policy $conjur_cli_pod:/policy
 elif [ $PLATFORM = 'openshift' ]; then
-  set_namespace $CONJUR_NAMESPACE_NAME
-  conjur_cli_pod=$(get_master_pod_name)
   oc rsync ./policy $conjur_cli_pod:/
 fi
 
@@ -63,3 +61,5 @@ $cli exec $conjur_cli_pod -- conjur variable values add "secrets/db-password" $p
 announce "Added DB password value: $password"
 
 $cli exec $conjur_cli_pod -- conjur authn logout
+
+set_namespace $TEST_APP_NAMESPACE_NAME

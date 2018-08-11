@@ -1,7 +1,0 @@
-FROM cyberark/conjur-cli:{{ CONJUR_VERSION }}
-
-WORKDIR /
-COPY uid_entrypoint.sh .
-RUN chmod g=u /etc/passwd /*.sh
-ENTRYPOINT [ "/uid_entrypoint.sh" ]
-USER 1001

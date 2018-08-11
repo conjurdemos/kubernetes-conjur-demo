@@ -5,6 +5,10 @@ set -euo pipefail
 
 announce "Creating Test App namespace."
 
+if [[ $PLATFORM == openshift ]]; then
+  oc login -u system:admin
+fi
+
 set_namespace default
 
 if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
@@ -23,10 +27,6 @@ else
 fi
 
 $cli delete --ignore-not-found rolebinding test-app-conjur-authenticator-role-binding
-
-if [[ $PLATFORM == openshift ]]; then
-  oc login -u system:admin
-fi
 
 sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./$PLATFORM/test-app-conjur-authenticator-role-binding.yml |
   sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |

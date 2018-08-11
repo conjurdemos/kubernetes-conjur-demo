@@ -52,7 +52,7 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           - name: CONJUR_VERSION
-            value: '4'
+            value: '{{ CONJUR_VERSION }}'
           - name: CONJUR_APPLIANCE_URL
             value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
           - name: CONJUR_AUTHN_URL

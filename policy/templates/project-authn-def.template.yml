@@ -1,7 +1,7 @@
 ---
 # This policy defines a layer of whitelisted identities permitted to authenticate to the authn-k8s endpoint.
 - !policy
-  id: /conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
+  id: conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
   owner: !group devops
   annotations:
     description: Identities permitted to authenticate 
