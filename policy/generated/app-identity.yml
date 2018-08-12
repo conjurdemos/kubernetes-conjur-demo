@@ -11,4 +11,5 @@
   - !grant
     role: !layer 
     members:
+    - !host /conjur/authn-k8s/dev/apps/jodyapp/*/*
     - !layer /conjur/authn-k8s/dev/apps

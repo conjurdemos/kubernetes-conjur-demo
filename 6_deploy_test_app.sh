@@ -58,10 +58,13 @@ test_app_docker_image=$(platform_image $TEST_APP_NAME)
 conjur_appliance_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
 conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
 
-if [ $CONJUR_VERSION = '4' ]; then
-  conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
-elif [ $CONJUR_VERSION = '5' ]; then
-  conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
+conjur_authn_login_prefix=""
+if [ $PLATFORM == kubernetes ]; then
+  if [ $CONJUR_VERSION = '4' ]; then
+    conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
+  elif [ $CONJUR_VERSION = '5' ]; then
+    conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
+  fi
 fi
 
 sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-api-sidecar.yml |

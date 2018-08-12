@@ -33,5 +33,12 @@ sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./$PLATFORM/
   $cli create -f -
 
 if [[ $PLATFORM == openshift ]]; then
+  # add permissions for Conjur admin user
+  oc adm policy add-role-to-user system:registry $CONJUR_OSHIFT_ADMIN
+  oc adm policy add-role-to-user system:image-builder $CONJUR_OSHIFT_ADMIN
+
+  oc adm policy add-role-to-user admin $CONJUR_OSHIFT_ADMIN -n default
+  oc adm policy add-role-to-user admin $CONJUR_OSHIFT_ADMIN -n $TEST_APP_NAMESPACE_NAME
+  echo "Logging in as Conjur Openshift admin. Provide password as needed."
   oc login -u $CONJUR_OSHIFT_ADMIN
 fi
