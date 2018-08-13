@@ -15,4 +15,6 @@ popd
 
 test_app_image=$(platform_image $TEST_APP_NAME)
 docker tag $TEST_APP_NAME:$TEST_APP_NAMESPACE_NAME $test_app_image
-docker push $test_app_image
+if [[ $MINIKUBE != true ]]; then
+  docker push $test_app_image
+fi
