@@ -17,7 +17,7 @@ spec:
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
-        name: test-app
+        name: {{ TEST_APP_NAMESPACE_NAME }}-app
         env:
           - name: CONJUR_APPLIANCE_URL
             value: https://conjur-follower.{{ CONJUR_NAMESPACE_NAME }}.svc.cluster.local/api
@@ -28,6 +28,8 @@ spec:
               configMapKeyRef:
                 name: {{ CONFIG_MAP_NAME }}
                 key: ssl-certificate
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token

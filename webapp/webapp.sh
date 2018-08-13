@@ -15,7 +15,7 @@ main() {
 	--cacert $CONJUR_CERT_FILE \
 	-H "Content-Type: application/json" \
 	-H "Authorization: Token token=\"$CONT_SESSION_TOKEN\"" \
-	$CONJUR_APPLIANCE_URL/variables/{$VAR_ID}/value)
+	$CONJUR_APPLIANCE_URL/variables/$VAR_ID/value)
   echo
   echo "The retrieved value is: $VAR_VALUE"
   echo

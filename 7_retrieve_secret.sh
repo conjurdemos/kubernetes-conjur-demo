@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 set -euo pipefail
 
 . utils.sh
@@ -7,8 +7,12 @@ announce "Retrieving secrets using Conjur access token."
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
-sidecar_api_pod=$($cli get pods --no-headers -l app=test-app-api-sidecar | awk '{ print $1 }')
-init_api_pod=$($cli get pods --no-headers -l app=test-app-api-init | awk '{ print $1 }')
+sidecar_api_pod=$($cli get pods --ignore-not-found --no-headers -l app=test-app-api-sidecar | awk '{ print $1 }')
+if [[ "$sidecar_api_pod" != "" ]]; then
+  echo "Sidecar + REST API: $($cli exec -c $TEST_APP_NAMESPACE_NAME-app $sidecar_api_pod -- /webapp.sh)"
+fi
 
-echo "Sidecar + Ruby API - $($cli exec -c test-app $sidecar_api_pod -- curl -s localhost:3000)"
-echo "Init Container + Ruby API - $($cli exec -c test-app $init_api_pod -- curl -s localhost:3000)"
+init_api_pod=$($cli get pods --ignore-not-found --no-headers -l app=test-app-api-init | awk '{ print $1 }')
+if [[ "$init_api_pod" != "" ]]; then
+  echo "Init Container + REST API: $($cli exec -c $TEST_APP_NAMESPACE_NAME-app $init_api_pod -- /webapp.sh)"
+fi

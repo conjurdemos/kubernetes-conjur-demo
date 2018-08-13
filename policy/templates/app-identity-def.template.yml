@@ -11,5 +11,4 @@
   - !grant
     role: !layer 
     members:
-    - !host /conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/{{ TEST_APP_NAMESPACE_NAME }}/*/*
     - !layer /conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
