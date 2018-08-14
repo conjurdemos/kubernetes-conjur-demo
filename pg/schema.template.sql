@@ -1,0 +1,2 @@
+CREATE USER test_app PASSWORD '{{ TEST_APP_PG_PASSWORD }}';
+GRANT ALL ON SCHEMA public to test_app;

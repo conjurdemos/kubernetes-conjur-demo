@@ -1,57 +1,60 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: test-app-api-sidecar
+  name: test-app-summon-sidecar
   labels:
-    app: test-app-api-sidecar
+    app: test-app-summon-sidecar
 spec:
   ports:
   - protocol: TCP
-    port: 80
+    port: 8080
+    targetPort: 8080
   selector:
-    app: test-app-api-sidecar
+    app: test-app-summon-sidecar
   type: LoadBalancer
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: test-app-api-sidecar
+  name: test-app-summon-sidecar
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: test-app-api-sidecar
-  name: test-app-api-sidecar
+    app: test-app-summon-sidecar
+  name: test-app-summon-sidecar
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-app-api-sidecar
+      app: test-app-summon-sidecar
   template:
     metadata:
       labels:
-        app: test-app-api-sidecar
+        app: test-app-summon-sidecar
     spec:
-      serviceAccountName: test-app-api-sidecar
+      serviceAccountName: test-app-summon-sidecar
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: {{ IMAGE_PULL_POLICY }}
-        name: {{ TEST_APP_NAMESPACE_NAME }}-app
+        name: test-app
+        ports:
+        - containerPort: 8080
         env:
+          - name: CONJUR_VERSION
+            value: '{{ CONJUR_VERSION }}'
           - name: CONJUR_APPLIANCE_URL
             value: "{{ CONJUR_APPLIANCE_URL }}"
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
                 name: {{ CONFIG_MAP_NAME }}
                 key: ssl-certificate
-          - name: CONJUR_AUTHN_TOKEN_FILE
-            value: /run/conjur/access-token
-          - name: CONJUR_VERSION
-            value: "{{ CONJUR_VERSION }}"
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
@@ -81,7 +84,7 @@ spec:
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: "{{ CONJUR_AUTHN_LOGIN_PREFIX }}/test-app-api-sidecar"
+            value: "{{ CONJUR_AUTHN_LOGIN_PREFIX }}/test-app-summon-sidecar"
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:

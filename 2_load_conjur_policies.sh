@@ -11,14 +11,10 @@ pushd policy
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/cluster-authn-svc.yml
 
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed -e "s#{{ TEST_APP_NAME }}#$TEST_APP_NAME#g" > ./generated/project-authn.yml
+    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/project-authn.yml
 
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identity-def.template.yml |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed -e "s#{{ TEST_APP_NAME }}#$TEST_APP_NAME#g" > ./generated/app-identity.yml
-
-  sed -e "s#{{ TEST_APP_NAME }}#$TEST_APP_NAME#g" ./templates/app-access-def.template.yml > ./generated/app-access.yml
+    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/app-identity.yml
 popd
 
 
@@ -37,7 +33,7 @@ POLICY_FILE_LIST="policy/users.yml
 policy/generated/project-authn.yml
 policy/generated/cluster-authn-svc.yml
 policy/generated/app-identity.yml
-policy/generated/app-access.yml"
+policy/app-access.yml"
 
 for i in $POLICY_FILE_LIST; do
   echo "Loading policy $i..."
@@ -54,7 +50,14 @@ echo "Conjur policy loaded."
 
 password=$(openssl rand -hex 12)
 
-$cli exec $conjur_cli_pod -- conjur variable values add "secrets/db-password" $password
+$cli exec $conjur_cli_pod -- conjur variable values add "test-app-db/password" $password
+$cli exec $conjur_cli_pod -- conjur variable values add "test-app-db/url" "postgresql://test-app-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:5432/postgres"
+$cli exec $conjur_cli_pod -- conjur variable values add "test-app-db/username" "test_app"
+
+# Set DB password in DB schema
+pushd pg
+  sed -e "s#{{ TEST_APP_PG_PASSWORD }}#$password#g" ./schema.template.sql > ./schema.sql
+popd
 
 announce "Added DB password value: $password"
 

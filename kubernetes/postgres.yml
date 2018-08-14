@@ -1,0 +1,35 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: test-app-backend
+spec:
+  selector:
+    app: test-app-backend
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: pg
+  labels:
+    app: test-app-backend
+spec:
+  serviceName: test-app-backend
+  selector:
+    matchLabels:
+      app: test-app-backend
+  template:
+    metadata:
+      labels:
+        app: test-app-backend
+    spec:
+      containers:
+      - name: test-app-backend
+        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 5432
