@@ -14,28 +14,43 @@ readonly APPS=(
   "sidecar"
 )
 
-# Kubernetes and OpenShift currently run different apps in the demo
-if [[ "$PLATFORM" = "kubernetes" ]]; then
+pushd test_app_summon
+  if [ $PLATFORM = 'openshift' ]; then
+    docker build -t test-app-builder -f Dockerfile.builder .
 
-  pushd test_app_summon
-    for app_type in "${APPS[@]}"; do
-      # prep secrets.yml
-      sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > secrets.yml
+    # retrieve the summon binaries
+    id=$(docker create test-app-builder)
+    docker cp $id:/usr/local/lib/summon/summon-conjur ./
+    docker cp $id:/usr/local/bin/summon ./
+    docker rm -v $id
+  fi
 
-      docker build -t test-app:$CONJUR_NAMESPACE_NAME .
+  for app_type in "${APPS[@]}"; do
+    # prep secrets.yml
+    sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > secrets.yml
 
-      test_app_image=$(platform_image "test-$app_type-app")
-      docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
+    dockerfile="Dockerfile"
+    if [ $PLATFORM = 'openshift' ]; then
+      dockerfile="Dockerfile.oc"
+    fi
 
-      if [[ is_minienv != true ]]; then
-        docker push $test_app_image
-      fi
-    done
-  popd
+    docker build \
+      -t test-app:$CONJUR_NAMESPACE_NAME \
+      -f $dockerfile .
 
+    test_app_image=$(platform_image "test-$app_type-app")
+    docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
+
+    if [[ is_minienv != true ]]; then
+      docker push $test_app_image
+    fi
+  done
+popd
+
+# If in Kubernetes, build custom pg image
+if [[ "$PLATFORM" != "openshift" ]]; then
   pushd pg
     docker build -t test-app-pg:$CONJUR_NAMESPACE_NAME .
-
     test_app_pg_image=$(platform_image test-app-pg)
     docker tag test-app-pg:$CONJUR_NAMESPACE_NAME $test_app_pg_image
 
@@ -43,21 +58,6 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
       docker push $test_app_pg_image
     fi
   popd
-
-else
-
-  pushd webapp
-    ./build.sh
-
-    for app_type in "${APPS[@]}"; do
-      test_app_image=$(platform_image "test-$app_type-app")
-      docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
-      if [[ is_minienv != true ]]; then
-        docker push $test_app_image
-      fi
-    done
-  popd
-
 fi
 
 if [[ $LOCAL_AUTHENTICATOR == true ]]; then

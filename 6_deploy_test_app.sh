@@ -16,12 +16,8 @@ main() {
     IMAGE_PULL_POLICY='Always'
   fi
 
-  # The Kubernetes app has a PG backend that also needs to be deployed
-  if [[ "$PLATFORM" = "kubernetes" ]]; then
-    deploy_app_backend
-    deploy_secretless_app
-  fi
-
+  deploy_app_backend
+  deploy_secretless_app
   deploy_sidecar_app
   deploy_init_container_app
   sleep 15  # allow time for containers to initialize
@@ -163,7 +159,12 @@ deploy_secretless_app() {
     deployment/test-app-secretless \
     service/test-app-secretless \
     serviceaccount/test-app-secretless \
+    serviceaccount/oc-test-app-secretless \
     configmap/test-app-secretless-config
+
+  if [ $PLATFORM = 'openshift' ]; then
+    oc delete --ignore-not-found deploymentconfig/test-app-secretless
+  fi
 
   $cli create configmap test-app-secretless-config \
     --from-file=etc/secretless.yml
