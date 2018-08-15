@@ -5,7 +5,7 @@ in Kubernetes or OpenShift. The numbered scripts perform the same steps that a
 user has to go through when setting up their own applications.
 
 **Note:** These demo scripts have only been tested with Conjur v4 and v5
-Enteprise. Conjur v5 OSS is not yet supported.
+Enterprise. Conjur OSS is not yet supported.
 
 # Setup
 
