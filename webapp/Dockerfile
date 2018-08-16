@@ -10,8 +10,8 @@ RUN mv /etc/vim/vimrc /etc/vim/vimrc.bak
 
 WORKDIR /
 
-COPY webapp.sh .
-COPY uid_entrypoint.sh .
+COPY webapp*.sh /
+COPY uid_entrypoint.sh /
 
 RUN chmod g=u /etc/passwd /*.sh
 ENTRYPOINT [ "/uid_entrypoint.sh" ]

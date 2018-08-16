@@ -76,7 +76,7 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           - name: CONJUR_AUTHN_URL
-            value: "{{ CONJUR_AUTHENTICATOR_URL }}"
+            value: "{{ CONJUR_AUTHN_URL }}"
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
@@ -86,8 +86,6 @@ spec:
               configMapKeyRef:
                 name: {{ CONFIG_MAP_NAME }}
                 key: ssl-certificate
-          - name: CONJUR_VERSION
-            value: '{{ CONJUR_VERSION }}'
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token

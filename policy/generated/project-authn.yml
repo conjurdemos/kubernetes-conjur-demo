@@ -11,17 +11,17 @@
       description: Layer of authenticator identities permitted to call authn svc
   - &hosts
     - !host
-      id: jodyapp/*/*
+      id: debug/*/*
       annotations:
         kubernetes/authentication-container-name: authenticator
         openshift: "true"
     - !host
-      id: jodyapp/service_account/test-app-api-sidecar
+      id: debug/service_account/test-app-api-sidecar
       annotations:
         kubernetes/authentication-container-name: authenticator
         kubernetes: "true"
     - !host
-      id: jodyapp/service_account/test-app-api-init
+      id: debug/service_account/test-app-api-init
       annotations:
         kubernetes/authentication-container-name: authenticator
         kubernetes: "true"

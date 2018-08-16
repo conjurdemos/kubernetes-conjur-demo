@@ -78,7 +78,7 @@ deploy_sidecar_app() {
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
-    sed -e "s#{{ CONJUR_AUTHENTICATOR_URL }}#$conjur_authenticator_url#g" |
+    sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
     sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
     sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
@@ -107,7 +107,7 @@ deploy_init_container_app() {
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
-    sed -e "s#{{ CONJUR_AUTHENTICATOR_URL }}#$conjur_authenticator_url#g" |
+    sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
     sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
     sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
