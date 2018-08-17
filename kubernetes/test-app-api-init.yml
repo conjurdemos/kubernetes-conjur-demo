@@ -36,8 +36,8 @@ spec:
       serviceAccountName: test-app-api-init
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
-        imagePullPolicy: Always
-        name: test-app
+        imagePullPolicy: Never
+        name: {{ TEST_APP_NAMESPACE_NAME }}-app
         env:
           - name: CONJUR_APPLIANCE_URL
             value: "{{ CONJUR_APPLIANCE_URL }}"
@@ -48,6 +48,8 @@ spec:
               configMapKeyRef:
                 name: {{ CONFIG_MAP_NAME }}
                 key: ssl-certificate
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
@@ -74,7 +76,7 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           - name: CONJUR_AUTHN_URL
-            value: "{{ CONJUR_AUTHENTICATOR_URL }}"
+            value: "{{ CONJUR_AUTHN_URL }}"
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN

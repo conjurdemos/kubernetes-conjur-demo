@@ -5,6 +5,10 @@ set -euo pipefail
 
 announce "Creating Test App namespace."
 
+if [[ $PLATFORM == openshift ]]; then
+  oc login -u system:admin
+fi
+
 set_namespace default
 
 if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
@@ -27,3 +31,14 @@ $cli delete --ignore-not-found rolebinding test-app-conjur-authenticator-role-bi
 sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./$PLATFORM/test-app-conjur-authenticator-role-binding.yml |
   sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
   $cli create -f -
+
+if [[ $PLATFORM == openshift ]]; then
+  # add permissions for Conjur admin user
+  oc adm policy add-role-to-user system:registry $CONJUR_OSHIFT_ADMIN
+  oc adm policy add-role-to-user system:image-builder $CONJUR_OSHIFT_ADMIN
+
+  oc adm policy add-role-to-user admin $CONJUR_OSHIFT_ADMIN -n default
+  oc adm policy add-role-to-user admin $CONJUR_OSHIFT_ADMIN -n $TEST_APP_NAMESPACE_NAME
+  echo "Logging in as Conjur Openshift admin. Provide password as needed."
+  oc login -u $CONJUR_OSHIFT_ADMIN
+fi

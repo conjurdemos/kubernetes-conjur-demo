@@ -9,10 +9,12 @@ fi
 
 announce "Building and pushing test app image."
 
-pushd test_app_api_v$CONJUR_VERSION
+pushd $TEST_APP_NAME
   ./build.sh
 popd
 
-test_app_image=$(platform_image test-app)
-docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
-docker push $test_app_image
+test_app_image=$(platform_image $TEST_APP_NAME)
+docker tag $TEST_APP_NAME:$TEST_APP_NAMESPACE_NAME $test_app_image
+if [[ $MINIKUBE != true ]]; then
+  docker push $test_app_image
+fi
