@@ -31,7 +31,12 @@ fi
 
 $cli exec $conjur_cli_pod -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
 
-POLICY_FILE_LIST=$(cat policies.txt)
+POLICY_FILE_LIST="policy/users.yml
+policy/generated/project-authn.yml
+policy/generated/cluster-authn-svc.yml
+policy/generated/app-identity.yml
+policy/generated/app-access.yml"
+
 for i in $POLICY_FILE_LIST; do
   echo "Loading policy $i..."
   if [ $CONJUR_VERSION = '4' ]; then

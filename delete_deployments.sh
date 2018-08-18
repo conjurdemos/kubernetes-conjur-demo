@@ -38,4 +38,11 @@ if [ $PLATFORM = 'openshift' ]; then
   oc delete --ignore-not-found deploymentconfig/test-app-api-init
 fi
 
+echo "Waiting for pods to terminate"
+until [[ "$(oc get pods 2>&1)" == "No resources found." ]]; do
+  sleep 4
+  echo -n '.'
+done
+echo
+
 echo "Test app deleted."

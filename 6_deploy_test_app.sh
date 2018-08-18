@@ -11,6 +11,7 @@ main() {
   init_connection_specs
   deploy_sidecar_app
   deploy_init_container_app
+  sleep 10  # allow time for containers to initialize
 }
 
 ###########################

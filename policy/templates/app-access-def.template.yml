@@ -14,5 +14,3 @@
     - !layer /{{ TEST_APP_NAME }}
     resources:
     - !variable db-password
-#    - !variable /DemoVault/CICD/CICD_Secrets/Database-Oracle-OracleDBuser/username
-#    - !variable /DemoVault/CICD/CICD_Secrets/Database-Oracle-OracleDBuser/password
