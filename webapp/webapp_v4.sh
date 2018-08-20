@@ -1,6 +1,7 @@
 #!/bin/bash 
 
-declare VAR_ID=secrets/db-password
+# name of secret to retrieve from Conjur
+VAR_ID=secrets/db-password
 
 main() {
   CONT_SESSION_TOKEN=$(cat $CONJUR_AUTHN_TOKEN_FILE | base64 | tr -d '\r\n')
@@ -10,7 +11,6 @@ main() {
 
   VAR_VALUE=$(curl -s -k \
 	--request GET \
-	--cacert $CONJUR_CERT_FILE \
 	-H "Content-Type: application/json" \
 	-H "Authorization: Token token=\"$CONT_SESSION_TOKEN\"" \
 	$CONJUR_APPLIANCE_URL/variables/$VAR_ID/value)
