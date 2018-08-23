@@ -3,6 +3,9 @@
 CONJUR_VERSION=${CONJUR_VERSION:-$CONJUR_MAJOR_VERSION} # default to CONJUR_MAJOR_VERSION if not set
 PLATFORM="${PLATFORM:-kubernetes}"  # default to kubernetes if env var not set
 
+MINIKUBE="${MINIKUBE:-false}"
+MINISHIFT="${MINISHIFT:-false}"
+
 if [ $PLATFORM = 'kubernetes' ]; then
     cli=kubectl
 elif [ $PLATFORM = 'openshift' ]; then

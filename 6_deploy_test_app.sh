@@ -16,7 +16,6 @@ main() {
 
 ###########################
 init_registry_creds() {
-
   if [ $PLATFORM = 'kubernetes' ]; then
     if ! [ "${DOCKER_EMAIL}" = "" ]; then
       announce "Creating image pull secret."
