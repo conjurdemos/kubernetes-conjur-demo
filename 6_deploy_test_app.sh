@@ -9,6 +9,13 @@ main() {
   set_namespace $TEST_APP_NAMESPACE_NAME
   init_registry_creds
   init_connection_specs
+
+  if is_minienv; then
+    IMAGE_PULL_POLICY='Never'
+  else
+    IMAGE_PULL_POLICY='Always'
+  fi
+  
   deploy_sidecar_app
   deploy_init_container_app
   sleep 10  # allow time for containers to initialize
@@ -74,6 +81,7 @@ deploy_sidecar_app() {
   sleep 5
 
   sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-api-sidecar.yml |
+    sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
@@ -103,6 +111,7 @@ deploy_init_container_app() {
   sleep 5
 
   sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-api-init.yml |
+    sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |

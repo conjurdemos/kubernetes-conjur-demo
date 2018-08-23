@@ -131,3 +131,11 @@ function wait_for_it() {
     echo 'Success!'
   fi
 }
+
+function is_minienv() {
+  if [[ $MINIKUBE == false ]]; then
+    false
+  else
+    true
+  fi
+}

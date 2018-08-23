@@ -36,7 +36,7 @@ spec:
       serviceAccountName: test-app-api-sidecar
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
-        imagePullPolicy: Never
+        imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         name: {{ TEST_APP_NAMESPACE_NAME }}-app
         env:
           - name: CONJUR_APPLIANCE_URL
