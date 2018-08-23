@@ -3,6 +3,9 @@
 CONJUR_VERSION=${CONJUR_VERSION:-$CONJUR_MAJOR_VERSION} # default to CONJUR_MAJOR_VERSION if not set
 PLATFORM="${PLATFORM:-kubernetes}"  # default to kubernetes if env var not set
 
+MINIKUBE="${MINIKUBE:-false}"
+MINISHIFT="${MINISHIFT:-false}"
+
 if [ $PLATFORM = 'kubernetes' ]; then
     cli=kubectl
 elif [ $PLATFORM = 'openshift' ]; then
@@ -28,9 +31,11 @@ announce() {
 
 platform_image() {
   if [ $PLATFORM = "openshift" ]; then
-    echo "$DOCKER_REGISTRY_PATH/$TEST_APP_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
-  else
+    echo "$DOCKER_REGISTRY_PATH/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
+  elif [ $MINIKUBE != true ]; then
     echo "$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
+  else
+    echo "$1:$CONJUR_NAMESPACE_NAME"
   fi
 }
 
@@ -124,5 +129,13 @@ function wait_for_it() {
       sleep $spacer
     done
     echo 'Success!'
+  fi
+}
+
+function is_minienv() {
+  if [[ $MINIKUBE == false ]]; then
+    false
+  else
+    true
   fi
 }

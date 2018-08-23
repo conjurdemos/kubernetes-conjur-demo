@@ -5,8 +5,12 @@ set -euo pipefail
 
 set_namespace default
 
+if [[ $PLATFORM == openshift ]]; then
+  oc login -u system:admin
+fi
+
 if has_namespace $TEST_APP_NAMESPACE_NAME; then
-  kubectl delete namespace $TEST_APP_NAMESPACE_NAME
+  $cli delete namespace $TEST_APP_NAMESPACE_NAME
 
   printf "Waiting for $TEST_APP_NAMESPACE_NAME namespace deletion to complete"
 
