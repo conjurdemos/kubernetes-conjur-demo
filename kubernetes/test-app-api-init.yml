@@ -50,6 +50,8 @@ spec:
                 key: ssl-certificate
           - name: CONJUR_AUTHN_TOKEN_FILE
             value: /run/conjur/access-token
+          - name: CONJUR_VERSION
+            value: "{{ CONJUR_VERSION }}"
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token

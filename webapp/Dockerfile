@@ -11,16 +11,10 @@ RUN mv /etc/vim/vimrc /etc/vim/vimrc.bak
 WORKDIR /
 
 # install Summon and the Summon-conjur provider
-RUN curl -LO https://github.com/cyberark/summon/releases/download/v0.6.7/summon-linux-amd64.tar.gz \
-    && tar xzf summon-linux-amd64.tar.gz && mv summon /usr/local/bin/ \
-    && rm summon-linux-amd64.tar.gz \
-    && mkdir -p /usr/local/lib/summon 
-
-#    && curl -LO https://github.com/cyberark/summon-conjur/releases/download/v0.5.2/summon-conjur-linux-amd64.tar.gz \
-#    && tar xzf summon-conjur-linux-amd64.tar.gz && mv summon-conjur /usr/local/lib/summon/ \
-#    && rm summon-conjur-linux-amd64.tar.gz
-
-COPY conjur_summon_provider.sh /usr/local/lib/summon
+RUN curl -sSL https://raw.githubusercontent.com/cyberark/summon/master/install.sh \
+      | env TMPDIR=$(mktemp -d) bash && \
+    curl -sSL https://raw.githubusercontent.com/cyberark/summon-conjur/master/install.sh \
+      | env TMPDIR=$(mktemp -d) bash
 
 COPY secrets.yml webapp*.sh uid_entrypoint.sh /
 
