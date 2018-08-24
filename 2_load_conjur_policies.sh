@@ -6,6 +6,8 @@ set -euo pipefail
 announce "Loading Conjur policy."
 
 pushd policy
+  mkdir -p ./generated
+
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/cluster-authn-svc.yml
 
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
