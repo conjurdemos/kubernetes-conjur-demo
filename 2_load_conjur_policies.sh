@@ -22,6 +22,7 @@ set_namespace $CONJUR_NAMESPACE_NAME
 conjur_cli_pod=$(get_conjur_cli_pod_name)
 
 if [ $PLATFORM = 'kubernetes' ]; then
+  kubectl exec $conjur_cli_pod -- rm -rf /policy
   kubectl cp ./policy $conjur_cli_pod:/policy
 elif [ $PLATFORM = 'openshift' ]; then
   oc rsync ./policy $conjur_cli_pod:/

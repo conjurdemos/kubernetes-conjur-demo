@@ -12,7 +12,7 @@ announce "Building and pushing test app images."
 # Kubernetes and OpenShift currently run different apps in the demo
 if [[ "$PLATFORM" = "kubernetes" ]]; then
 
-  pushd test_app
+  pushd test_app_summon
     docker build -t test-app:$CONJUR_NAMESPACE_NAME .
 
     test_app_image=$(platform_image test-app)

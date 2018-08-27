@@ -14,6 +14,8 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
     grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
   sidecar_url=$($cli describe service test-app-summon-sidecar |
     grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
+  secretless_url=$($cli describe service test-app-secretless |
+    grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
 
   echo -e "Adding entry to the init app\n"
   curl \
@@ -27,6 +29,12 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
     -H "Content-Type: application/json" \
     $sidecar_url/pet
 
+  echo -e "Adding entry to the secretless app\n"
+  curl \
+    -d '{"name": "Mr. Secretless"}' \
+    -H "Content-Type: application/json" \
+    $secretless_url/pet
+
   echo -e "Remember that they are both using the same DB backend...\n"
 
   echo -e "Querying init app\n"
@@ -34,6 +42,9 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
 
   echo -e "\n\nQuerying sidecar app\n"
   curl $sidecar_url/pets
+
+  echo -e "\n\nQuerying secretless app\n"
+  curl $secretless_url/pets
 
 else
 

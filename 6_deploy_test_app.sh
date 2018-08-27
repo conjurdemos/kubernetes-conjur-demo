@@ -19,11 +19,12 @@ main() {
   # The Kubernetes app has a PG backend that also needs to be deployed
   if [[ "$PLATFORM" = "kubernetes" ]]; then
     deploy_app_backend
+    deploy_secretless_app
   fi
 
   deploy_sidecar_app
   deploy_init_container_app
-  sleep 10  # allow time for containers to initialize
+  sleep 15  # allow time for containers to initialize
 }
 
 ###########################
@@ -140,6 +141,29 @@ deploy_init_container_app() {
     $cli create -f -
 
   echo "Test app/init-container deployed."
+}
+
+###########################
+deploy_secretless_app() {
+  $cli delete --ignore-not-found \
+    deployment/test-app-secretless \
+    service/test-app-secretless \
+    serviceaccount/test-app-secretless \
+    configmap/test-app-secretless-config
+
+  $cli create configmap test-app-secretless-config \
+    --from-file=etc/secretless.yml
+
+  sleep 5
+
+  sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
+    sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+    sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
+    sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
+    $cli create -f -
+
+  echo "Secretless test app deployed."
 }
 
 main $@
