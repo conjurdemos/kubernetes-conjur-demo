@@ -43,7 +43,9 @@ will be deployed:
 
 ```
 export TEST_APP_NAMESPACE_NAME=test-app
+export TEST_APP_NAME=webapp
 ```
+As found at boostrap.env
 
 You will also need to set several environment variables to match the values used
 when configuring your Conjur deployment. Note that if you may already have these 
@@ -74,4 +76,4 @@ Conjur Ruby API, configured with the access token provided by the authenticator
 sidecar, to retrieve a secret value from Conjur.
 
 You can run the `./rotate` script to rotate the secret value and then run the
-final numbered script again to retrieve and print the new value.
+final numbered script (currently `7_retrieve_secret.sh`) again to retrieve and print the new value.
