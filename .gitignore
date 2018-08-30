@@ -1,3 +1,3 @@
-policy/policy.yml
 policy/generated/*
 webapp/summon*.gz
+pg/schema.sql

@@ -15,7 +15,12 @@ main() {
   else
     IMAGE_PULL_POLICY='Always'
   fi
-  
+
+  # The Kubernetes app has a PG backend that also needs to be deployed
+  if [[ "$PLATFORM" = "kubernetes" ]]; then
+    deploy_app_backend
+  fi
+
   deploy_sidecar_app
   deploy_init_container_app
   sleep 10  # allow time for containers to initialize
@@ -52,7 +57,7 @@ init_registry_creds() {
 
 ###########################
 init_connection_specs() {
-  test_app_docker_image=$(platform_image $TEST_APP_NAME)
+  test_app_docker_image=$(platform_image test-app)
 
   conjur_appliance_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
   conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
@@ -68,26 +73,37 @@ init_connection_specs() {
 }
 
 ###########################
+deploy_app_backend() {
+  $cli delete --ignore-not-found \
+     service/test-app-backend \
+     statefulset/pg
+
+  echo "Deploying test app backend"
+  test_app_pg_docker_image=$(platform_image test-app-pg)
+  sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/postgres.yml |
+    $cli create -f -
+}
+
+###########################
 deploy_sidecar_app() {
   $cli delete --ignore-not-found \
-    deployment/test-app-api-sidecar \
-    service/test-app-api-sidecar \
-    serviceaccount/test-app-api-sidecar
+    deployment/test-app-summon-sidecar \
+    service/test-app-summon-sidecar \
+    serviceaccount/test-app-summon-sidecar
 
   if [ $PLATFORM = 'openshift' ]; then
-    oc delete --ignore-not-found deploymentconfig/test-app-api-sidecar
+    oc delete --ignore-not-found deploymentconfig/test-app-summon-sidecar
   fi
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-api-sidecar.yml |
+  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
     sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
-    sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
     sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
@@ -100,24 +116,23 @@ deploy_sidecar_app() {
 ###########################
 deploy_init_container_app() {
   $cli delete --ignore-not-found \
-    deployment/test-app-api-init \
-    service/test-app-api-init \
-    serviceaccount/test-app-api-init
+    deployment/test-app-summon-init \
+    service/test-app-summon-init \
+    serviceaccount/test-app-summon-init
 
   if [ $PLATFORM = 'openshift' ]; then
-    oc delete --ignore-not-found deploymentconfig/test-app-api-init
+    oc delete --ignore-not-found deploymentconfig/test-app-summon-init
   fi
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-api-init.yml |
+  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
     sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
-    sed -e "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
     sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |

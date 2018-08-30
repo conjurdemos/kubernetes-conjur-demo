@@ -1,0 +1,17 @@
+---
+- !policy
+  id: test-app-db
+  owner: !group secrets_admin
+  annotations:
+    description: This policy contains the creds to access the test-app DB
+
+  body:
+  - &variables
+    - !variable password
+    - !variable url
+    - !variable username
+
+  - !permit
+    role: !layer /test-app
+    privileges: [ read, execute ]
+    resources: *variables

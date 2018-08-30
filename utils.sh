@@ -133,7 +133,7 @@ function wait_for_it() {
 }
 
 function is_minienv() {
-  if [[ $MINIKUBE == false ]]; then
+  if [[ $MINIKUBE == false && "$(minishift status | grep Running)" = "" ]]; then
     false
   else
     true
