@@ -9,7 +9,7 @@ fi
 
 announce "Building and pushing test app images."
 
-# Kubernetes and OpsnShift currently run different apps in the demo
+# Kubernetes and OpenShift currently run different apps in the demo
 if [[ "$PLATFORM" = "kubernetes" ]]; then
 
   pushd test_app
