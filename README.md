@@ -44,6 +44,7 @@ will be deployed:
 ```
 export TEST_APP_NAMESPACE_NAME=test-app
 ```
+As found at boostrap.env
 
 You will also need to set several environment variables to match the values used
 when configuring your Conjur deployment. Note that if you may already have these 
@@ -67,11 +68,15 @@ export DOCKER_EMAIL=<your-email>
 ```
 
 # Usage
-
 Run `./start` to execute the numbered scripts, which will step through the
-process of configuring Conjur and deploying a test app. The test app uses the
-Conjur Ruby API, configured with the access token provided by the authenticator
+process of configuring Conjur and deploying a test app.
+
+## Kubernetes
+The test app is based on the `cyberark/demo-app` Docker image ([GitHub repo](https://github.com/conjurdemos/pet-store-demo)). It is deployed with a PostgreSQL database and the DB credentials are stored in Conjur. The app uses Summon at runtime to retrieve the credentials it needs to connect with the DB, and it authenticates to Conjur using the access token provided by the authenticator sidecar.
+
+## OpenShift
+The test app uses the Conjur Ruby API, configured with the access token provided by the authenticator
 sidecar, to retrieve a secret value from Conjur.
 
 You can run the `./rotate` script to rotate the secret value and then run the
-final numbered script again to retrieve and print the new value.
+final numbered script (currently `7_verify_authentication.sh`) again to retrieve and print the new value.
