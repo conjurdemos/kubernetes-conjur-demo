@@ -3,6 +3,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: test-app-backend
+  namespace: {{ TEST_APP_NAMESPACE_NAME }}
 spec:
   selector:
     app: test-app-backend

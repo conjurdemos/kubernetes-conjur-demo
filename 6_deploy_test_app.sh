@@ -82,6 +82,7 @@ deploy_app_backend() {
   echo "Deploying test app backend"
   test_app_pg_docker_image=$(platform_image test-app-pg)
   sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/postgres.yml |
+    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     $cli create -f -
 }
 
@@ -161,6 +162,7 @@ deploy_secretless_app() {
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
+    sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
     $cli create -f -
 
   echo "Secretless test app deployed."
