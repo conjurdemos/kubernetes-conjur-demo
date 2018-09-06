@@ -47,7 +47,7 @@ export TEST_APP_NAMESPACE_NAME=test-app
 As found at boostrap.env
 
 You will also need to set several environment variables to match the values used
-when configuring your Conjur deployment. Note that if you may already have these 
+when configuring your Conjur deployment. Note that if you may already have these
 variables set if you're using the same shell to run the demo:
 
 ```
@@ -69,14 +69,52 @@ export DOCKER_EMAIL=<your-email>
 
 # Usage
 Run `./start` to execute the numbered scripts, which will step through the
-process of configuring Conjur and deploying a test app.
+process of configuring Conjur and deploying test app(s).
 
 ## Kubernetes
-The test app is based on the `cyberark/demo-app` Docker image ([GitHub repo](https://github.com/conjurdemos/pet-store-demo)). It is deployed with a PostgreSQL database and the DB credentials are stored in Conjur. The app uses Summon at runtime to retrieve the credentials it needs to connect with the DB, and it authenticates to Conjur using the access token provided by the authenticator sidecar.
+The test app is based on the `cyberark/demo-app` Docker image
+([GitHub repo](https://github.com/conjurdemos/pet-store-demo)). It is deployed
+with a PostgreSQL database and the DB credentials are stored in Conjur.
+The app uses Summon at runtime to retrieve the credentials it needs to connect
+with the DB, and it authenticates to Conjur using the access token provided by
+the authenticator sidecar.
+
+There are three iterations of this app that are deployed:
+- App with sidecar authenticator client (to provide continuously refreshed Conjur access tokens)
+- App with init container authenticator client (to provide a one-time Conjur access token on start)
+- Secretless app with [Secretless Broker](https://github.com/cyberark/secretless-broker)
+  deployed as a sidecar, managing the credential retrieval / injection for the app
+
+
+### Rotation
+To demonstrate how the apps respond to rotation, you can run the `./rotate` script.
+This script updates the variables in Conjur and then updates the password in the
+pg backends, which automatically kicks off a script to close all open connections
+that use the old password.
+
+To see this in action, you can open a terminal (while still working in the same
+Kubernetes context) and run:
+```
+secretless_url=$(kubectl describe service test-app-secretless |
+    grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
+
+while true
+do
+  echo "Retrieving pets"
+  curl -i $secretless_url/pets
+  echo ""
+  echo ""
+  echo "..."
+  echo ""
+  sleep 3
+done
+```
+This will continuously query the Secretless pet store application. In another terminal
+run the `rotate` script. Note that as the rotate script completes, the next query
+to the app has the slightest hesitation as credentials are re-retrieved and
+connections to the pg backend are re-opened, but there are no errors - the app remains
+available.
 
 ## OpenShift
 The test app uses the Conjur Ruby API, configured with the access token provided by the authenticator
 sidecar, to retrieve a secret value from Conjur.
-
-You can run the `./rotate` script to rotate the secret value and then run the
-final numbered script (currently `7_verify_authentication.sh`) again to retrieve and print the new value.

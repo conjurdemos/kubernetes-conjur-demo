@@ -7,11 +7,31 @@ announce "Rotating password."
 
 set_namespace $CONJUR_NAMESPACE_NAME
 
-conjur_master=$(get_master_pod_name)
+conjur_cli_pod=$(get_conjur_cli_pod_name)
 new_pwd=$(openssl rand -hex 12)
 
-kubectl exec $conjur_master -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
-kubectl exec $conjur_master -- conjur variable values add test-app-db/password $new_pwd
-kubectl exec $conjur_master -- conjur authn logout
+readonly APPS=(
+  "test-summon-init-app"
+  "test-summon-sidecar-app"
+  "test-secretless-app"
+)
+
+# Update the DB password in Conjur
+$cli exec $conjur_cli_pod -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
+for app_name in "${APPS[@]}"; do
+  $cli exec $conjur_cli_pod -- conjur variable values add $app_name-db/password $new_pwd
+done
+$cli exec $conjur_cli_pod -- conjur authn logout
+
+# Update the DB password in the DB
+if [[ "$PLATFORM" = "kubernetes" ]]; then
+  set_namespace $TEST_APP_NAMESPACE_NAME
+
+  for app_name in "${APPS[@]}"; do
+    backend_pod=$($cli get pods --no-headers -l app=$app_name-backend |
+      awk '{ print $1 }')
+    $cli exec -c $app_name-backend $backend_pod -- rotate_password $new_pwd
+  done
+fi
 
 echo "New db password is:" $new_pwd
