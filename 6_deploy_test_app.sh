@@ -58,7 +58,8 @@ init_registry_creds() {
 
 ###########################
 init_connection_specs() {
-  test_app_docker_image=$(platform_image test-app)
+  test_sidecar_app_docker_image=$(platform_image test-sidecar-app)
+  test_init_app_docker_image=$(platform_image test-init-app)
 
   conjur_appliance_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
   conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
@@ -76,8 +77,12 @@ init_connection_specs() {
 ###########################
 deploy_app_backend() {
   $cli delete --ignore-not-found \
-     service/test-app-backend \
-     statefulset/pg
+     service/test-summon-init-app-backend \
+     service/test-summon-sidecar-app-backend \
+     service/test-secretless-app-backend \
+     statefulset/summon-init-pg \
+     statefulset/summon-sidecar-pg \
+     statefulset/secretless-pg
 
   echo "Deploying test app backend"
   test_app_pg_docker_image=$(platform_image test-app-pg)
@@ -99,7 +104,7 @@ deploy_sidecar_app() {
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
+  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_sidecar_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
@@ -128,7 +133,7 @@ deploy_init_container_app() {
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
+  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |

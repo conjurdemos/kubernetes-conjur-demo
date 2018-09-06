@@ -13,14 +13,24 @@ announce "Building and pushing test app images."
 if [[ "$PLATFORM" = "kubernetes" ]]; then
 
   pushd test_app_summon
-    docker build -t test-app:$CONJUR_NAMESPACE_NAME .
+    readonly APPS=(
+      "init"
+      "sidecar"
+    )
 
-    test_app_image=$(platform_image test-app)
-    docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
+    for app_type in "${APPS[@]}"; do
+      # prep secrets.yml
+      sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > secrets.yml
 
-    if [[ is_minienv != true ]]; then
-      docker push $test_app_image
-    fi
+      docker build -t test-app:$CONJUR_NAMESPACE_NAME .
+
+      test_app_image=$(platform_image "test-$app_type-app")
+      docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
+
+      if [[ is_minienv != true ]]; then
+        docker push $test_app_image
+      fi
+    done
   popd
 
   pushd pg

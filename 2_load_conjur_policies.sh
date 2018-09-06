@@ -51,9 +51,28 @@ echo "Conjur policy loaded."
 
 password=$(openssl rand -hex 12)
 
-$cli exec $conjur_cli_pod -- conjur variable values add "test-app-db/password" $password
-$cli exec $conjur_cli_pod -- conjur variable values add "test-app-db/url" "postgresql://test-app-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:5432/postgres"
-$cli exec $conjur_cli_pod -- conjur variable values add "test-app-db/username" "test_app"
+# load secret values for each app
+readonly APPS=(
+  "test-summon-init-app"
+  "test-summon-sidecar-app"
+  "test-secretless-app"
+)
+
+for app_name in "${APPS[@]}"; do
+  echo "Loading secret values for $app_name"
+  $cli exec $conjur_cli_pod -- conjur variable values add "$app_name-db/password" $password
+  $cli exec $conjur_cli_pod -- conjur variable values add "$app_name-db/username" "test_app"
+
+  db_url="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:5432/postgres"
+
+  if [[ "$app_name" = "test-secretless-app" ]]; then
+    # Secretless doesn't require the full connection URL, just the host/port
+    # and an optional database
+    $cli exec $conjur_cli_pod -- conjur variable values add "$app_name-db/url" "$db_url"
+  else
+    $cli exec $conjur_cli_pod -- conjur variable values add "$app_name-db/url" "postgresql://$db_url"
+  fi
+done
 
 # Set DB password in DB schema
 pushd pg
