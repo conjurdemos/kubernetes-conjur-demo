@@ -1,0 +1,182 @@
+#!/bin/bash
+
+# Usage:
+# summon -e [platform] ./test [platform] [conjur version]
+# platform: gke or oc
+# conjur version: 4 or 5
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# Clean up when script completes
+function finish {
+  announce 'Wrapping up and removing test environment'
+
+  # Stop the running processes
+  runDockerCommand "
+    ./stop
+    cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop
+  "
+
+  # Remove the deploy directory
+  rm -rf ../kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+
+  # Delete registry images that were used
+  deleteRegistryImage "$DOCKER_REGISTRY_PATH/haproxy:$CONJUR_NAMESPACE_NAME"
+  deleteRegistryImage "$DOCKER_REGISTRY_PATH/conjur-appliance:$CONJUR_NAMESPACE_NAME"
+}
+trap finish EXIT
+
+# Verify that arguments are passed to the script
+function printUsage() {
+  echo "---"
+  echo "Usage:"
+  echo "summon -e [platform] ./test [platform] [conjur version]"
+  echo "platform: gke or oc"
+  echo "conjur version: 4 or 5"
+
+  exit 1
+}
+
+# Parse input arguments
+if [ $# -ne 2 ]; then
+  echo "Invalid number of arguments."
+  printUsage
+fi
+
+TEST_PLATFORM="$1"
+CONJUR_VERSION="$2"
+
+export TEST_PLATFORM
+export CONJUR_VERSION
+
+function main() {
+  announce 'Checking arguments'
+  checkArguments
+
+  announce 'Preparing test environment'
+  prepareTestEnvironment
+
+  announce 'Deploying Conjur'
+  deployConjur
+
+  announce 'Deploying demo'
+  deployDemo
+}
+
+function deployConjur() {
+  pushd ..
+    git clone git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+  popd
+
+  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+}
+
+function deployDemo() {
+  runDockerCommand "./start"
+}
+
+# Sets additional required environment variables that aren't available in the
+# secrets.yml file, and performs other preparatory steps
+function prepareTestEnvironment() {
+  # Set environment variables
+  local registry='registry2.itci.conjur.net/conjur-appliance'
+
+  export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
+
+  export CONJUR_NAMESPACE_NAME=conjur-$CONJUR_VERSION-$UNIQUE_TEST_ID-test
+  export AUTHENTICATOR_ID=conjur-$CONJUR_VERSION-$UNIQUE_TEST_ID-test
+  export TEST_APP_NAMESPACE_NAME=test-app-$CONJUR_VERSION-$UNIQUE_TEST_ID
+
+  export MINIKUBE=false
+
+  export CONJUR_DEMO_TEST_IMAGE=conjur-demo-$CONJUR_VERSION-$UNIQUE_TEST_ID
+
+  if [[ "$CONJUR_VERSION" = "4" ]]; then
+    export CONJUR_APPLIANCE_IMAGE=$registry:4.9-stable
+  else
+    export CONJUR_APPLIANCE_IMAGE=$registry:5.0-stable
+  fi
+
+  # Prepare Docker images
+  docker pull $CONJUR_APPLIANCE_IMAGE
+  docker build -t $CONJUR_DEMO_TEST_IMAGE:$CONJUR_NAMESPACE_NAME \
+    -f Dockerfile \
+    --build-arg OPENSHIFT_CLI_URL=$OPENSHIFT_CLI_URL \
+    --build-arg KUBECTL_CLI_URL=$KUBECTL_CLI_URL \
+    .
+}
+
+# Delete an image from GCR, unless it is has multiple tags pointing to it
+# This means another parallel build is using the image and we should
+# just untag it to be deleted by the later job
+function deleteRegistryImage() {
+  local image_and_tag=$1
+
+  IFS=':' read -r -a array <<< $image_and_tag
+  local image="${array[0]}"
+  local tag="${array[1]}"
+
+  if [[ "$PLATFORM" = "kubernetes" ]]; then
+    runDockerCommand "
+      if gcloud container images list-tags $image | grep $tag; then
+        gcloud container images delete --force-delete-tags -q $image_and_tag
+      fi
+    "
+  fi
+}
+
+function runDockerCommand() {
+  docker run --rm \
+    -e CONJUR_VERSION \
+    -e CONJUR_APPLIANCE_IMAGE \
+    -e CONJUR_NAMESPACE_NAME \
+    -e CONJUR_ACCOUNT \
+    -e CONJUR_ADMIN_PASSWORD \
+    -e AUTHENTICATOR_ID \
+    -e TEST_APP_NAMESPACE_NAME \
+    -e PLATFORM \
+    -e DOCKER_REGISTRY_URL \
+    -e DOCKER_REGISTRY_PATH \
+    -e MINIKUBE \
+    -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
+    -e GCLOUD_CLUSTER_NAME \
+    -e GCLOUD_ZONE \
+    -e GCLOUD_PROJECT_NAME \
+    -e OPENSHIFT_URL \
+    -e OPENSHIFT_USERNAME \
+    -e OPENSHIFT_PASSWORD \
+    -v $GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ~/.config:/root/.config \
+    -v "$PWD/..":/src \
+    -w /src \
+    $CONJUR_DEMO_TEST_IMAGE:$CONJUR_NAMESPACE_NAME \
+    bash -c "
+      ./ci/platform_login
+      $1
+    "
+}
+
+function announce() {
+  echo "++++++++++++++++++++++++++++++++++++++"
+  echo ""
+  echo "$@"
+  echo ""
+  echo "++++++++++++++++++++++++++++++++++++++"
+}
+
+# Check that the argument values are valid
+function checkArguments() {
+  if [[ "$TEST_PLATFORM" != "gke" && "$TEST_PLATFORM" != "oc" ]]; then
+    echo "The only valid platform values are 'gke' and 'oc'"
+  elif [[ "$CONJUR_VERSION" != "4" && "$CONJUR_VERSION" != "5" ]]; then
+    echo "The only valid Conjur version values are '4' and '5'."
+  else
+    return 0
+  fi
+
+  printUsage
+}
+
+main
