@@ -19,11 +19,12 @@ main() {
   # The Kubernetes app has a PG backend that also needs to be deployed
   if [[ "$PLATFORM" = "kubernetes" ]]; then
     deploy_app_backend
+    deploy_secretless_app
   fi
 
   deploy_sidecar_app
   deploy_init_container_app
-  sleep 10  # allow time for containers to initialize
+  sleep 15  # allow time for containers to initialize
 }
 
 ###########################
@@ -57,7 +58,8 @@ init_registry_creds() {
 
 ###########################
 init_connection_specs() {
-  test_app_docker_image=$(platform_image test-app)
+  test_sidecar_app_docker_image=$(platform_image test-sidecar-app)
+  test_init_app_docker_image=$(platform_image test-init-app)
 
   conjur_appliance_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
   conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
@@ -75,12 +77,17 @@ init_connection_specs() {
 ###########################
 deploy_app_backend() {
   $cli delete --ignore-not-found \
-     service/test-app-backend \
-     statefulset/pg
+     service/test-summon-init-app-backend \
+     service/test-summon-sidecar-app-backend \
+     service/test-secretless-app-backend \
+     statefulset/summon-init-pg \
+     statefulset/summon-sidecar-pg \
+     statefulset/secretless-pg
 
   echo "Deploying test app backend"
   test_app_pg_docker_image=$(platform_image test-app-pg)
   sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/postgres.yml |
+    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     $cli create -f -
 }
 
@@ -97,7 +104,7 @@ deploy_sidecar_app() {
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
+  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_sidecar_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
@@ -126,7 +133,7 @@ deploy_init_container_app() {
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
+  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
@@ -140,6 +147,30 @@ deploy_init_container_app() {
     $cli create -f -
 
   echo "Test app/init-container deployed."
+}
+
+###########################
+deploy_secretless_app() {
+  $cli delete --ignore-not-found \
+    deployment/test-app-secretless \
+    service/test-app-secretless \
+    serviceaccount/test-app-secretless \
+    configmap/test-app-secretless-config
+
+  $cli create configmap test-app-secretless-config \
+    --from-file=etc/secretless.yml
+
+  sleep 5
+
+  sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
+    sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+    sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
+    sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
+    sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
+    $cli create -f -
+
+  echo "Secretless test app deployed."
 }
 
 main $@

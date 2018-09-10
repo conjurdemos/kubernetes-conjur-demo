@@ -1,3 +1,4 @@
 policy/generated/*
 webapp/summon*.gz
 pg/schema.sql
+test_app_summon/secrets.yml

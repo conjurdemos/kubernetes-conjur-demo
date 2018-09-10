@@ -1,17 +1,50 @@
----
 - !policy
-  id: test-app-db
+  id: test-summon-init-app-db
   owner: !group secrets_admin
   annotations:
-    description: This policy contains the creds to access the test-app DB
+    description: This policy contains the creds to access the summon init app DB
 
   body:
-  - &variables
-    - !variable password
-    - !variable url
-    - !variable username
+    - &init-variables
+      - !variable password
+      - !variable url
+      - !variable username
 
-  - !permit
-    role: !layer /test-app
-    privileges: [ read, execute ]
-    resources: *variables
+    - !permit
+      role: !layer /test-app
+      privileges: [ read, execute ]
+      resources: *init-variables
+
+- !policy
+  id: test-summon-sidecar-app-db
+  owner: !group secrets_admin
+  annotations:
+    description: This policy contains the creds to access the summon sidecar app DB
+
+  body:
+    - &sidecar-variables
+      - !variable password
+      - !variable url
+      - !variable username
+
+    - !permit
+      role: !layer /test-app
+      privileges: [ read, execute ]
+      resources: *sidecar-variables
+
+- !policy
+  id: test-secretless-app-db
+  owner: !group secrets_admin
+  annotations:
+    description: This policy contains the creds to access the secretless app DB
+
+  body:
+    - &secretless-variables
+      - !variable password
+      - !variable url
+      - !variable username
+
+    - !permit
+      role: !layer /test-app
+      privileges: [ read, execute ]
+      resources: *secretless-variables
