@@ -2,7 +2,7 @@
 kind: RoleBinding
 apiVersion: v1
 metadata:
-  name: test-app-conjur-authenticator-role-binding
+  name: test-app-conjur-authenticator-role-binding-{{ CONJUR_NAMESPACE_NAME }}
   namespace: {{ TEST_APP_NAMESPACE_NAME }}
 subjects:
   - kind: ServiceAccount
@@ -10,4 +10,4 @@ subjects:
     namespace: {{ CONJUR_NAMESPACE_NAME }}
 roleRef:
   kind: ClusterRole
-  name: conjur-authenticator
+  name: conjur-authenticator-{{ CONJUR_NAMESPACE_NAME }}
