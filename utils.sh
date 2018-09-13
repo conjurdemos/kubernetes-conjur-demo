@@ -133,9 +133,25 @@ function wait_for_it() {
 }
 
 function is_minienv() {
-  if [[ $MINIKUBE == false && "$(minishift status | grep Running)" = "" ]]; then
-    false
+  if hash minishift 2>/dev/null; then
+    # Check if Minishift is running too
+    if [[ $MINIKUBE == false && "$(minishift status | grep Running)" = "" ]]; then
+      false
+    else
+      true
+    fi
   else
-    true
+    if [[ $MINIKUBE == false ]]; then
+      false
+    else
+      true
+    fi
   fi
+}
+
+function service_ip() {
+  local service=$1
+
+  echo "$($cli describe service $service | grep 'LoadBalancer Ingress' |
+    awk '{ print $3 }')"
 }

@@ -10,14 +10,19 @@ set_namespace $TEST_APP_NAMESPACE_NAME
 # Kubernetes and OpenShift currently deploy different apps; verify differently
 if [[ "$PLATFORM" = "kubernetes" ]]; then
 
-  init_url=$($cli describe service test-app-summon-init |
-    grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
-  sidecar_url=$($cli describe service test-app-summon-sidecar |
-    grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
-  secretless_url=$($cli describe service test-app-secretless |
-    grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
+  echo "Waiting for services to become available"
+  while [ -z "$(service_ip "test-app-summon-init")" ] ||
+        [ -z "$(service_ip "test-app-summon-sidecar")" ] ||
+        [ -z "$(service_ip "test-app-secretless")" ]; do
+    printf "."
+    sleep 1
+  done
 
-  echo -e "Adding entry to the init app\n"
+  init_url=$(service_ip test-app-summon-init):8080
+  sidecar_url=$(service_ip test-app-summon-sidecar):8080
+  secretless_url=$(service_ip test-app-secretless):8080
+
+  echo -e "\nAdding entry to the init app\n"
   curl \
     -d '{"name": "Mr. Init"}' \
     -H "Content-Type: application/json" \
@@ -34,8 +39,6 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
     -d '{"name": "Mr. Secretless"}' \
     -H "Content-Type: application/json" \
     $secretless_url/pet
-
-  echo -e "Remember that they are both using the same DB backend...\n"
 
   echo -e "Querying init app\n"
   curl $init_url/pets
