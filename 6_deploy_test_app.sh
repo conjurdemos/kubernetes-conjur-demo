@@ -65,18 +65,10 @@ init_connection_specs() {
   conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
 
   conjur_authn_login_prefix=""
-  if [ $PLATFORM == kubernetes ]; then
-    if [ $CONJUR_VERSION = '4' ]; then
-      conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
-    elif [ $CONJUR_VERSION = '5' ]; then
-      conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
-    fi
-  else
-    if [ $CONJUR_VERSION = '4' ]; then
-      conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
-    elif [ $CONJUR_VERSION = '5' ]; then
-      conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME
-    fi
+  if [ $CONJUR_VERSION = '4' ]; then
+    conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
+  elif [ $CONJUR_VERSION = '5' ]; then
+    conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
   fi
 }
 
