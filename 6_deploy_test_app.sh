@@ -71,6 +71,12 @@ init_connection_specs() {
     elif [ $CONJUR_VERSION = '5' ]; then
       conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
     fi
+  else
+    if [ $CONJUR_VERSION = '4' ]; then
+      conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
+    elif [ $CONJUR_VERSION = '5' ]; then
+      conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME
+    fi
   fi
 }
 
