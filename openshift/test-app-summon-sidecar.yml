@@ -17,7 +17,7 @@ spec:
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
-        name: {{ TEST_APP_NAMESPACE_NAME }}-app
+        name: test-app
         env:
           - name: CONJUR_APPLIANCE_URL
             value: "{{ CONJUR_APPLIANCE_URL }}"
@@ -61,7 +61,7 @@ spec:
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
           - name: CONJUR_AUTHN_LOGIN
-            value: {{ TEST_APP_NAMESPACE_NAME }}/*/*
+            value: "{{ CONJUR_AUTHN_LOGIN_PREFIX }}/oc-test-app-summon-sidecar"
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
