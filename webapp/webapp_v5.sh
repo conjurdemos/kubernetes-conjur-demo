@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 # name of secret to retrieve from Conjur
-VAR_ID=secrets/db-password
+VAR_ID=test-summon-sidecar-app-db/password
 
 main() {
   CONT_SESSION_TOKEN=$(cat $CONJUR_AUTHN_TOKEN_FILE | base64 | tr -d '\r\n')

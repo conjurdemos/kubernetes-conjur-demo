@@ -53,14 +53,14 @@ else
 
   sidecar_api_pod=$($cli get pods --no-headers -l app=test-app-summon-sidecar | awk '{ print $1 }')
   if [[ "$sidecar_api_pod" != "" ]]; then
-    echo "Sidecar + REST API: $($cli exec -c $TEST_APP_NAMESPACE_NAME-app $sidecar_api_pod -- /webapp_v$CONJUR_VERSION.sh)"
-    echo "Sidecar + Summon: $($cli exec -c $TEST_APP_NAMESPACE_NAME-app $sidecar_api_pod -- summon /webapp_summon.sh)"
+    echo "Sidecar + REST API: $($cli exec -c test-app $sidecar_api_pod -- /webapp_v$CONJUR_VERSION.sh)"
+    echo "Sidecar + Summon: $($cli exec -c test-app $sidecar_api_pod -- summon /webapp_summon.sh)"
   fi
 
   init_api_pod=$($cli get pods --no-headers -l app=test-app-summon-init | awk '{ print $1 }')
   if [[ "$init_api_pod" != "" ]]; then
-    echo "Init Container + REST API: $($cli exec -c $TEST_APP_NAMESPACE_NAME-app $init_api_pod -- /webapp_v$CONJUR_VERSION.sh)"
-    echo "Init Container + Summon: $($cli exec -c $TEST_APP_NAMESPACE_NAME-app $init_api_pod -- summon /webapp_summon.sh)"
+    echo "Init Container + REST API: $($cli exec -c test-app $init_api_pod -- /webapp_v$CONJUR_VERSION.sh)"
+    echo "Init Container + Summon: $($cli exec -c test-app $init_api_pod -- summon /webapp_summon.sh)"
   fi
 
 fi
