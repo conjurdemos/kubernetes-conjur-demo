@@ -53,13 +53,17 @@ docker_tag_and_push() {
   else
     docker_tag="$DOCKER_REGISTRY_PATH/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
   fi
-    
+
   docker tag $1:$CONJUR_NAMESPACE_NAME $docker_tag
   docker push $docker_tag
 }
 
 get_master_pod_name() {
-  pod_list=$($cli get pods -l app=conjur-node,role=master --no-headers | awk '{ print $1 }')
+  if [ $CONJUR_OSS = 'false' ]; then
+    pod_list=$($cli get pods -l app=conjur-node,role=master --no-headers | awk '{ print $1 }')
+  elif [ $CONJUR_OSS = 'true' ]; then
+    pod_list=$($cli get pods -l role=master --no-headers | awk '{ print $1 }')
+  fi
   echo $pod_list | awk '{print $1}'
 }
 

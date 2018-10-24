@@ -32,7 +32,7 @@ init_registry_creds() {
   if [ $PLATFORM = 'kubernetes' ]; then
     if ! [ "${DOCKER_EMAIL}" = "" ]; then
       announce "Creating image pull secret."
-    
+
       kubectl delete --ignore-not-found secret dockerpullsecret
 
       kubectl create secret docker-registry dockerpullsecret \
@@ -43,16 +43,16 @@ init_registry_creds() {
     fi
   elif [ $PLATFORM = 'openshift' ]; then
     announce "Creating image pull secret."
-    
+
     $cli delete --ignore-not-found secrets dockerpullsecret
-  
+
     $cli secrets new-dockercfg dockerpullsecret \
       --docker-server=${DOCKER_REGISTRY_PATH} \
       --docker-username=_ \
       --docker-password=$($cli whoami -t) \
       --docker-email=_
-  
-    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull    
+
+    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull
   fi
 }
 
@@ -61,8 +61,8 @@ init_connection_specs() {
   test_sidecar_app_docker_image=$(platform_image test-sidecar-app)
   test_init_app_docker_image=$(platform_image test-init-app)
 
-  conjur_appliance_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
-  conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
+  conjur_appliance_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
+  conjur_authenticator_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
 
   conjur_authn_login_prefix=""
   if [ $CONJUR_VERSION = '4' ]; then
@@ -94,7 +94,7 @@ deploy_sidecar_app() {
   $cli delete --ignore-not-found \
     deployment/test-app-summon-sidecar \
     service/test-app-summon-sidecar \
-    serviceaccount/test-app-summon-sidecar
+    serviceaccount/oc-test-app-summon-sidecar
 
   if [ $PLATFORM = 'openshift' ]; then
     oc delete --ignore-not-found deploymentconfig/test-app-summon-sidecar
@@ -123,7 +123,7 @@ deploy_init_container_app() {
   $cli delete --ignore-not-found \
     deployment/test-app-summon-init \
     service/test-app-summon-init \
-    serviceaccount/test-app-summon-init
+    serviceaccount/oc-test-app-summon-init
 
   if [ $PLATFORM = 'openshift' ]; then
     oc delete --ignore-not-found deploymentconfig/test-app-summon-init

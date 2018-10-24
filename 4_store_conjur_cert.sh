@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 set -euo pipefail
 
 . utils.sh
@@ -9,8 +9,13 @@ set_namespace $CONJUR_NAMESPACE_NAME
 
 echo "Retrieving Conjur certificate."
 
-follower_pod_name=$($cli get pods -l role=follower --no-headers | awk '{ print $1 }' | head -1)
-ssl_cert=$($cli exec $follower_pod_name -- cat /opt/conjur/etc/ssl/conjur.pem)
+if [ $CONJUR_OSS = 'false' ]; then
+  follower_pod_name=$($cli get pods -l role=follower --no-headers | awk '{ print $1 }' | head -1)
+  ssl_cert=$($cli exec $follower_pod_name -- cat /opt/conjur/etc/ssl/conjur.pem)
+elif [ $CONJUR_OSS = 'true' ]; then
+  cli_pod_name=$($cli get pods | grep conjur-cli | awk '{ print $1 }' | head -1)
+  ssl_cert=$($cli exec $cli_pod_name -- cat /root/conjur-quick-start.pem)
+fi
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
