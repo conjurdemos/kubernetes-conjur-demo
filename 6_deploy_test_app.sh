@@ -61,13 +61,16 @@ init_connection_specs() {
   test_sidecar_app_docker_image=$(platform_image test-sidecar-app)
   test_init_app_docker_image=$(platform_image test-init-app)
 
-  conjur_appliance_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
-  conjur_authenticator_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
-
+  conjur_appliance_url=""
+  conjur_authenticator_url=""
   conjur_authn_login_prefix=""
   if [ $CONJUR_VERSION = '4' ]; then
+    conjur_appliance_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
+    conjur_authenticator_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
     conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
   elif [ $CONJUR_VERSION = '5' ]; then
+    conjur_appliance_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/
+    conjur_authenticator_url=https://conjur-cluster.$CONJUR_NAMESPACE_NAME.svc.cluster.local/authn-k8s/$AUTHENTICATOR_ID
     conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
   fi
 }

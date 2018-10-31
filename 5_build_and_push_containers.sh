@@ -22,7 +22,9 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
       # prep secrets.yml
       sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > secrets.yml
 
-      docker build -t test-app:$CONJUR_NAMESPACE_NAME .
+      if [[ $OFFLINE_MODE == "false" ]]; then
+        docker build -t test-app:$CONJUR_NAMESPACE_NAME .
+      fi
 
       test_app_image=$(platform_image "test-$app_type-app")
       docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
@@ -34,7 +36,9 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
   popd
 
   pushd pg
-    docker build -t test-app-pg:$CONJUR_NAMESPACE_NAME .
+    if [[ $OFFLINE_MODE == "false" ]]; then
+      docker build -t test-app-pg:$CONJUR_NAMESPACE_NAME .
+    fi
 
     test_app_pg_image=$(platform_image test-app-pg)
     docker tag test-app-pg:$CONJUR_NAMESPACE_NAME $test_app_pg_image
@@ -47,7 +51,9 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
 else
 
   pushd webapp
-    ./build.sh
+    if [[ $OFFLINE_MODE == false ]]; then
+      ./build.sh
+    fi
 
     for app_type in "${APPS[@]}"; do
       test_app_image=$(platform_image "test-$app_type-app")
