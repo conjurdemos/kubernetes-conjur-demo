@@ -59,3 +59,13 @@ else
   popd
 
 fi
+
+if [[ $LOCAL_AUTHENTICATOR == true ]]; then
+  # Re-tag the locally-built conjur-authn-k8s-client:dev image
+  authn_image=$(platform_image conjur-authn-k8s-client)
+  docker tag conjur-authn-k8s-client:dev $authn_image
+
+  if [[ is_minienv != true ]]; then
+    docker push $authn_image
+  fi
+fi

@@ -118,3 +118,18 @@ available.
 ## OpenShift
 The test app uses the Conjur Ruby API, configured with the access token provided by the authenticator
 sidecar, to retrieve a secret value from Conjur.
+
+# Development
+
+If you are using this repository for development purposes, there is some
+additional functionality that you may find useful.
+
+- Setting the `LOCAL_AUTHENTICATOR` environment variable to `true` will push
+  the Conjur K8s authenticator client from your local Docker registry to the
+  remote registry (if used), and will use that image rather than the image
+  stored in DockerHub.
+  This can be useful if you are working on changes to the [authenticator client](https://github.com/cyberark/conjur-authn-k8s-client).
+  If you run `./bin/build` in that project to generate a local Docker image
+  `conjur-authn-k8s-client:dev` and set `LOCAL_AUTHENTICATOR=true`, then when
+  you run the `./start` script in this repo the demo apps will be deployed with
+  your local build of the authenticator.
