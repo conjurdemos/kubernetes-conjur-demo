@@ -5,6 +5,7 @@ PLATFORM="${PLATFORM:-kubernetes}"  # default to kubernetes if env var not set
 
 MINIKUBE="${MINIKUBE:-false}"
 MINISHIFT="${MINISHIFT:-false}"
+LOCAL_AUTHENTICATOR="${LOCAL_AUTHENTICATOR:-false}"
 
 if [ $PLATFORM = 'kubernetes' ]; then
     cli=kubectl
