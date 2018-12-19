@@ -68,8 +68,99 @@ export DOCKER_EMAIL=<your-email>
 ```
 
 # Usage
-Run `./start` to execute the numbered scripts, which will step through the
-process of configuring Conjur and deploying test app(s).
+
+Before getting started, you will need to prepare Conjur. This includes:
+- Initializing Conjur's Kubernetes authenticator certificate authority
+- Loading the Conjur policies that add host identities, application secrets,
+  and entitlements
+
+## Initializing the authenticator CA
+
+In order to use Conjur's Kubernetes authenticator, Conjur must be configured to
+act as a certificate authority so that it can create a client certificate to
+establish mutual TLS with authenticator clients.
+
+To initialize the authenticator certificate authority in your Conjur cluster,
+exec into the Conjur master and run:
+
+```
+chpst -u conjur \
+  conjur-plugin-service possum \
+  rake authn_k8s:ca_init["conjur/authn-k8s/<AUTHENTICATOR_ID>"]
+````
+where you replace `<AUTHENTICATOR_ID>` with the authenticator ID your application
+will be using.
+
+*Note: if you have been following the [Conjur documentation](https://docs.conjur.org/Latest/en/Content/Integrations/Kubernetes_deployConjur.htm),
+you may have completed this step while you were already logged into the Conjur
+master. If not, you will need to do so now.*
+
+
+## Loading the Conjur policies
+
+To generate the Conjur policies, you can run `./2_load_conjur_policies.sh`. Running
+this script will also auto-generate a random database password that you will have to
+load into your Conjur variables, and it will echo this password to the screen as
+```
+Added DB password value: 4664ab5bb33cee15336868ed
+```
+Once you've run this script and generated the policy files, you can run a Conjur CLI container and load the
+policies in your Conjur master. Make sure that you correctly pass the DB
+password to the Docker container as demonstrated below, and update the command
+below with the URL of your Conjur master instance.
+
+```
+# replace the password value with your DB's password
+$ db_password=4664ab5bb33cee15336868ed
+$ docker run \
+    --rm -it \
+    -v $PWD/policy:/policy \
+    -e DB_PASSWORD=$db_password \
+    -e CONJUR_APPLIANCE_URL=<URL of your Conjur master> \
+    -e CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
+    -e CONJUR_AUTHN_LOGIN="admin" \
+    -e CONJUR_ADMIN_PASSWORD=$CONJUR_ADMIN_PASSWORD \
+    -e CONJUR_VERSION=$CONJUR_VERSION \
+    -e TEST_APP_NAMESPACE_NAME=$TEST_APP_NAMESPACE_NAME \
+    cyberark/conjur-cli:5
+
+root@0b86d4e8d4e7:/# ./policy/load_policies.sh
+
+SHA1 Fingerprint=C4:95:D4:F2:5C:06:7F:79:E5:0D:BF:AD:92:3C:40:28:32:F8:66:C4
+
+Please verify this certificate on the appliance using command:
+              openssl x509 -fingerprint -noout -in ~conjur/etc/ssl/conjur.pem
+
+Trust this certificate (yes/no): yes
+Wrote certificate to /root/conjur-example.pem
+Wrote configuration to /root/.conjurrc
+Logged in
+Loaded policy 'root'
+...
+Loading secret values for test-summon-init-app
+Value added
+Value added
+Value added
+Loading secret values for test-summon-sidecar-app
+Value added
+Value added
+Value added
+Loading secret values for test-secretless-app
+Value added
+Value added
+Value added
+
+root@0b86d4e8d4e7:/# exit
+```
+
+After loading the policies, run `./start` to execute the numbered scripts,
+which will step through the process of deploying test apps.
+
+#### Optional master cluster in Kubernetes (*Test and Demo Only*)
+If you're running the scripts in this repo after deploying a Conjur cluster to
+Kubernetes using the scripts in [`kubernetes-conjur-deploy`](https://github.com/cyberark/kubernetes-conjur-deploy)
+with `DEPLOY_MASTER_CLUSTER=true` set, you can just run `./start` to deploy your
+demo apps.
 
 ## Kubernetes
 The test app is based on the `cyberark/demo-app` Docker image

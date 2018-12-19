@@ -1,11 +1,6 @@
 #!/bin/bash
 
-CONJUR_VERSION=${CONJUR_VERSION:-$CONJUR_MAJOR_VERSION} # default to CONJUR_MAJOR_VERSION if not set
-PLATFORM="${PLATFORM:-kubernetes}"  # default to kubernetes if env var not set
-
-MINIKUBE="${MINIKUBE:-false}"
-MINISHIFT="${MINISHIFT:-false}"
-LOCAL_AUTHENTICATOR="${LOCAL_AUTHENTICATOR:-false}"
+. set_env_vars.sh
 
 if [ $PLATFORM = 'kubernetes' ]; then
     cli=kubectl
@@ -16,10 +11,15 @@ fi
 check_env_var() {
   var_name=$1
 
+  # temporarily turn off checking for unset variables
+  set +u
+
   if [ "${!var_name}" = "" ]; then
     echo "You must set $1 before running these scripts."
     exit 1
   fi
+
+  set -u
 }
 
 announce() {
