@@ -100,7 +100,8 @@ deploy_sidecar_app() {
   $cli delete --ignore-not-found \
     deployment/test-app-summon-sidecar \
     service/test-app-summon-sidecar \
-    serviceaccount/test-app-summon-sidecar
+    serviceaccount/test-app-summon-sidecar \
+    serviceaccount/oc-test-app-summon-sidecar
 
   if [ $PLATFORM = 'openshift' ]; then
     oc delete --ignore-not-found deploymentconfig/test-app-summon-sidecar
@@ -130,7 +131,8 @@ deploy_init_container_app() {
   $cli delete --ignore-not-found \
     deployment/test-app-summon-init \
     service/test-app-summon-init \
-    serviceaccount/test-app-summon-init
+    serviceaccount/test-app-summon-init \
+    serviceaccount/oc-test-app-summon-init
 
   if [ $PLATFORM = 'openshift' ]; then
     oc delete --ignore-not-found deploymentconfig/test-app-summon-init

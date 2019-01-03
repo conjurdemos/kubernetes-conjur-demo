@@ -1,13 +1,21 @@
 #!/bin/bash
 set -xeuo pipefail
 
+. set_env_vars.sh
+
 ./0_check_dependencies.sh
 
 ./stop
 
 ./1_create_test_app_namespace.sh
-./2_load_conjur_policies.sh
-./3_init_conjur_cert_authority.sh
+
+if [[ "${DEPLOY_MASTER_CLUSTER}" = "true" ]]; then
+  # Only automatically run these scripts for dev/demo envs deploying a master
+  # cluster directly to k8s/oc
+  ./2_load_conjur_policies.sh
+  ./3_init_conjur_cert_authority.sh
+fi
+
 ./4_store_conjur_cert.sh
 ./5_build_and_push_containers.sh
 ./6_deploy_test_app.sh
