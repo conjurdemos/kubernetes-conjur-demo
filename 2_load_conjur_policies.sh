@@ -36,7 +36,7 @@ if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
       DB_PASSWORD=${password} \
       TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
       CONJUR_VERSION=${CONJUR_VERSION} \
-      ./policy/load_policies.sh
+      /policy/load_policies.sh
     "
 
   $cli exec $conjur_cli_pod -- rm -rf ./policy

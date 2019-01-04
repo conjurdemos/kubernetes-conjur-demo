@@ -11,12 +11,14 @@ set -u
 
 conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
 
+readonly PATH_TO_POLICY_FILES="/policy"
+
 readonly POLICY_FILES=(
-  "policy/users.yml"
-  "policy/generated/project-authn.yml"
-  "policy/generated/cluster-authn-svc.yml"
-  "policy/generated/app-identity.yml"
-  "policy/app-access.yml"
+  "$PATH_TO_POLICY_FILES/users.yml"
+  "$PATH_TO_POLICY_FILES/generated/project-authn.yml"
+  "$PATH_TO_POLICY_FILES/generated/cluster-authn-svc.yml"
+  "$PATH_TO_POLICY_FILES/generated/app-identity.yml"
+  "$PATH_TO_POLICY_FILES/app-access.yml"
 )
 
 for policy_file in "${POLICY_FILES[@]}"; do
