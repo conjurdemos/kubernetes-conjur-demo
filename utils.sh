@@ -59,6 +59,14 @@ docker_tag_and_push() {
   docker push $docker_tag
 }
 
+get_pod_name() {
+  local pod_identifier=$1
+
+  # Query to get the pod name, ignoring temp "deploy" pods
+  pod_name=$($cli get pods | grep "$pod_identifier" | grep -v "deploy" | awk '{ print $1 }')
+  echo "$pod_name"
+}
+
 get_master_pod_name() {
   pod_list=$($cli get pods -l app=conjur-node,role=master --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
@@ -155,4 +163,11 @@ function service_ip() {
 
   echo "$($cli describe service $service | grep 'LoadBalancer Ingress' |
     awk '{ print $3 }')"
+}
+
+function deployment_status() {
+  local deployment=$1
+
+  echo "$($cli describe deploymentconfig $deployment | grep '^\tStatus:' |
+    awk '{ print $2 }')"
 }

@@ -24,8 +24,8 @@ main() {
 
 ###########################
 init_registry_creds() {
-  if [ $PLATFORM = 'kubernetes' ]; then
-    if ! [ "${DOCKER_EMAIL}" = "" ]; then
+  if [[ "$PLATFORM" == "kubernetes" ]]; then
+    if [[ "${DOCKER_EMAIL}" != "" ]]; then
       announce "Creating image pull secret."
     
       kubectl delete --ignore-not-found secret dockerpullsecret
@@ -36,7 +36,7 @@ init_registry_creds() {
         --docker-password=$DOCKER_PASSWORD \
         --docker-email=$DOCKER_EMAIL
     fi
-  elif [ $PLATFORM = 'openshift' ]; then
+  elif [[ "$PLATFORM" == "openshift" ]]; then
     announce "Creating image pull secret."
     
     $cli delete --ignore-not-found secrets dockerpullsecret
@@ -68,9 +68,9 @@ init_connection_specs() {
   conjur_authenticator_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
 
   conjur_authn_login_prefix=""
-  if [ $CONJUR_VERSION = '4' ]; then
+  if [[ "$CONJUR_VERSION" == "4" ]]; then
     conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
-  elif [ $CONJUR_VERSION = '5' ]; then
+  elif [[ "$CONJUR_VERSION" == "5" ]]; then
     conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
   fi
 }
@@ -100,8 +100,10 @@ deploy_sidecar_app() {
     serviceaccount/test-app-summon-sidecar \
     serviceaccount/oc-test-app-summon-sidecar
 
-  if [ $PLATFORM = 'openshift' ]; then
-    oc delete --ignore-not-found deploymentconfig/test-app-summon-sidecar
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc delete --ignore-not-found \
+      deploymentconfig/test-app-summon-sidecar \
+      route/test-app-summon-sidecar
   fi
 
   sleep 5
@@ -120,6 +122,10 @@ deploy_sidecar_app() {
     sed -e "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc expose service test-app-summon-sidecar
+  fi
+
   echo "Test app/sidecar deployed."
 }
 
@@ -131,8 +137,10 @@ deploy_init_container_app() {
     serviceaccount/test-app-summon-init \
     serviceaccount/oc-test-app-summon-init
 
-  if [ $PLATFORM = 'openshift' ]; then
-    oc delete --ignore-not-found deploymentconfig/test-app-summon-init
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc delete --ignore-not-found \
+      deploymentconfig/test-app-summon-init \
+      route/test-app-summon-init
   fi
 
   sleep 5
@@ -151,6 +159,10 @@ deploy_init_container_app() {
     sed -e "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc expose service test-app-summon-init
+  fi
+
   echo "Test app/init-container deployed."
 }
 
@@ -163,8 +175,10 @@ deploy_secretless_app() {
     serviceaccount/oc-test-app-secretless \
     configmap/test-app-secretless-config
 
-  if [ $PLATFORM = 'openshift' ]; then
-    oc delete --ignore-not-found deploymentconfig/test-app-secretless
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc delete --ignore-not-found \
+      deploymentconfig/test-app-secretless \
+      route/test-app-secretless
   fi
 
   $cli create configmap test-app-secretless-config \
@@ -180,6 +194,10 @@ deploy_secretless_app() {
     sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
     $cli create -f -
+
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc expose service test-app-secretless
+  fi
 
   echo "Secretless test app deployed."
 }

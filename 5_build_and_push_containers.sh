@@ -3,7 +3,7 @@ set -euo pipefail
 
 . utils.sh
 
-if [ $PLATFORM = 'openshift' ]; then
+if [[ "$PLATFORM" == "openshift" ]]; then
     docker login -u _ -p $(oc whoami -t) $DOCKER_REGISTRY_PATH
 fi
 
@@ -15,7 +15,8 @@ readonly APPS=(
 )
 
 pushd test_app_summon
-  if [ $PLATFORM = 'openshift' ]; then
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    echo "Building Summon binaries to include in app image"
     docker build -t test-app-builder -f Dockerfile.builder .
 
     # retrieve the summon binaries
@@ -30,10 +31,11 @@ pushd test_app_summon
     sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > secrets.yml
 
     dockerfile="Dockerfile"
-    if [ $PLATFORM = 'openshift' ]; then
+    if [[ "$PLATFORM" == "openshift" ]]; then
       dockerfile="Dockerfile.oc"
     fi
 
+    echo "Building test app image"
     docker build \
       -t test-app:$CONJUR_NAMESPACE_NAME \
       -f $dockerfile .
@@ -60,7 +62,7 @@ if [[ "$PLATFORM" != "openshift" ]]; then
   popd
 fi
 
-if [[ $LOCAL_AUTHENTICATOR == true ]]; then
+if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
   # Re-tag the locally-built conjur-authn-k8s-client:dev image
   authn_image=$(platform_image conjur-authn-k8s-client)
   docker tag conjur-authn-k8s-client:dev $authn_image

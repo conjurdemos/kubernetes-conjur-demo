@@ -3,22 +3,70 @@ set -euo pipefail
 
 . utils.sh
 
+function finish {
+  readonly PIDS=(
+    "SIDECAR_PORT_FORWARD_PID"
+    "INIT_PORT_FORWARD_PID"
+    "SECRETLESS_PORT_FORWARD_PID"
+  )
+
+  set +u
+
+  echo -e "\n\nStopping all port-forwarding"
+  for pid in "${PIDS[@]}"; do
+    if [ -n "${!pid}" ]; then
+      # Kill process, and swallow any errors
+      kill ${!pid} > /dev/null 2>&1
+    fi
+  done
+}
+trap finish EXIT
+
 announce "Validating that the deployments are functioning as expected."
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
-# Kubernetes and OpenShift currently deploy different apps; verify differently
-echo "Waiting for services to become available"
-while [ -z "$(service_ip "test-app-summon-init")" ] ||
-      [ -z "$(service_ip "test-app-summon-sidecar")" ] ||
-      [ -z "$(service_ip "test-app-secretless")" ]; do
-  printf "."
-  sleep 1
-done
+if [[ "$PLATFORM" == "openshift" ]]; then
+  echo "Waiting for deployments to become available"
 
-init_url=$(service_ip test-app-summon-init):8080
-sidecar_url=$(service_ip test-app-summon-sidecar):8080
-secretless_url=$(service_ip test-app-secretless):8080
+  while [[ "$(deployment_status "test-app-summon-init")" != "Complete" ]] ||
+        [[ "$(deployment_status "test-app-summon-sidecar")" != "Complete" ]] ||
+        [[ "$(deployment_status "test-app-secretless")" != "Complete" ]]; do
+    printf "."
+    sleep 1
+  done
+
+  sidecar_pod=$(get_pod_name test-app-summon-sidecar)
+  init_pod=$(get_pod_name test-app-summon-init)
+  secretless_pod=$(get_pod_name test-app-secretless)
+
+  # Routes are defined, but we need to do port-mapping to access them
+  oc port-forward $sidecar_pod 8081:8080 > /dev/null 2>&1 &
+  SIDECAR_PORT_FORWARD_PID=$!
+  oc port-forward $init_pod 8082:8080 > /dev/null 2>&1 &
+  INIT_PORT_FORWARD_PID=$!
+  oc port-forward $secretless_pod 8083:8080 > /dev/null 2>&1 &
+  SECRETLESS_PORT_FORWARD_PID=$!
+
+  init_url="localhost:8081"
+  sidecar_url="localhost:8082"
+  secretless_url="localhost:8083"
+
+  # Pause for the port-forwarding to complete setup
+  sleep 10
+else
+  echo "Waiting for services to become available"
+  while [ -z "$(service_ip "test-app-summon-init")" ] ||
+        [ -z "$(service_ip "test-app-summon-sidecar")" ] ||
+        [ -z "$(service_ip "test-app-secretless")" ]; do
+    printf "."
+    sleep 1
+  done
+
+  init_url=$(service_ip test-app-summon-init):8080
+  sidecar_url=$(service_ip test-app-summon-sidecar):8080
+  secretless_url=$(service_ip test-app-secretless):8080
+fi
 
 echo -e "\nAdding entry to the init app\n"
 curl \
