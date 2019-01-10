@@ -60,7 +60,7 @@ spec:
             name: conjur-access-token
             readOnly: true
       initContainers:
-      - image: cyberark/conjur-kubernetes-authenticator
+      - image: {{ AUTHENTICATOR_CLIENT_IMAGE }}
         imagePullPolicy: Always
         name: authenticator
         env:

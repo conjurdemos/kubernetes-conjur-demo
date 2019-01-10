@@ -20,7 +20,6 @@ main() {
   deploy_secretless_app
   deploy_sidecar_app
   deploy_init_container_app
-  sleep 15  # allow time for containers to initialize
 }
 
 ###########################
@@ -57,10 +56,12 @@ init_connection_specs() {
   test_sidecar_app_docker_image=$(platform_image test-sidecar-app)
   test_init_app_docker_image=$(platform_image test-init-app)
 
-  if [[ $LOCAL_AUTHENTICATOR == true ]]; then
+  if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
     authenticator_client_image=$(platform_image conjur-authn-k8s-client)
+    secretless_image=$(platform_image secretless-broker)
   else
     authenticator_client_image="cyberark/conjur-kubernetes-authenticator"
+    secretless_image="cyberark/secretless-broker"
   fi
 
   conjur_appliance_url=https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
@@ -172,6 +173,7 @@ deploy_secretless_app() {
   sleep 5
 
   sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
+    sed -e "s#{{ SECRETLESS_IMAGE }}#$secretless_image#g" |
     sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
