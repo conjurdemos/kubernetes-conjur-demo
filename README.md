@@ -162,7 +162,7 @@ Kubernetes using the scripts in [`kubernetes-conjur-deploy`](https://github.com/
 with `DEPLOY_MASTER_CLUSTER=true` set, you can just run `./start` to deploy your
 demo apps.
 
-## Kubernetes
+## Demo Applications
 The test app is based on the `cyberark/demo-app` Docker image
 ([GitHub repo](https://github.com/conjurdemos/pet-store-demo)). It is deployed
 with a PostgreSQL database and the DB credentials are stored in Conjur.
@@ -176,51 +176,27 @@ There are three iterations of this app that are deployed:
 - Secretless app with [Secretless Broker](https://github.com/cyberark/secretless-broker)
   deployed as a sidecar, managing the credential retrieval / injection for the app
 
-
-### Rotation
-To demonstrate how the apps respond to rotation, you can run the `./rotate` script.
-This script updates the variables in Conjur and then updates the password in the
-pg backends, which automatically kicks off a script to close all open connections
-that use the old password.
-
-To see this in action, you can open a terminal (while still working in the same
-Kubernetes context) and run:
-```
-secretless_url=$(kubectl describe service test-app-secretless |
-    grep 'LoadBalancer Ingress' | awk '{ print $3 }'):8080
-
-while true
-do
-  echo "Retrieving pets"
-  curl -i $secretless_url/pets
-  echo ""
-  echo ""
-  echo "..."
-  echo ""
-  sleep 3
-done
-```
-This will continuously query the Secretless pet store application. In another terminal
-run the `rotate` script. Note that as the rotate script completes, the next query
-to the app has the slightest hesitation as credentials are re-retrieved and
-connections to the pg backend are re-opened, but there are no errors - the app remains
-available.
-
-## OpenShift
-The test app uses the Conjur Ruby API, configured with the access token provided by the authenticator
-sidecar, to retrieve a secret value from Conjur.
-
 # Development
 
-If you are using this repository for development purposes, there is some
-additional functionality that you may find useful.
+If you are using this repository for development
+purposes, there is some additional functionality that
+you may find useful.
 
-- Setting the `LOCAL_AUTHENTICATOR` environment variable to `true` will push
-  the Conjur K8s authenticator client from your local Docker registry to the
-  remote registry (if used), and will use that image rather than the image
-  stored in DockerHub.
-  This can be useful if you are working on changes to the [authenticator client](https://github.com/cyberark/conjur-authn-k8s-client).
-  If you run `./bin/build` in that project to generate a local Docker image
-  `conjur-authn-k8s-client:dev` and set `LOCAL_AUTHENTICATOR=true`, then when
-  you run the `./start` script in this repo the demo apps will be deployed with
-  your local build of the authenticator.
+- Setting the `LOCAL_AUTHENTICATOR` environment
+  variable to `true` will push
+  the Conjur K8s authenticator client and Secretless
+  Broker from your local Docker registry to the
+  remote registry (if used), and will use that image
+  rather than the image from DockerHub.
+
+  This can be useful if you are working on changes to the
+  [authenticator client](https://github.com/cyberark/conjur-authn-k8s-client) and
+  [Secretless Broker](https://github.com/cyberark/secretless-broker).
+  - Run `./bin/build` in `conjur-authn-k8s-client` to
+    generate a local Docker image `conjur-authn-k8s-client:dev`
+  - Run `./bin/build` in `secretless-broker` to
+    generate a local Docker image `secretless-broker:latest`
+  - Set `LOCAL_AUTHENTICATOR=true`
+  - Run the `./start` script in this repo as usual,
+    and the demo apps will be deployed with your
+    local builds of the authenticator and Secretless.
