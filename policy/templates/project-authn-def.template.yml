@@ -42,6 +42,12 @@
         kubernetes/authentication-container-name: secretless
         kubernetes: "true"
 
+    - !host
+      id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/oc-test-app-secretless
+      annotations:
+        kubernetes/authentication-container-name: secretless
+        kubernetes: "true"
+
   - !grant
     role: !layer
     members: *hosts

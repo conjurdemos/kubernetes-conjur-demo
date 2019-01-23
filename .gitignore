@@ -1,5 +1,6 @@
 policy/generated/*
-webapp/summon*.gz
 pg/schema.sql
+openshift/postgres.yml
 test_app_summon/secrets.yml
+test_app_summon/summon*
 output/

@@ -1,5 +1,20 @@
 ---
 apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-summon-sidecar
+  labels:
+    app: test-app-summon-sidecar
+spec:
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: test-app-summon-sidecar
+  type: LoadBalancer
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: oc-test-app-summon-sidecar
@@ -24,25 +39,27 @@ spec:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: Always
         name: test-app
+        ports:
+        - containerPort: 8080
         env:
+          - name: CONJUR_VERSION
+            value: '{{ CONJUR_VERSION }}'
           - name: CONJUR_APPLIANCE_URL
             value: "{{ CONJUR_APPLIANCE_URL }}"
           - name: CONJUR_ACCOUNT
             value: {{ CONJUR_ACCOUNT }}
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
           - name: CONJUR_SSL_CERTIFICATE
             valueFrom:
               configMapKeyRef:
                 name: {{ CONFIG_MAP_NAME }}
                 key: ssl-certificate
-          - name: CONJUR_AUTHN_TOKEN_FILE
-            value: /run/conjur/access-token
-          - name: CONJUR_VERSION
-            value: "{{ CONJUR_VERSION }}"
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: cyberark/conjur-kubernetes-authenticator
+      - image: {{ AUTHENTICATOR_CLIENT_IMAGE }}
         imagePullPolicy: Always
         name: authenticator
         env:

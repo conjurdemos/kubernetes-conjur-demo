@@ -51,4 +51,9 @@ pushd pg
   sed -e "s#{{ TEST_APP_PG_PASSWORD }}#$password#g" ./schema.template.sql > ./schema.sql
 popd
 
+# Set DB password in OC deployment manifest
+pushd openshift
+  sed -e "s#{{ TEST_APP_PG_PASSWORD }}#$password#g" ./postgres.template.yml > ./postgres.yml
+popd
+
 announce "Added DB password value: $password"
