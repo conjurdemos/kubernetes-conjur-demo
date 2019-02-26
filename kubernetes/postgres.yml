@@ -28,6 +28,8 @@ spec:
       labels:
         app: test-summon-init-app-backend
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
       - name: test-summon-init-app-backend
         image: {{ TEST_APP_PG_DOCKER_IMAGE }}
@@ -74,6 +76,8 @@ spec:
       labels:
         app: test-summon-sidecar-app-backend
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
       - name: test-summon-sidecar-app-backend
         image: {{ TEST_APP_PG_DOCKER_IMAGE }}
@@ -121,6 +125,8 @@ spec:
       labels:
         app: test-secretless-app-backend
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
       - name: test-secretless-app-backend
         image: {{ TEST_APP_PG_DOCKER_IMAGE }}
