@@ -41,6 +41,19 @@ spec:
             value: {{ TEST_APP_PG_PASSWORD }}
           - name: POSTGRESQL_DATABASE
             value: test_app
+        volumeMounts:
+          - name: backend-certs
+            mountPath: "/etc/certs/"
+            readOnly: true
+        command: ["/bin/sh", "-c"]
+        args:
+          - mkdir -p /opt/app-root/certs/;
+            install -m 0600 /etc/certs/* /opt/app-root/certs;
+            run-postgresql -c ssl=on -c ssl_cert_file=/opt/app-root/certs/server.crt -c ssl_key_file=/opt/app-root/certs/server.key
+      volumes:
+      - name: backend-certs
+        secret:
+          secretName: test-app-backend-certs
 
 ---
 kind: Service
@@ -85,6 +98,19 @@ spec:
             value: {{ TEST_APP_PG_PASSWORD }}
           - name: POSTGRESQL_DATABASE
             value: test_app
+        volumeMounts:
+        - name: backend-certs
+          mountPath: "/etc/certs/"
+          readOnly: true
+        command: ["/bin/sh", "-c"]
+        args:
+          - mkdir -p /opt/app-root/certs/;
+            install -m 0600 /etc/certs/* /opt/app-root/certs;
+            run-postgresql -c ssl=on -c ssl_cert_file=/opt/app-root/certs/server.crt -c ssl_key_file=/opt/app-root/certs/server.key
+      volumes:
+      - name: backend-certs
+        secret:
+          secretName: test-app-backend-certs
 
 ---
 kind: Service
@@ -129,3 +155,16 @@ spec:
             value: {{ TEST_APP_PG_PASSWORD }}
           - name: POSTGRESQL_DATABASE
             value: test_app
+        volumeMounts:
+        - name: backend-certs
+          mountPath: "/etc/certs/"
+          readOnly: true
+        command: ["/bin/sh", "-c"]
+        args:
+          - mkdir -p /opt/app-root/certs/;
+            install -m 0600 /etc/certs/* /opt/app-root/certs;
+            run-postgresql -c ssl=on -c ssl_cert_file=/opt/app-root/certs/server.crt -c ssl_key_file=/opt/app-root/certs/server.key
+      volumes:
+      - name: backend-certs
+        secret:
+          secretName: test-app-backend-certs
