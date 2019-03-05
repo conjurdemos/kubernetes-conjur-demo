@@ -83,7 +83,15 @@ deploy_app_backend() {
      service/test-secretless-app-backend \
      statefulset/summon-init-pg \
      statefulset/summon-sidecar-pg \
-     statefulset/secretless-pg
+     statefulset/secretless-pg \
+     secret/test-app-backend-certs
+
+  echo "Create secrets for test app backend"
+  $cli --namespace $TEST_APP_NAMESPACE_NAME \
+    create secret generic \
+    test-app-backend-certs \
+    --from-file=server.crt=./etc/ca.pem \
+    --from-file=server.key=./etc/ca-key.pem
 
   echo "Deploying test app backend"
   test_app_pg_docker_image=$(platform_image test-app-pg)
