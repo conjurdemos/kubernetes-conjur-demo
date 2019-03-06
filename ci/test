@@ -135,6 +135,7 @@ function deleteRegistryImage() {
 
 function runDockerCommand() {
   docker run --rm \
+    -it \
     -e CONJUR_VERSION \
     -e CONJUR_APPLIANCE_IMAGE \
     -e CONJUR_NAMESPACE_NAME \
