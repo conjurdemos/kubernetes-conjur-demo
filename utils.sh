@@ -168,6 +168,6 @@ function service_ip() {
 function deployment_status() {
   local deployment=$1
 
-  echo "$($cli describe deploymentconfig $deployment | grep '^\tStatus:' |
+  echo "$($cli describe deploymentconfig $deployment | awk '/^\tStatus:/' |
     awk '{ print $2 }')"
 }
