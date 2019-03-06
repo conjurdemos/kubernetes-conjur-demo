@@ -50,6 +50,11 @@ CONJUR_VERSION="$2"
 export TEST_PLATFORM
 export CONJUR_VERSION
 
+# sensible default for OPENSHIFT_URL port
+if [[ ! -z "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then
+ OPENSHIFT_URL="${OPENSHIFT_URL}:8443"
+fi
+
 function main() {
   announce 'Checking arguments'
   checkArguments
@@ -149,6 +154,8 @@ function runDockerCommand() {
     -e OPENSHIFT_URL \
     -e OPENSHIFT_USERNAME \
     -e OPENSHIFT_PASSWORD \
+    -e OSHIFT_CONJUR_ADMIN_USERNAME \
+    -e OSHIFT_CLUSTER_ADMIN_USERNAME \
     -v $GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v ~/.config:/root/.config \
