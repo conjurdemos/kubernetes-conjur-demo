@@ -60,7 +60,7 @@ init_connection_specs() {
     authenticator_client_image=$(platform_image conjur-authn-k8s-client)
     secretless_image=$(platform_image secretless-broker)
   else
-    authenticator_client_image="cyberark/conjur-kubernetes-authenticator:0.11.1"
+    authenticator_client_image="cyberark/conjur-kubernetes-authenticator"
     secretless_image="cyberark/secretless-broker"
   fi
 
