@@ -15,6 +15,7 @@
       annotations:
         kubernetes/authentication-container-name: authenticator
         openshift: "true"
+
     - !host
       id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-summon-sidecar
       annotations:
@@ -26,6 +27,12 @@
         kubernetes/authentication-container-name: authenticator
         kubernetes: "true"
     - !host
+      id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-secretless
+      annotations:
+        kubernetes/authentication-container-name: secretless
+        kubernetes: "true"
+
+    - !host
       id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/oc-test-app-summon-sidecar
       annotations:
         kubernetes/authentication-container-name: authenticator
@@ -35,18 +42,11 @@
       annotations:
         kubernetes/authentication-container-name: authenticator
         openshift: "true"
-
-    - !host
-      id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/test-app-secretless
-      annotations:
-        kubernetes/authentication-container-name: secretless
-        kubernetes: "true"
-
     - !host
       id: {{ TEST_APP_NAMESPACE_NAME }}/service_account/oc-test-app-secretless
       annotations:
         kubernetes/authentication-container-name: secretless
-        kubernetes: "true"
+        openshift: "true"
 
   - !grant
     role: !layer
