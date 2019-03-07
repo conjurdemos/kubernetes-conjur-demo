@@ -71,7 +71,7 @@ function main() {
 
 function deployConjur() {
   pushd ..
-    git clone --single-branch --branch works-in-oc git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    git clone git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
   popd
 
   runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
