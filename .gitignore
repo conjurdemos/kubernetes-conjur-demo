@@ -1,6 +1,8 @@
 policy/generated/*
 pg/schema.sql
 openshift/postgres.yml
+openshift/mysql.yml
+kubernetes/mysql.yml
 test_app_summon/secrets.yml
 test_app_summon/summon*
 output/

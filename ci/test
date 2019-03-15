@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Usage:
-# summon -e [platform] ./test [platform] [conjur version]
+# summon -e [platform] ./test [platform] [conjur version] [database]
 # platform: gke or oc
 # conjur version: 4 or 5
+# database: postgres or mysql
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -31,29 +32,13 @@ trap finish EXIT
 function printUsage() {
   echo "---"
   echo "Usage:"
-  echo "summon -e [platform] ./test [platform] [conjur version]"
+  echo "summon -e [platform] ./test [platform] [conjur version] [database]"
   echo "platform: gke or oc"
   echo "conjur version: 4 or 5"
+  echo "database: postgres or mysql"
 
   exit 1
 }
-
-# Parse input arguments
-if [ $# -ne 2 ]; then
-  echo "Invalid number of arguments."
-  printUsage
-fi
-
-TEST_PLATFORM="$1"
-CONJUR_VERSION="$2"
-
-export TEST_PLATFORM
-export CONJUR_VERSION
-
-# sensible default for OPENSHIFT_URL port
-if [[ ! -z "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then
- OPENSHIFT_URL="${OPENSHIFT_URL}:8443"
-fi
 
 function main() {
   announce 'Checking arguments'
@@ -143,6 +128,7 @@ function runDockerCommand() {
     -e CONJUR_ADMIN_PASSWORD \
     -e AUTHENTICATOR_ID \
     -e TEST_APP_NAMESPACE_NAME \
+    -e TEST_APP_DATABASE \
     -e PLATFORM \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \
@@ -189,5 +175,24 @@ function checkArguments() {
 
   printUsage
 }
+
+# Parse input arguments
+if [ $# -ne 3 ]; then
+  echo "Invalid number of arguments."
+  printUsage
+fi
+
+TEST_PLATFORM="$1"
+CONJUR_VERSION="$2"
+TEST_APP_DATABASE="$3"
+
+export TEST_PLATFORM
+export CONJUR_VERSION
+export TEST_APP_DATABASE
+
+# sensible default for OPENSHIFT_URL port
+if [[ ! -z "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then
+ OPENSHIFT_URL="${OPENSHIFT_URL}:8443"
+fi
 
 main

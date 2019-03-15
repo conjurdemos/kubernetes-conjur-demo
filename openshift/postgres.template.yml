@@ -38,7 +38,7 @@ spec:
           - name: POSTGRESQL_USER
             value: test_app
           - name: POSTGRESQL_PASSWORD
-            value: {{ TEST_APP_PG_PASSWORD }}
+            value: {{ TEST_APP_DB_PASSWORD }}
           - name: POSTGRESQL_DATABASE
             value: test_app
         volumeMounts:
@@ -95,7 +95,7 @@ spec:
           - name: POSTGRESQL_USER
             value: test_app
           - name: POSTGRESQL_PASSWORD
-            value: {{ TEST_APP_PG_PASSWORD }}
+            value: {{ TEST_APP_DB_PASSWORD }}
           - name: POSTGRESQL_DATABASE
             value: test_app
         volumeMounts:
@@ -152,7 +152,7 @@ spec:
           - name: POSTGRESQL_USER
             value: test_app
           - name: POSTGRESQL_PASSWORD
-            value: {{ TEST_APP_PG_PASSWORD }}
+            value: {{ TEST_APP_DB_PASSWORD }}
           - name: POSTGRESQL_DATABASE
             value: test_app
         volumeMounts:

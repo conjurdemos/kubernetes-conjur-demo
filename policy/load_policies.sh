@@ -42,14 +42,31 @@ for app_name in "${APPS[@]}"; do
   conjur variable values add "$app_name-db/password" $DB_PASSWORD
   conjur variable values add "$app_name-db/username" "test_app"
 
-  db_url="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:5432/postgres"
+  case "$TEST_APP_DATABASE" in
+  postgres)
+    PORT=5432
+    PROTOCOL=postgresql
+    ;;
+  mysql)
+    PORT=3306
+    PROTOCOL=mysql
+    ;;
+  *)
+    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
+    exit 1
+    ;;
+  esac
+  db_host="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
+  db_url="$db_host:$PORT/test_app"
 
   if [[ "$app_name" = "test-secretless-app" ]]; then
     # Secretless doesn't require the full connection URL, just the host/port
     # and an optional database
     conjur variable values add "$app_name-db/url" "$db_url"
+    conjur variable values add "$app_name-db/port" "$PORT"
+    conjur variable values add "$app_name-db/host" "$db_host"
   else
-    conjur variable values add "$app_name-db/url" "postgresql://$db_url"
+    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_url"
   fi
 done
 

@@ -42,6 +42,8 @@
     - &secretless-variables
       - !variable password
       - !variable url
+      - !variable port
+      - !variable host
       - !variable username
 
     - !permit

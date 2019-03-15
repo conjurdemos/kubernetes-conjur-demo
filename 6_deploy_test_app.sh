@@ -84,20 +84,38 @@ deploy_app_backend() {
      statefulset/summon-init-pg \
      statefulset/summon-sidecar-pg \
      statefulset/secretless-pg \
+     statefulset/summon-init-mysql \
+     statefulset/summon-sidecar-mysql \
+     statefulset/secretless-mysql \
      secret/test-app-backend-certs
 
-  echo "Create secrets for test app backend"
-  $cli --namespace $TEST_APP_NAMESPACE_NAME \
-    create secret generic \
-    test-app-backend-certs \
-    --from-file=server.crt=./etc/ca.pem \
-    --from-file=server.key=./etc/ca-key.pem
+  case "${TEST_APP_DATABASE}" in
+  postgres)
+    echo "Create secrets for test app backend"
+    $cli --namespace $TEST_APP_NAMESPACE_NAME \
+      create secret generic \
+      test-app-backend-certs \
+      --from-file=server.crt=./etc/ca.pem \
+      --from-file=server.key=./etc/ca-key.pem
 
-  echo "Deploying test app backend"
-  test_app_pg_docker_image=$(platform_image test-app-pg)
-  sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/postgres.yml |
+    echo "Deploying test app backend"
+    test_app_pg_docker_image=$(platform_image test-app-pg)
+    sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/postgres.yml |
     sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     $cli create -f -
+    ;;
+  mysql)
+    echo "Deploying test app backend"
+    test_app_mysql_docker_image="mysql/mysql-server:5.7"
+    sed -e "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/mysql.yml | sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" | $cli create -f -
+    echo "doneee"
+    ;;
+  *)
+    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
+    exit 1
+    ;;
+  esac
+
 }
 
 ###########################
@@ -194,8 +212,25 @@ deploy_secretless_app() {
 
   sleep 5
 
+  case "$TEST_APP_DATABASE" in
+  postgres)
+    PORT=5432
+    PROTOCOL=postgresql
+    ;;
+  mysql)
+    PORT=3306
+    PROTOCOL=mysql
+    ;;
+  *)
+    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
+    exit 1
+    ;;
+  esac
+  secretless_db_url="$PROTOCOL://localhost:$PORT/test_app"
+
   sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
     sed -e "s#{{ SECRETLESS_IMAGE }}#$secretless_image#g" |
+    sed -e "s#{{ SECRETLESS_DB_URL }}#$secretless_db_url#g" |
     sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
     sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |

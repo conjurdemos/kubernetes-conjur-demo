@@ -35,6 +35,7 @@ if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
       CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
       DB_PASSWORD=${password} \
       TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
+      TEST_APP_DATABASE=${TEST_APP_DATABASE} \
       CONJUR_VERSION=${CONJUR_VERSION} \
       /policy/load_policies.sh
     "
@@ -48,12 +49,18 @@ fi
 
 # Set DB password in DB schema
 pushd pg
-  sed -e "s#{{ TEST_APP_PG_PASSWORD }}#$password#g" ./schema.template.sql > ./schema.sql
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./schema.template.sql > ./schema.sql
+popd
+
+# Set DB password in MySQL Kubernetes manifest
+pushd kubernetes
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./mysql.yml
 popd
 
 # Set DB password in OC deployment manifest
 pushd openshift
-  sed -e "s#{{ TEST_APP_PG_PASSWORD }}#$password#g" ./postgres.template.yml > ./postgres.yml
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./postgres.yml
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./mysql.yml
 popd
 
 announce "Added DB password value: $password"
