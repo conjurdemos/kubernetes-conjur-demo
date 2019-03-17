@@ -10,7 +10,7 @@ pipeline {
 
   stages {
     stage('Deploy Demos') {
-      parallel {
+      stages {
 
 // Postgres Tests
 
