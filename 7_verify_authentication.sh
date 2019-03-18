@@ -61,37 +61,29 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   init_url="localhost:8081"
   sidecar_url="localhost:8082"
   secretless_url="localhost:8083"
-
-  # Pause for the port-forwarding to complete setup
-  echo "Waiting for port-forwarding to complete setup"
-  while [[ $(nc -z localhost 8081) ]] ||
-        [[ $(nc -z localhost 8082) ]] ||
-        [[ $(nc -z localhost 8083) ]]; do
-    printf "."
-    sleep 1
-  done
 else
   echo "Waiting for services to become available"
   while [ -z "$(service_ip "test-app-summon-init")" ] ||
         [ -z "$(service_ip "test-app-summon-sidecar")" ] ||
         [ -z "$(service_ip "test-app-secretless")" ]; do
     printf "."
-    sleep 1
+    sleep 3
   done
 
   init_url=$(service_ip test-app-summon-init):8080
   sidecar_url=$(service_ip test-app-summon-sidecar):8080
   secretless_url=$(service_ip test-app-secretless):8080
-
-  # Pause for service ips to complete setup
-  echo "Waiting for service ips to complete setup"
-  while [[ $(nc -z $(service_ip test-app-summon-init) 8080) ]] ||
-        [[ $(nc -z $(service_ip test-app-summon-sidecar) 8080) ]] ||
-        [[ $(nc -z $(service_ip test-app-secretless) 8080) ]]; do
-    printf "."
-    sleep 1
-  done
 fi
+
+split_url() { echo $1 | awk -F":" '{print $1, $2}' }
+
+echo "Waiting for urls to be ready"
+while [[ ! $(nc -z $(split_url $init_url)) ]] ||
+      [[ ! $(nc -z $(split_url $sidecar_url)) ]] ||
+      [[ ! $(nc -z $(split_url $secretless_url)) ]]; do
+  printf "."
+  sleep 3
+done
 
 echo -e "\nAdding entry to the init app\n"
 curl \
