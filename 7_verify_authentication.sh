@@ -75,7 +75,9 @@ else
   secretless_url=$(service_ip test-app-secretless):8080
 fi
 
-split_url() { echo $1 | awk -F":" '{print $1, $2}' }
+function split_url() {
+  echo $1 | awk -F":" '{print $1, $2}';
+}
 
 echo "Waiting for urls to be ready"
 while [[ ! $(nc -z $(split_url $init_url)) ]] ||
