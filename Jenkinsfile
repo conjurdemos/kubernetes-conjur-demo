@@ -39,7 +39,7 @@ pipeline {
     }
 
 // MySQL Tests
-    stage('MySQL') {
+    stage('Deploy Demos MySQL') {
       parallel {
         stage('GKE, v4 Conjur, MySQL') {
           steps {
