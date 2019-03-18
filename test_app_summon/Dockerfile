@@ -1,3 +1,5 @@
+ARG namespace
+
 FROM ruby:2.2.9 as test-app-builder
 MAINTAINER CyberArk
 LABEL builder="test-app-builder"
@@ -25,7 +27,7 @@ COPY --from=test-app-builder /usr/local/lib/summon /usr/local/lib/summon
 COPY --from=test-app-builder /usr/local/bin/summon /usr/local/bin/summon
 
 #---copy secrets.yml into image---#
-COPY secrets.yml /etc/secrets.yml
+COPY $namespace.secrets.yml /etc/secrets.yml
 
 #---override entrypoint to wrap command with summon---#
 ENTRYPOINT [ "summon", "--provider", "summon-conjur", "-f", "/etc/secrets.yml", "java", "-jar", "/app.jar"]

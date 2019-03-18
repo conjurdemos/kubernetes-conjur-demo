@@ -28,7 +28,7 @@ pushd test_app_summon
 
   for app_type in "${APPS[@]}"; do
     # prep secrets.yml
-    sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > secrets.yml
+    sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > "$TEST_APP_NAMESPACE_NAME.secrets.yml"
 
     dockerfile="Dockerfile"
     if [[ "$PLATFORM" == "openshift" ]]; then
@@ -37,6 +37,7 @@ pushd test_app_summon
 
     echo "Building test app image"
     docker build \
+      --build-arg namespace=$TEST_APP_NAMESPACE_NAME\
       -t test-app:$CONJUR_NAMESPACE_NAME \
       -f $dockerfile .
 

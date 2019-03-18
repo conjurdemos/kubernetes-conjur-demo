@@ -1,2 +1,0 @@
-CREATE USER test_app PASSWORD '{{ TEST_APP_DB_PASSWORD }}';
-GRANT ALL ON SCHEMA public to test_app;

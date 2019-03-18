@@ -27,7 +27,7 @@ init_registry_creds() {
   if [[ "$PLATFORM" == "kubernetes" ]]; then
     if [[ "${DOCKER_EMAIL}" != "" ]]; then
       announce "Creating image pull secret."
-    
+
       kubectl delete --ignore-not-found secret dockerpullsecret
 
       kubectl create secret docker-registry dockerpullsecret \
@@ -38,16 +38,16 @@ init_registry_creds() {
     fi
   elif [[ "$PLATFORM" == "openshift" ]]; then
     announce "Creating image pull secret."
-    
+
     $cli delete --ignore-not-found secrets dockerpullsecret
-  
+
     $cli secrets new-dockercfg dockerpullsecret \
       --docker-server=${DOCKER_REGISTRY_PATH} \
       --docker-username=_ \
       --docker-password=$($cli whoami -t) \
       --docker-email=_
-  
-    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull    
+
+    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull
   fi
 }
 
@@ -100,15 +100,14 @@ deploy_app_backend() {
 
     echo "Deploying test app backend"
     test_app_pg_docker_image=$(platform_image test-app-pg)
-    sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/postgres.yml |
+    sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/${TEST_APP_NAMESPACE_NAME}.postgres.yml |
     sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     $cli create -f -
     ;;
   mysql)
     echo "Deploying test app backend"
     test_app_mysql_docker_image="mysql/mysql-server:5.7"
-    sed -e "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/mysql.yml | sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" | $cli create -f -
-    echo "doneee"
+    sed -e "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/${TEST_APP_NAMESPACE_NAME}.mysql.yml | sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" | $cli create -f -
     ;;
   *)
     echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"

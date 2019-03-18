@@ -47,20 +47,16 @@ if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
   set_namespace "$TEST_APP_NAMESPACE_NAME"
 fi
 
-# Set DB password in DB schema
-pushd pg
-  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./schema.template.sql > ./schema.sql
-popd
-
-# Set DB password in MySQL Kubernetes manifest
+# Set DB password in Kubernetes manifests
 pushd kubernetes
-  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./mysql.yml
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.sql
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
-# Set DB password in OC deployment manifest
+# Set DB password in OC manifests
 pushd openshift
-  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./postgres.yml
-  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./mysql.yml
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.yml
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
 announce "Added DB password value: $password"
