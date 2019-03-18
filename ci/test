@@ -15,12 +15,6 @@ function finish {
 
   # Stop the running processes
   runDockerCommand "
-    if [ \$PLATFORM = 'kubernetes' ]; then
-        cli=kubectl
-    elif [ \$PLATFORM = 'openshift' ]; then
-        cli=oc
-    fi
-    \$cli -n $TEST_APP_NAMESPACE_NAME get pods
     ./stop
     cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop
   "

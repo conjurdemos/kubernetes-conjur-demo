@@ -1,7 +1,10 @@
-#!/bin/bash 
+#!/bin/bash
 set -euo pipefail
 
 . utils.sh
+
+set_namespace $TEST_APP_NAMESPACE_NAME
+$cli get pods
 
 set_namespace default
 
@@ -16,7 +19,7 @@ if has_namespace $TEST_APP_NAMESPACE_NAME; then
 
   while : ; do
     printf "..."
-    
+
     if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
       sleep 5
     else
