@@ -12,6 +12,9 @@ function finish {
 
   set +u
 
+  echo "lastly from secretless"
+  kubectl logs -l "app=test-app-secretless" --all-containers=true
+
   echo -e "\n\nStopping all port-forwarding"
   for pid in "${PIDS[@]}"; do
     if [ -n "${!pid}" ]; then
