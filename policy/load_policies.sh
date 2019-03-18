@@ -15,9 +15,9 @@ readonly PATH_TO_POLICY_FILES="/policy"
 
 readonly POLICY_FILES=(
   "$PATH_TO_POLICY_FILES/users.yml"
-  "$PATH_TO_POLICY_FILES/generated/project-authn.yml"
-  "$PATH_TO_POLICY_FILES/generated/cluster-authn-svc.yml"
-  "$PATH_TO_POLICY_FILES/generated/app-identity.yml"
+  "$PATH_TO_POLICY_FILES/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
+  "$PATH_TO_POLICY_FILES/generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml"
+  "$PATH_TO_POLICY_FILES/generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml"
   "$PATH_TO_POLICY_FILES/app-access.yml"
 )
 
