@@ -1,5 +1,3 @@
-ARG namespace
-
 FROM ruby:2.2.9 as test-app-builder
 MAINTAINER CyberArk
 LABEL builder="test-app-builder"
@@ -20,6 +18,7 @@ ENV PATH="/usr/local/lib/summon:${PATH}"
 # ============= MAIN CONTAINER ============== #
 
 FROM cyberark/demo-app
+ARG namespace
 MAINTAINER CyberArk
 
 #---copy summon into image---#

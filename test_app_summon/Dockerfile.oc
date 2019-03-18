@@ -1,6 +1,5 @@
-ARG namespace
-
 FROM cyberark/demo-app
+ARG namespace
 MAINTAINER CyberArk
 
 #---copy summon into image---#

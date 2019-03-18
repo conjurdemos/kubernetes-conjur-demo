@@ -49,7 +49,7 @@ fi
 
 # Set DB password in Kubernetes manifests
 pushd kubernetes
-  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.sql
+  sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.yml
   sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
