@@ -54,7 +54,7 @@ docker_tag_and_push() {
   else
     docker_tag="$DOCKER_REGISTRY_PATH/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
   fi
-    
+
   docker tag $1:$CONJUR_NAMESPACE_NAME $docker_tag
   docker push $docker_tag
 }
@@ -170,4 +170,10 @@ function deployment_status() {
 
   echo "$($cli describe deploymentconfig $deployment | awk '/^\tStatus:/' |
     awk '{ print $2 }')"
+}
+
+function pods_not_ready() {
+  local app_label=$1
+
+  $cli describe pod -l "app=$app_label" | awk '/Ready/' | awk '{ print $2 }' | grep 'False'
 }

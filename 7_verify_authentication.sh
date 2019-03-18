@@ -26,6 +26,15 @@ announce "Validating that the deployments are functioning as expected."
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
+echo "Waiting for pods to become available"
+
+while [[ $(pods_not_ready "test-app-summon-init") ]] ||
+      [[ $(pods_not_ready "test-app-summon-sidecar") ]] ||
+      [[ $(pods_not_ready "test-app-secretless") ]]; do
+  printf "."
+  sleep 1
+done
+
 if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
 
