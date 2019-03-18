@@ -20,7 +20,7 @@ function finish {
     elif [ \$PLATFORM = 'openshift' ]; then
         cli=oc
     fi
-    \$cli get pods
+    \$cli -n $TEST_APP_NAMESPACE_NAME get pods
     ./stop
     cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop
   "

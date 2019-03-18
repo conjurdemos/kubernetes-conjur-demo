@@ -34,6 +34,7 @@ while [[ $(pods_not_ready "test-app-summon-init") ]] ||
   printf "."
   sleep 1
 done
+echo ""
 
 if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
@@ -62,7 +63,13 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   secretless_url="localhost:8083"
 
   # Pause for the port-forwarding to complete setup
-  sleep 10
+  echo "Waiting for port-forwarding to complete setup"
+  while [[ $(nc -z localhost 8081) ]] ||
+        [[ $(nc -z localhost 8082) ]] ||
+        [[ $(nc -z localhost 8083) ]]; do
+    printf "."
+    sleep 1
+  done
 else
   echo "Waiting for services to become available"
   while [ -z "$(service_ip "test-app-summon-init")" ] ||
