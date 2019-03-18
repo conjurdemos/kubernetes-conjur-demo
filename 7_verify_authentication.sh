@@ -82,6 +82,15 @@ else
   init_url=$(service_ip test-app-summon-init):8080
   sidecar_url=$(service_ip test-app-summon-sidecar):8080
   secretless_url=$(service_ip test-app-secretless):8080
+
+  # Pause for service ips to complete setup
+  echo "Waiting for service ips to complete setup"
+  while [[ $(nc -z $(service_ip test-app-summon-init) 8080) ]] ||
+        [[ $(nc -z $(service_ip test-app-summon-sidecar) 8080) ]] ||
+        [[ $(nc -z $(service_ip test-app-secretless) 8080) ]]; do
+    printf "."
+    sleep 1
+  done
 fi
 
 echo -e "\nAdding entry to the init app\n"
