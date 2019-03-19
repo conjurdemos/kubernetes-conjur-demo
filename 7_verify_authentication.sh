@@ -75,14 +75,10 @@ else
   secretless_url=$(service_ip test-app-secretless):8080
 fi
 
-function split_url() {
-  echo $1 | awk -F":" '{print $1, $2}';
-}
-
 echo "Waiting for urls to be ready"
-while ! $(curl $(split_url $init_url)) ||
-      ! $(curl $(split_url $sidecar_url)) ||
-      ! $(curl $(split_url $secretless_url)); do
+while ! $(curl -s --connect-timeout 3 $init_url > /dev/null) ||
+      ! $(curl -s --connect-timeout 3 $sidecar_url > /dev/null) ||
+      ! $(curl -s --connect-timeout 3 $secretless_url > /dev/null); do
   printf "."
   sleep 3
 done
