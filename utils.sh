@@ -22,6 +22,19 @@ check_env_var() {
   set -u
 }
 
+ensure_env_database() {
+  case "${TEST_APP_DATABASE}" in
+  postgres)
+    ;;
+  mysql)
+    ;;
+  *)
+    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
+    exit 1
+    ;;
+  esac
+}
+
 announce() {
   echo "++++++++++++++++++++++++++++++++++++++"
   echo ""

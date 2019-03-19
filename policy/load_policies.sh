@@ -13,6 +13,7 @@ conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
 
 readonly PATH_TO_POLICY_FILES="/policy"
 
+# NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 readonly POLICY_FILES=(
   "$PATH_TO_POLICY_FILES/users.yml"
   "$PATH_TO_POLICY_FILES/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
@@ -42,7 +43,7 @@ for app_name in "${APPS[@]}"; do
   conjur variable values add "$app_name-db/password" $DB_PASSWORD
   conjur variable values add "$app_name-db/username" "test_app"
 
-  case "$TEST_APP_DATABASE" in
+  case "${TEST_APP_DATABASE}" in
   postgres)
     PORT=5432
     PROTOCOL=postgresql

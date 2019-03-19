@@ -80,9 +80,9 @@ function split_url() {
 }
 
 echo "Waiting for urls to be ready"
-while ! $(nc -z $(split_url $init_url)) ||
-      ! $(nc -z $(split_url $sidecar_url)) ||
-      ! $(nc -z $(split_url $secretless_url)); do
+while ! $(curl $(split_url $init_url)) ||
+      ! $(curl $(split_url $sidecar_url)) ||
+      ! $(curl $(split_url $secretless_url)); do
   printf "."
   sleep 3
 done

@@ -12,13 +12,4 @@ check_env_var "CONJUR_ACCOUNT"
 check_env_var "CONJUR_ADMIN_PASSWORD"
 check_env_var "AUTHENTICATOR_ID"
 check_env_var "TEST_APP_DATABASE"
-case "${TEST_APP_DATABASE}" in
-postgres)
-  ;;
-mysql)
-  ;;
-*)
-  echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
-  exit 1
-  ;;
-esac
+ensure_env_database

@@ -8,6 +8,8 @@ announce "Generating Conjur policy."
 pushd policy
   mkdir -p ./generated
 
+  # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
+
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
 
   sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
@@ -48,12 +50,14 @@ if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
 fi
 
 # Set DB password in Kubernetes manifests
+# NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 pushd kubernetes
   sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.yml
   sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
 # Set DB password in OC manifests
+# NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 pushd openshift
   sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.yml
   sed -e "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./${TEST_APP_NAMESPACE_NAME}.mysql.yml

@@ -89,6 +89,7 @@ deploy_app_backend() {
      statefulset/secretless-mysql \
      secret/test-app-backend-certs
 
+  ensure_env_database
   case "${TEST_APP_DATABASE}" in
   postgres)
     echo "Create secrets for test app backend"
@@ -108,10 +109,6 @@ deploy_app_backend() {
     echo "Deploying test app backend"
     test_app_mysql_docker_image="mysql/mysql-server:5.7"
     sed -e "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/${TEST_APP_NAMESPACE_NAME}.mysql.yml | sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" | $cli create -f -
-    ;;
-  *)
-    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
-    exit 1
     ;;
   esac
 
@@ -211,6 +208,7 @@ deploy_secretless_app() {
 
   sleep 5
 
+  ensure_env_database
   case "$TEST_APP_DATABASE" in
   postgres)
     PORT=5432
@@ -219,10 +217,6 @@ deploy_secretless_app() {
   mysql)
     PORT=3306
     PROTOCOL=mysql
-    ;;
-  *)
-    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
-    exit 1
     ;;
   esac
   secretless_db_url="$PROTOCOL://localhost:$PORT/test_app"
