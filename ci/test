@@ -1,7 +1,15 @@
 #!/bin/bash
 
 # Usage:
+# ./test [platform] [conjur version] [database]
+#
+# Note: This script expects several environment variables to be
+# defined and exported, some of which are sensitive/secret values.
+# It is for this that we recommend to always call this script using summon.
+#
+# Recommended usage:
 # summon -e [platform] ./test [platform] [conjur version] [database]
+#
 # platform: gke or oc
 # conjur version: 4 or 5
 # database: postgres or mysql
@@ -32,7 +40,13 @@ trap finish EXIT
 function printUsage() {
   echo "---"
   echo "Usage:"
+  echo "./test [platform] [conjur version] [database]"
+  echo ""
+  echo "Note: This script expects several environment variables to be defined and exported, some of which are sensitive/secret values. It is for this that we recommend to always call this script using summon."
+  echo ""
+  echo "Recommended Usage:"
   echo "summon -e [platform] ./test [platform] [conjur version] [database]"
+  echo ""
   echo "platform: gke or oc"
   echo "conjur version: 4 or 5"
   echo "database: postgres or mysql"

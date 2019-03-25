@@ -23,16 +23,15 @@ check_env_var() {
 }
 
 ensure_env_database() {
-  case "${TEST_APP_DATABASE}" in
-  postgres)
-    ;;
-  mysql)
-    ;;
-  *)
-    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
+  local valid_dbs=(
+    postgres
+    mysql
+  )
+  if ! printf '%s\n' "${valid_dbs[@]}" | grep -q "^${TEST_APP_DATABASE}\$"; then
+    echo "Got '${TEST_APP_DATABASE}', expected TEST_APP_DATABASE to be one of:"
+    printf "'%s'\n" "${valid_dbs[@]}"
     exit 1
-    ;;
-  esac
+  fi
 }
 
 announce() {
@@ -81,12 +80,12 @@ get_pod_name() {
 }
 
 get_master_pod_name() {
-  pod_list=$($cli get pods -l app=conjur-node,role=master --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods --selector app=conjur-node,role=master --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 
 get_conjur_cli_pod_name() {
-  pod_list=$($cli get pods -l app=conjur-cli --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods --selector app=conjur-cli --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 
@@ -188,5 +187,5 @@ function deployment_status() {
 function pods_not_ready() {
   local app_label=$1
 
-  $cli describe pod -l "app=$app_label" | awk '/Ready/' | awk '{ print $2 }' | grep 'False'
+  $cli describe pod --selector "app=$app_label" | awk '/Ready/{if ($2 != "False") exit 1}'
 }

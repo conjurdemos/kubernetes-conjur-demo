@@ -76,9 +76,9 @@ else
 fi
 
 echo "Waiting for urls to be ready"
-while ! $(curl -s --connect-timeout 3 $init_url > /dev/null) ||
-      ! $(curl -s --connect-timeout 3 $sidecar_url > /dev/null) ||
-      ! $(curl -s --connect-timeout 3 $secretless_url > /dev/null); do
+until $(curl -s --connect-timeout 3 $init_url > /dev/null) &&
+      $(curl -s --connect-timeout 3 $sidecar_url > /dev/null) &&
+      $(curl -s --connect-timeout 3 $secretless_url > /dev/null); do
   printf "."
   sleep 3
 done

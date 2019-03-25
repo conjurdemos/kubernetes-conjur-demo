@@ -11,15 +11,15 @@ set -u
 
 conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
 
-readonly PATH_TO_POLICY_FILES="/policy"
+readonly POLICY_DIR="/policy"
 
 # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 readonly POLICY_FILES=(
-  "$PATH_TO_POLICY_FILES/users.yml"
-  "$PATH_TO_POLICY_FILES/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
-  "$PATH_TO_POLICY_FILES/generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml"
-  "$PATH_TO_POLICY_FILES/generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml"
-  "$PATH_TO_POLICY_FILES/app-access.yml"
+  "$POLICY_DIR/users.yml"
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml"
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml"
+  "$POLICY_DIR/app-access.yml"
 )
 
 for policy_file in "${POLICY_FILES[@]}"; do
