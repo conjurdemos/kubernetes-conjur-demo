@@ -3,8 +3,8 @@ ARG namespace
 MAINTAINER CyberArk
 
 #---copy summon into image---#
-COPY tmp.summon-conjur /usr/local/lib/summon/
-COPY tmp.summon /usr/local/bin/
+COPY tmp.summon-conjur /usr/local/lib/summon/summon-conjur
+COPY tmp.summon /usr/local/bin/summon
 
 #---copy secrets.yml into image---#
 COPY tmp.$namespace.secrets.yml /etc/secrets.yml
