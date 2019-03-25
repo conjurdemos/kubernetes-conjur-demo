@@ -1,12 +1,3 @@
 policy/generated/*
-openshift/*.postgres.yml
-openshift/*.mysql.yml
-kubernetes/*.postgres.yml
-kubernetes/*.mysql.yml
-openshift/postgres.yml
-openshift/mysql.yml
-kubernetes/postgres.yml
-kubernetes/mysql.yml
-test_app_summon/*.secrets.yml
-test_app_summon/summon*
+tmp.*
 output/

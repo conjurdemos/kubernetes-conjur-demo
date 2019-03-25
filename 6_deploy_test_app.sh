@@ -101,14 +101,14 @@ deploy_app_backend() {
 
     echo "Deploying test app backend"
     test_app_pg_docker_image=$(platform_image test-app-pg)
-    sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/${TEST_APP_NAMESPACE_NAME}.postgres.yml |
+    sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     $cli create -f -
     ;;
   mysql)
     echo "Deploying test app backend"
     test_app_mysql_docker_image="mysql/mysql-server:5.7"
-    sed "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/${TEST_APP_NAMESPACE_NAME}.mysql.yml | sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" | $cli create -f -
+    sed "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml | sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" | $cli create -f -
     ;;
   esac
 

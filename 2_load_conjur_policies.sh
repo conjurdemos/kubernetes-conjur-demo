@@ -52,15 +52,15 @@ fi
 # Set DB password in Kubernetes manifests
 # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 pushd kubernetes
-  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.yml
-  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./${TEST_APP_NAMESPACE_NAME}.mysql.yml
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
 # Set DB password in OC manifests
 # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 pushd openshift
-  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./${TEST_APP_NAMESPACE_NAME}.postgres.yml
-  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./${TEST_APP_NAMESPACE_NAME}.mysql.yml
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
 announce "Added DB password value: $password"
