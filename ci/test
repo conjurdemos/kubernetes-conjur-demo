@@ -191,7 +191,7 @@ function checkArguments() {
 }
 
 # Parse input arguments
-if [ $# -ne 3 ]; then
+if [[ $# -ne 3 ]]; then
   echo "Invalid number of arguments."
   printUsage
 fi
@@ -205,7 +205,7 @@ export CONJUR_VERSION
 export TEST_APP_DATABASE
 
 # sensible default for OPENSHIFT_URL port
-if [[ ! -z "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then
+if [[ -n "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then
  OPENSHIFT_URL="${OPENSHIFT_URL}:8443"
 fi
 

@@ -9,17 +9,12 @@ elif [ $PLATFORM = 'openshift' ]; then
 fi
 
 check_env_var() {
-  var_name=$1
-
-  # temporarily turn off checking for unset variables
-  set +u
-
-  if [ "${!var_name}" = "" ]; then
+  if [[ -z "${!1+x}" ]]; then
+# where ${var+x} is a parameter expansion which evaluates to nothing if var is unset, and substitutes the string x otherwise.
+# https://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash/13864829#13864829
     echo "You must set $1 before running these scripts."
     exit 1
   fi
-
-  set -u
 }
 
 ensure_env_database() {
