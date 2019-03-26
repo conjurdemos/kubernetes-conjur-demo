@@ -8,7 +8,7 @@
 # It is for this that we recommend to always call this script using summon.
 #
 # Recommended usage:
-# summon -e [platform] ./test [platform] [conjur version] [database]
+# summon --environment [platform] ./test [platform] [conjur version] [database]
 #
 # platform: gke or oc
 # conjur version: 4 or 5
@@ -45,7 +45,7 @@ function printUsage() {
   echo "Note: This script expects several environment variables to be defined and exported, some of which are sensitive/secret values. It is for this that we recommend to always call this script using summon."
   echo ""
   echo "Recommended Usage:"
-  echo "summon -e [platform] ./test [platform] [conjur version] [database]"
+  echo "summon --environment [platform] ./test [platform] [conjur version] [database]"
   echo ""
   echo "platform: gke or oc"
   echo "conjur version: 4 or 5"
@@ -106,8 +106,8 @@ function prepareTestEnvironment() {
 
   # Prepare Docker images
   docker pull $CONJUR_APPLIANCE_IMAGE
-  docker build -t $CONJUR_DEMO_TEST_IMAGE:$CONJUR_NAMESPACE_NAME \
-    -f Dockerfile \
+  docker build --tag $CONJUR_DEMO_TEST_IMAGE:$CONJUR_NAMESPACE_NAME \
+    --file Dockerfile \
     --build-arg OPENSHIFT_CLI_URL=$OPENSHIFT_CLI_URL \
     --build-arg KUBECTL_CLI_URL=$KUBECTL_CLI_URL \
     .

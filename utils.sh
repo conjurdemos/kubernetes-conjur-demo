@@ -179,8 +179,8 @@ function deployment_status() {
     awk '{ print $2 }')"
 }
 
-function pods_not_ready() {
+function pods_ready() {
   local app_label=$1
 
-  $cli describe pod --selector "app=$app_label" | awk '/Ready/{if ($2 != "False") exit 1}'
+  $cli describe pod --selector "app=$app_label" | awk '/Ready/{if ($2 != "True") exit 1}'  && echo 2
 }

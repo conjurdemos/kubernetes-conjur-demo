@@ -28,9 +28,9 @@ set_namespace $TEST_APP_NAMESPACE_NAME
 
 echo "Waiting for pods to become available"
 
-while [[ $(pods_not_ready "test-app-summon-init") ]] ||
-      [[ $(pods_not_ready "test-app-summon-sidecar") ]] ||
-      [[ $(pods_not_ready "test-app-secretless") ]]; do
+until [[ $(pods_ready "test-app-summon-init") ]] &&
+      [[ $(pods_ready "test-app-summon-sidecar") ]] &&
+      [[ $(pods_ready "test-app-secretless") ]]; do
   printf "."
   sleep 1
 done

@@ -23,7 +23,7 @@ pushd test_app_summon
     id=$(docker create test-app-builder)
     docker cp $id:/usr/local/lib/summon/summon-conjur ./tmp.summon-conjur
     docker cp $id:/usr/local/bin/summon ./tmp.summon
-    docker rm -v $id
+    docker rm --volumes $id
   fi
 
 
@@ -40,8 +40,8 @@ pushd test_app_summon
     echo "Building test app image"
     docker build \
       --build-arg namespace=$TEST_APP_NAMESPACE_NAME\
-      -t test-app:$CONJUR_NAMESPACE_NAME \
-      -f $dockerfile .
+      --tag test-app:$CONJUR_NAMESPACE_NAME \
+      --file $dockerfile .
 
     test_app_image=$(platform_image "test-$app_type-app")
     docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
