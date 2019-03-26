@@ -1,4 +1,4 @@
-FROM ruby:2.2.9 as test-app-builder
+FROM ruby:2.4 as test-app-builder
 MAINTAINER CyberArk
 LABEL builder="test-app-builder"
 
