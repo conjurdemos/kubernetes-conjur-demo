@@ -26,6 +26,16 @@ announce "Validating that the deployments are functioning as expected."
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
+echo "Waiting for pods to become available"
+
+until [[ $(pods_ready "test-app-summon-init") ]] &&
+      [[ $(pods_ready "test-app-summon-sidecar") ]] &&
+      [[ $(pods_ready "test-app-secretless") ]]; do
+  printf "."
+  sleep 1
+done
+echo ""
+
 if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
 
@@ -51,22 +61,27 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   init_url="localhost:8081"
   sidecar_url="localhost:8082"
   secretless_url="localhost:8083"
-
-  # Pause for the port-forwarding to complete setup
-  sleep 10
 else
   echo "Waiting for services to become available"
   while [ -z "$(service_ip "test-app-summon-init")" ] ||
         [ -z "$(service_ip "test-app-summon-sidecar")" ] ||
         [ -z "$(service_ip "test-app-secretless")" ]; do
     printf "."
-    sleep 1
+    sleep 3
   done
 
   init_url=$(service_ip test-app-summon-init):8080
   sidecar_url=$(service_ip test-app-summon-sidecar):8080
   secretless_url=$(service_ip test-app-secretless):8080
 fi
+
+echo "Waiting for urls to be ready"
+until $(curl -s --connect-timeout 3 $init_url > /dev/null) &&
+      $(curl -s --connect-timeout 3 $sidecar_url > /dev/null) &&
+      $(curl -s --connect-timeout 3 $secretless_url > /dev/null); do
+  printf "."
+  sleep 3
+done
 
 echo -e "\nAdding entry to the init app\n"
 curl \

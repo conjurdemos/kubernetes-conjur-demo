@@ -8,14 +8,14 @@ spec:
   selector:
     app: test-summon-init-app-backend
   ports:
-    - port: 5432
-      targetPort: 5432
+    - port: 3306
+      targetPort: 3306
 
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: summon-init-pg
+  name: summon-init-mysql
   labels:
     app: test-summon-init-app-backend
 spec:
@@ -28,24 +28,22 @@ spec:
       labels:
         app: test-summon-init-app-backend
     spec:
-      securityContext:
-        fsGroup: 999
       containers:
       - name: test-summon-init-app-backend
-        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
+        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:
-          - containerPort: 5432
-        volumeMounts:
-          - name: backend-certs
-            mountPath: "/etc/certs/"
-            readOnly: true
-        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
-      volumes:
-        - name: backend-certs
-          secret:
-            secretName: test-app-backend-certs
-            defaultMode: 384
+          - containerPort: 3306
+        env:
+          - name: MYSQL_RANDOM_ROOT_PASSWORD
+            value: "yes"
+          - name: MYSQL_USER
+            value: test_app
+          - name: MYSQL_PASSWORD
+            value: {{ TEST_APP_DB_PASSWORD }}
+          - name: MYSQL_DATABASE
+            value: test_app
+
 ---
 kind: Service
 apiVersion: v1
@@ -56,14 +54,14 @@ spec:
   selector:
     app: test-summon-sidecar-app-backend
   ports:
-    - port: 5432
-      targetPort: 5432
+    - port: 3306
+      targetPort: 3306
 
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: summon-sidecar-pg
+  name: summon-sidecar-mysql
   labels:
     app: test-summon-sidecar-app-backend
 spec:
@@ -76,24 +74,21 @@ spec:
       labels:
         app: test-summon-sidecar-app-backend
     spec:
-      securityContext:
-        fsGroup: 999
       containers:
       - name: test-summon-sidecar-app-backend
-        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
+        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:
-          - containerPort: 5432
-        volumeMounts:
-          - name: backend-certs
-            mountPath: "/etc/certs/"
-            readOnly: true
-        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
-      volumes:
-        - name: backend-certs
-          secret:
-            secretName: test-app-backend-certs
-            defaultMode: 384
+          - containerPort: 3306
+        env:
+          - name: MYSQL_RANDOM_ROOT_PASSWORD
+            value: "yes"
+          - name: MYSQL_USER
+            value: test_app
+          - name: MYSQL_PASSWORD
+            value: {{ TEST_APP_DB_PASSWORD }}
+          - name: MYSQL_DATABASE
+            value: test_app
 
 ---
 kind: Service
@@ -105,14 +100,14 @@ spec:
   selector:
     app: test-secretless-app-backend
   ports:
-    - port: 5432
-      targetPort: 5432
+    - port: 3306
+      targetPort: 3306
 
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: secretless-pg
+  name: secretless-mysql
   labels:
     app: test-secretless-app-backend
 spec:
@@ -125,21 +120,18 @@ spec:
       labels:
         app: test-secretless-app-backend
     spec:
-      securityContext:
-        fsGroup: 999
       containers:
       - name: test-secretless-app-backend
-        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
+        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:
-          - containerPort: 5432
-        volumeMounts:
-          - name: backend-certs
-            mountPath: "/etc/certs/"
-            readOnly: true
-        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
-      volumes:
-        - name: backend-certs
-          secret:
-            secretName: test-app-backend-certs
-            defaultMode: 384
+          - containerPort: 3306
+        env:
+          - name: MYSQL_RANDOM_ROOT_PASSWORD
+            value: "yes"
+          - name: MYSQL_USER
+            value: test_app
+          - name: MYSQL_PASSWORD
+            value: {{ TEST_APP_DB_PASSWORD }}
+          - name: MYSQL_DATABASE
+            value: test_app

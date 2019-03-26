@@ -40,7 +40,14 @@ spec:
         imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         name: test-app
         ports:
-        - containerPort: 8080
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /pets
+            port: http
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
         env:
           - name: CONJUR_VERSION
             value: '{{ CONJUR_VERSION }}'

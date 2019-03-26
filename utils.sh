@@ -9,17 +9,24 @@ elif [ $PLATFORM = 'openshift' ]; then
 fi
 
 check_env_var() {
-  var_name=$1
-
-  # temporarily turn off checking for unset variables
-  set +u
-
-  if [ "${!var_name}" = "" ]; then
+  if [[ -z "${!1+x}" ]]; then
+# where ${var+x} is a parameter expansion which evaluates to nothing if var is unset, and substitutes the string x otherwise.
+# https://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash/13864829#13864829
     echo "You must set $1 before running these scripts."
     exit 1
   fi
+}
 
-  set -u
+ensure_env_database() {
+  local valid_dbs=(
+    postgres
+    mysql
+  )
+  if ! printf '%s\n' "${valid_dbs[@]}" | grep -q "^${TEST_APP_DATABASE}\$"; then
+    echo "Got '${TEST_APP_DATABASE}', expected TEST_APP_DATABASE to be one of:"
+    printf "'%s'\n" "${valid_dbs[@]}"
+    exit 1
+  fi
 }
 
 announce() {
@@ -54,7 +61,7 @@ docker_tag_and_push() {
   else
     docker_tag="$DOCKER_REGISTRY_PATH/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
   fi
-    
+
   docker tag $1:$CONJUR_NAMESPACE_NAME $docker_tag
   docker push $docker_tag
 }
@@ -68,12 +75,12 @@ get_pod_name() {
 }
 
 get_master_pod_name() {
-  pod_list=$($cli get pods -l app=conjur-node,role=master --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods --selector app=conjur-node,role=master --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 
 get_conjur_cli_pod_name() {
-  pod_list=$($cli get pods -l app=conjur-cli --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods --selector app=conjur-cli --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 
@@ -170,4 +177,10 @@ function deployment_status() {
 
   echo "$($cli describe deploymentconfig $deployment | awk '/^\tStatus:/' |
     awk '{ print $2 }')"
+}
+
+function pods_ready() {
+  local app_label=$1
+
+  $cli describe pod --selector "app=$app_label" | awk '/Ready/{if ($2 != "True") exit 1}'  && echo 2
 }

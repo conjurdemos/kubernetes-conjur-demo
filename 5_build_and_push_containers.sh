@@ -21,14 +21,16 @@ pushd test_app_summon
 
     # retrieve the summon binaries
     id=$(docker create test-app-builder)
-    docker cp $id:/usr/local/lib/summon/summon-conjur ./
-    docker cp $id:/usr/local/bin/summon ./
-    docker rm -v $id
+    docker cp $id:/usr/local/lib/summon/summon-conjur ./tmp.summon-conjur
+    docker cp $id:/usr/local/bin/summon ./tmp.summon
+    docker rm --volumes $id
   fi
+
 
   for app_type in "${APPS[@]}"; do
     # prep secrets.yml
-    sed -e "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > secrets.yml
+    # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
+    sed "s#{{ TEST_APP_NAME }}#test-summon-$app_type-app#g" ./secrets.template.yml > "tmp.$TEST_APP_NAMESPACE_NAME.secrets.yml"
 
     dockerfile="Dockerfile"
     if [[ "$PLATFORM" == "openshift" ]]; then
@@ -37,8 +39,9 @@ pushd test_app_summon
 
     echo "Building test app image"
     docker build \
-      -t test-app:$CONJUR_NAMESPACE_NAME \
-      -f $dockerfile .
+      --build-arg namespace=$TEST_APP_NAMESPACE_NAME \
+      --tag test-app:$CONJUR_NAMESPACE_NAME \
+      --file $dockerfile .
 
     test_app_image=$(platform_image "test-$app_type-app")
     docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image

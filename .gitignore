@@ -1,6 +1,3 @@
 policy/generated/*
-pg/schema.sql
-openshift/postgres.yml
-test_app_summon/secrets.yml
-test_app_summon/summon*
+tmp.*
 output/

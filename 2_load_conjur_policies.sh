@@ -8,13 +8,15 @@ announce "Generating Conjur policy."
 pushd policy
   mkdir -p ./generated
 
-  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/cluster-authn-svc.yml
+  # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 
-  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/project-authn.yml
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
 
-  sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identity-def.template.yml |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/app-identity.yml
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
+
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identity-def.template.yml |
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml
 popd
 
 # Create the random database password
@@ -35,6 +37,7 @@ if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
       CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
       DB_PASSWORD=${password} \
       TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
+      TEST_APP_DATABASE=${TEST_APP_DATABASE} \
       CONJUR_VERSION=${CONJUR_VERSION} \
       /policy/load_policies.sh
     "
@@ -46,14 +49,18 @@ if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
   set_namespace "$TEST_APP_NAMESPACE_NAME"
 fi
 
-# Set DB password in DB schema
-pushd pg
-  sed -e "s#{{ TEST_APP_PG_PASSWORD }}#$password#g" ./schema.template.sql > ./schema.sql
+# Set DB password in Kubernetes manifests
+# NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
+pushd kubernetes
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
-# Set DB password in OC deployment manifest
+# Set DB password in OC manifests
+# NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 pushd openshift
-  sed -e "s#{{ TEST_APP_PG_PASSWORD }}#$password#g" ./postgres.template.yml > ./postgres.yml
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./postgres.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml
+  sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
 announce "Added DB password value: $password"

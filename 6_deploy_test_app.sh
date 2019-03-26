@@ -24,30 +24,28 @@ main() {
 
 ###########################
 init_registry_creds() {
-  if [[ "$PLATFORM" == "kubernetes" ]]; then
-    if [[ "${DOCKER_EMAIL}" != "" ]]; then
-      announce "Creating image pull secret."
-    
-      kubectl delete --ignore-not-found secret dockerpullsecret
+  if [[ "${PLATFORM}" == "kubernetes" ]] && [[ -n "${DOCKER_EMAIL}" ]]; then
+    announce "Creating image pull secret."
 
-      kubectl create secret docker-registry dockerpullsecret \
-        --docker-server=$DOCKER_REGISTRY_URL \
-        --docker-username=$DOCKER_USERNAME \
-        --docker-password=$DOCKER_PASSWORD \
-        --docker-email=$DOCKER_EMAIL
-    fi
+    kubectl delete --ignore-not-found secret dockerpullsecret
+
+    kubectl create secret docker-registry dockerpullsecret \
+      --docker-server=$DOCKER_REGISTRY_URL \
+      --docker-username=$DOCKER_USERNAME \
+      --docker-password=$DOCKER_PASSWORD \
+      --docker-email=$DOCKER_EMAIL
   elif [[ "$PLATFORM" == "openshift" ]]; then
     announce "Creating image pull secret."
-    
+
     $cli delete --ignore-not-found secrets dockerpullsecret
-  
+
     $cli secrets new-dockercfg dockerpullsecret \
       --docker-server=${DOCKER_REGISTRY_PATH} \
       --docker-username=_ \
       --docker-password=$($cli whoami -t) \
       --docker-email=_
-  
-    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull    
+
+    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull
   fi
 }
 
@@ -84,20 +82,40 @@ deploy_app_backend() {
      statefulset/summon-init-pg \
      statefulset/summon-sidecar-pg \
      statefulset/secretless-pg \
+     statefulset/summon-init-mysql \
+     statefulset/summon-sidecar-mysql \
+     statefulset/secretless-mysql \
      secret/test-app-backend-certs
 
-  echo "Create secrets for test app backend"
-  $cli --namespace $TEST_APP_NAMESPACE_NAME \
-    create secret generic \
-    test-app-backend-certs \
-    --from-file=server.crt=./etc/ca.pem \
-    --from-file=server.key=./etc/ca-key.pem
+  ensure_env_database
+  case "${TEST_APP_DATABASE}" in
+  postgres)
+    echo "Create secrets for test app backend"
+    $cli --namespace $TEST_APP_NAMESPACE_NAME \
+      create secret generic \
+      test-app-backend-certs \
+      --from-file=server.crt=./etc/ca.pem \
+      --from-file=server.key=./etc/ca-key.pem
 
-  echo "Deploying test app backend"
-  test_app_pg_docker_image=$(platform_image test-app-pg)
-  sed -e "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/postgres.yml |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    $cli create -f -
+    echo "Deploying test app backend"
+
+    test_app_pg_docker_image=$(platform_image test-app-pg)
+
+    sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml |
+      sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+      $cli create -f -
+    ;;
+  mysql)
+    echo "Deploying test app backend"
+
+    test_app_mysql_docker_image="mysql/mysql-server:5.7"
+
+    sed "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml |
+     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+     $cli create -f -
+    ;;
+  esac
+
 }
 
 ###########################
@@ -116,18 +134,18 @@ deploy_sidecar_app() {
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_sidecar_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
-    sed -e "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
-    sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
-    sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
-    sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
-    sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
-    sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
-    sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed -e "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
+  sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_sidecar_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
+    sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
+    sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
+    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
+    sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
+    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
+    sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
+    sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
+    sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -153,18 +171,18 @@ deploy_init_container_app() {
 
   sleep 5
 
-  sed -e "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
-    sed -e "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
-    sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
-    sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
-    sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
-    sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
-    sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
-    sed -e "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed -e "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
-    sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed -e "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
+  sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
+    sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
+    sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
+    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
+    sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
+    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
+    sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
+    sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
+    sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -194,13 +212,27 @@ deploy_secretless_app() {
 
   sleep 5
 
-  sed -e "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
-    sed -e "s#{{ SECRETLESS_IMAGE }}#$secretless_image#g" |
-    sed -e "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
-    sed -e "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
-    sed -e "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed -e "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
-    sed -e "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
+  ensure_env_database
+  case "${TEST_APP_DATABASE}" in
+  postgres)
+    PORT=5432
+    PROTOCOL=postgresql
+    ;;
+  mysql)
+    PORT=3306
+    PROTOCOL=mysql
+    ;;
+  esac
+  secretless_db_url="$PROTOCOL://localhost:$PORT/test_app"
+
+  sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
+    sed "s#{{ SECRETLESS_IMAGE }}#$secretless_image#g" |
+    sed "s#{{ SECRETLESS_DB_URL }}#$secretless_db_url#g" |
+    sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
+    sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
+    sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then

@@ -28,33 +28,31 @@ spec:
       labels:
         app: test-summon-init-app-backend
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
       - name: test-summon-init-app-backend
-        image: centos/postgresql-95-centos7
+        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:
           - containerPort: 5432
-        env:
-          - name: POSTGRESQL_USER
-            value: test_app
-          - name: POSTGRESQL_PASSWORD
-            value: {{ TEST_APP_DB_PASSWORD }}
-          - name: POSTGRESQL_DATABASE
-            value: test_app
         volumeMounts:
           - name: backend-certs
             mountPath: "/etc/certs/"
             readOnly: true
-        command: ["/bin/sh", "-c"]
-        args:
-          - mkdir -p /opt/app-root/certs/;
-            install -m 0600 /etc/certs/* /opt/app-root/certs;
-            run-postgresql -c ssl=on -c ssl_cert_file=/opt/app-root/certs/server.crt -c ssl_key_file=/opt/app-root/certs/server.key
+        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
+        env:
+          - name: POSTGRES_USER
+            value: test_app
+          - name: POSTGRES_PASSWORD
+            value: {{ TEST_APP_DB_PASSWORD }}
+          - name: POSTGRES_DB
+            value: test_app
       volumes:
-      - name: backend-certs
-        secret:
-          secretName: test-app-backend-certs
-
+        - name: backend-certs
+          secret:
+            secretName: test-app-backend-certs
+            defaultMode: 384
 ---
 kind: Service
 apiVersion: v1
@@ -85,32 +83,31 @@ spec:
       labels:
         app: test-summon-sidecar-app-backend
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
       - name: test-summon-sidecar-app-backend
-        image: centos/postgresql-95-centos7
+        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:
           - containerPort: 5432
-        env:
-          - name: POSTGRESQL_USER
-            value: test_app
-          - name: POSTGRESQL_PASSWORD
-            value: {{ TEST_APP_DB_PASSWORD }}
-          - name: POSTGRESQL_DATABASE
-            value: test_app
         volumeMounts:
-        - name: backend-certs
-          mountPath: "/etc/certs/"
-          readOnly: true
-        command: ["/bin/sh", "-c"]
-        args:
-          - mkdir -p /opt/app-root/certs/;
-            install -m 0600 /etc/certs/* /opt/app-root/certs;
-            run-postgresql -c ssl=on -c ssl_cert_file=/opt/app-root/certs/server.crt -c ssl_key_file=/opt/app-root/certs/server.key
+          - name: backend-certs
+            mountPath: "/etc/certs/"
+            readOnly: true
+        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
+        env:
+          - name: POSTGRES_USER
+            value: test_app
+          - name: POSTGRES_PASSWORD
+            value: {{ TEST_APP_DB_PASSWORD }}
+          - name: POSTGRES_DB
+            value: test_app
       volumes:
-      - name: backend-certs
-        secret:
-          secretName: test-app-backend-certs
+        - name: backend-certs
+          secret:
+            secretName: test-app-backend-certs
+            defaultMode: 384
 
 ---
 kind: Service
@@ -142,29 +139,28 @@ spec:
       labels:
         app: test-secretless-app-backend
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
       - name: test-secretless-app-backend
-        image: centos/postgresql-95-centos7
+        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:
           - containerPort: 5432
-        env:
-          - name: POSTGRESQL_USER
-            value: test_app
-          - name: POSTGRESQL_PASSWORD
-            value: {{ TEST_APP_DB_PASSWORD }}
-          - name: POSTGRESQL_DATABASE
-            value: test_app
         volumeMounts:
-        - name: backend-certs
-          mountPath: "/etc/certs/"
-          readOnly: true
-        command: ["/bin/sh", "-c"]
-        args:
-          - mkdir -p /opt/app-root/certs/;
-            install -m 0600 /etc/certs/* /opt/app-root/certs;
-            run-postgresql -c ssl=on -c ssl_cert_file=/opt/app-root/certs/server.crt -c ssl_key_file=/opt/app-root/certs/server.key
+          - name: backend-certs
+            mountPath: "/etc/certs/"
+            readOnly: true
+        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
+        env:
+          - name: POSTGRES_USER
+            value: test_app
+          - name: POSTGRES_PASSWORD
+            value: {{ TEST_APP_DB_PASSWORD }}
+          - name: POSTGRES_DB
+            value: test_app
       volumes:
-      - name: backend-certs
-        secret:
-          secretName: test-app-backend-certs
+        - name: backend-certs
+          secret:
+            secretName: test-app-backend-certs
+            defaultMode: 384

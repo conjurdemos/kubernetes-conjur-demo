@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 set -euo pipefail
 
 . utils.sh
@@ -28,7 +28,7 @@ if [[ "$PLATFORM" = "kubernetes" ]]; then
   set_namespace $TEST_APP_NAMESPACE_NAME
 
   for app_name in "${APPS[@]}"; do
-    backend_pod=$($cli get pods --no-headers -l app=$app_name-backend |
+    backend_pod=$($cli get pods --no-headers --selector app=$app_name-backend |
       awk '{ print $1 }')
     $cli exec -c $app_name-backend $backend_pod -- rotate_password $new_pwd
   done

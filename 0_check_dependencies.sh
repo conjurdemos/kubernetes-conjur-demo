@@ -11,3 +11,5 @@ check_env_var "DOCKER_REGISTRY_PATH"
 check_env_var "CONJUR_ACCOUNT"
 check_env_var "CONJUR_ADMIN_PASSWORD"
 check_env_var "AUTHENTICATOR_ID"
+check_env_var "TEST_APP_DATABASE"
+ensure_env_database
