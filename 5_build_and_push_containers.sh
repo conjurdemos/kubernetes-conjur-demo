@@ -39,7 +39,7 @@ pushd test_app_summon
 
     echo "Building test app image"
     docker build \
-      --build-arg namespace=$TEST_APP_NAMESPACE_NAME\
+      --build-arg namespace=$TEST_APP_NAMESPACE_NAME \
       --tag test-app:$CONJUR_NAMESPACE_NAME \
       --file $dockerfile .
 
