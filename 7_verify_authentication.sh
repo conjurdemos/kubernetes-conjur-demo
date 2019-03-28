@@ -28,9 +28,9 @@ set_namespace $TEST_APP_NAMESPACE_NAME
 
 echo "Waiting for pods to become available"
 
-until [[ $(pods_ready "test-app-summon-init") ]] &&
-      [[ $(pods_ready "test-app-summon-sidecar") ]] &&
-      [[ $(pods_ready "test-app-secretless") ]]; do
+until pods_ready "test-app-summon-init" &&
+      pods_ready "test-app-summon-sidecar" &&
+      pods_ready "test-app-secretless"; do
   printf "."
   sleep 1
 done
@@ -63,9 +63,9 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   secretless_url="localhost:8083"
 else
   echo "Waiting for services to become available"
-  while [ -z "$(service_ip "test-app-summon-init")" ] ||
-        [ -z "$(service_ip "test-app-summon-sidecar")" ] ||
-        [ -z "$(service_ip "test-app-secretless")" ]; do
+  while [[ -z "$(service_ip "test-app-summon-init")" ]] ||
+        [[ -z "$(service_ip "test-app-summon-sidecar")" ]] ||
+        [[ -z "$(service_ip "test-app-secretless")" ]]; do
     printf "."
     sleep 3
   done
@@ -76,9 +76,9 @@ else
 fi
 
 echo "Waiting for urls to be ready"
-until $(curl -s --connect-timeout 3 $init_url > /dev/null) &&
-      $(curl -s --connect-timeout 3 $sidecar_url > /dev/null) &&
-      $(curl -s --connect-timeout 3 $secretless_url > /dev/null); do
+until curl -s --connect-timeout 3 $init_url > /dev/null &&
+      curl -s --connect-timeout 3 $sidecar_url > /dev/null &&
+      curl -s --connect-timeout 3 $secretless_url > /dev/null; do
   printf "."
   sleep 3
 done
