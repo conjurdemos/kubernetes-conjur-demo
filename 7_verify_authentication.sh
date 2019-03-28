@@ -16,7 +16,7 @@ function finish {
   for pid in "${PIDS[@]}"; do
     if [ -n "${!pid}" ]; then
       # Kill process, and swallow any errors
-      kill ${!pid} > /dev/null 2>&1
+      kill "${!pid}" > /dev/null 2>&1
     fi
   done
 }
@@ -24,13 +24,13 @@ trap finish EXIT
 
 announce "Validating that the deployments are functioning as expected."
 
-set_namespace $TEST_APP_NAMESPACE_NAME
+set_namespace "$TEST_APP_NAMESPACE_NAME"
 
 echo "Waiting for pods to become available"
 
-until [[ $(pods_ready "test-app-summon-init") ]] &&
-      [[ $(pods_ready "test-app-summon-sidecar") ]] &&
-      [[ $(pods_ready "test-app-secretless") ]]; do
+until pods_ready "test-app-summon-init" &&
+      pods_ready "test-app-summon-sidecar" &&
+      pods_ready "test-app-secretless"; do
   printf "."
   sleep 1
 done
@@ -51,11 +51,11 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   secretless_pod=$(get_pod_name test-app-secretless)
 
   # Routes are defined, but we need to do port-mapping to access them
-  oc port-forward $sidecar_pod 8081:8080 > /dev/null 2>&1 &
+  oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &
   SIDECAR_PORT_FORWARD_PID=$!
-  oc port-forward $init_pod 8082:8080 > /dev/null 2>&1 &
+  oc port-forward "$init_pod" 8082:8080 > /dev/null 2>&1 &
   INIT_PORT_FORWARD_PID=$!
-  oc port-forward $secretless_pod 8083:8080 > /dev/null 2>&1 &
+  oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
   SECRETLESS_PORT_FORWARD_PID=$!
 
   init_url="localhost:8081"
@@ -63,9 +63,9 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   secretless_url="localhost:8083"
 else
   echo "Waiting for services to become available"
-  while [ -z "$(service_ip "test-app-summon-init")" ] ||
-        [ -z "$(service_ip "test-app-summon-sidecar")" ] ||
-        [ -z "$(service_ip "test-app-secretless")" ]; do
+  while [[ -z "$(service_ip "test-app-summon-init")" ]] ||
+        [[ -z "$(service_ip "test-app-summon-sidecar")" ]] ||
+        [[ -z "$(service_ip "test-app-secretless")" ]]; do
     printf "."
     sleep 3
   done
@@ -76,9 +76,9 @@ else
 fi
 
 echo "Waiting for urls to be ready"
-until $(curl -s --connect-timeout 3 $init_url > /dev/null) &&
-      $(curl -s --connect-timeout 3 $sidecar_url > /dev/null) &&
-      $(curl -s --connect-timeout 3 $secretless_url > /dev/null); do
+until curl -s --connect-timeout 3 "$init_url" > /dev/null &&
+      curl -s --connect-timeout 3 "$sidecar_url" > /dev/null &&
+      curl -s --connect-timeout 3 "$secretless_url" > /dev/null; do
   printf "."
   sleep 3
 done
@@ -87,25 +87,25 @@ echo -e "\nAdding entry to the init app\n"
 curl \
   -d '{"name": "Mr. Init"}' \
   -H "Content-Type: application/json" \
-  $init_url/pet
+  "$init_url"/pet
 
 echo -e "Adding entry to the sidecar app\n"
 curl \
   -d '{"name": "Mr. Sidecar"}' \
   -H "Content-Type: application/json" \
-  $sidecar_url/pet
+  "$sidecar_url"/pet
 
 echo -e "Adding entry to the secretless app\n"
 curl \
   -d '{"name": "Mr. Secretless"}' \
   -H "Content-Type: application/json" \
-  $secretless_url/pet
+  "$secretless_url"/pet
 
 echo -e "Querying init app\n"
-curl $init_url/pets
+curl "$init_url"/pets
 
 echo -e "\n\nQuerying sidecar app\n"
-curl $sidecar_url/pets
+curl "$sidecar_url"/pets
 
 echo -e "\n\nQuerying secretless app\n"
-curl $secretless_url/pets
+curl "$secretless_url"/pets
