@@ -19,12 +19,13 @@ check_env_var() {
 
 ensure_env_database() {
   local valid_dbs=(
-    postgres
-    mysql
+  'postgres'
+  'mysql'
   )
-  if ! printf '%s\n' "${valid_dbs[@]}" | grep -q "^${TEST_APP_DATABASE}\$"; then
-    echo "Got '${TEST_APP_DATABASE}', expected TEST_APP_DATABASE to be one of:"
-    printf "'%s'\n" "${valid_dbs[@]}"
+
+  if ! printf '%s\n' "${valid_dbs[@]}" | grep -Fxq "${TEST_APP_DATABASE}"; then
+    echo "Got '${TEST_APP_DATABASE}', expected TEST_APP_DATABASE to be one of:";
+    printf "'%s'\n" "${valid_dbs[@]}";
     exit 1
   fi
 }
