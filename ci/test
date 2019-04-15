@@ -144,6 +144,7 @@ function runDockerCommand() {
     -e TEST_APP_NAMESPACE_NAME \
     -e TEST_APP_DATABASE \
     -e PLATFORM \
+    -e FOLLOWER_SEED="" \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \
     -e MINIKUBE \
