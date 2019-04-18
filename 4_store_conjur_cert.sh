@@ -9,8 +9,14 @@ set_namespace $CONJUR_NAMESPACE_NAME
 
 echo "Retrieving Conjur certificate."
 
-follower_pod_name=$($cli get pods --selector role=follower --no-headers | awk '{ print $1 }' | head -1)
-ssl_cert=$($cli exec $follower_pod_name -- cat /opt/conjur/etc/ssl/conjur.pem)
+if $cli get pods --selector role=follower --no-headers; then
+  follower_pod_name=$($cli get pods --selector role=follower --no-headers | awk '{ print $1 }' | head -1)
+  ssl_cert=$($cli exec $follower_pod_name -- cat /opt/conjur/etc/ssl/conjur.pem)
+else
+  echo "Regular follower not found. Trying to assume a decomposed follower..."
+  follower_pod_name=$($cli get pods --selector role=decomposed-follower --no-headers | awk '{ print $1 }' | head -1)
+  ssl_cert=$($cli exec -c "nginx" $follower_pod_name -- cat /opt/conjur/etc/ssl/cert/tls.crt)
+fi
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
