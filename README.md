@@ -47,8 +47,6 @@ export TEST_APP_DATABASE=mysql
 ```
 As found at boostrap.env
 
-You might also like to spe
-
 You will also need to set several environment variables to match the values used
 when configuring your Conjur deployment. Note that if you may already have these
 variables set if you're using the same shell to run the demo:
