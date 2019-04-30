@@ -39,10 +39,11 @@ policy that you would not want to be present in your production environment.
 ### Script Configuration
 
 You will need to provide a name for the kubernetes namespace in which your test app
-will be deployed:
+will be deployed AND the database type to deploy with the app:
 
 ```
 export TEST_APP_NAMESPACE_NAME=test-app
+export TEST_APP_DATABASE=mysql
 ```
 As found at boostrap.env
 
@@ -164,8 +165,8 @@ demo apps.
 
 ## Demo Applications
 The test app is based on the `cyberark/demo-app` Docker image
-([GitHub repo](https://github.com/conjurdemos/pet-store-demo)). It is deployed
-with a PostgreSQL database and the DB credentials are stored in Conjur.
+([GitHub repo](https://github.com/conjurdemos/pet-store-demo)). It can be deployed
+with a PostgreSQL or MySQL database and the DB credentials are stored in Conjur.
 The app uses Summon at runtime to retrieve the credentials it needs to connect
 with the DB, and it authenticates to Conjur using the access token provided by
 the authenticator sidecar.
