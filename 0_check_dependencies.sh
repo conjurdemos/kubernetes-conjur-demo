@@ -6,12 +6,17 @@ set -eo pipefail
 check_env_var "CONJUR_VERSION"
 check_env_var "CONJUR_NAMESPACE_NAME"
 check_env_var "TEST_APP_NAMESPACE_NAME"
-[[ "$PLATFORM" == "kubernetes" ]] && check_env_var "DOCKER_REGISTRY_URL"
+
+if [[ "$PLATFORM" == "kubernetes" ]]; then
+  check_env_var "DOCKER_REGISTRY_URL"
+fi
+
 check_env_var "DOCKER_REGISTRY_PATH"
 check_env_var "CONJUR_ACCOUNT"
 check_env_var "CONJUR_ADMIN_PASSWORD"
 check_env_var "AUTHENTICATOR_ID"
 check_env_var "TEST_APP_DATABASE"
+
 ensure_env_database
 
 export DEPLOY_MASTER_CLUSTER="${DEPLOY_MASTER_CLUSTER:-false}"
