@@ -17,6 +17,20 @@ check_env_var() {
   fi
 }
 
+check_file_exists() {
+  local file_path="$1"
+  local error_message="$2"
+
+  if [[ ! -r "${file_path}" ]]; then
+    echo "ERROR: File '${file_path}' not found!"
+    if [[ "${error_message}" != "" ]]; then
+      echo "ERROR: ${error_message}"
+    fi
+
+    exit 1
+  fi
+}
+
 ensure_env_database() {
   local valid_dbs=(
   'postgres'
