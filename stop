@@ -3,11 +3,6 @@ set -euo pipefail
 
 . utils.sh
 
-set_namespace $TEST_APP_NAMESPACE_NAME
-$cli get pods
-
-set_namespace default
-
 if [[ $PLATFORM == openshift ]]; then
   oc login -u $OSHIFT_CLUSTER_ADMIN_USERNAME
 fi
@@ -17,8 +12,8 @@ if has_namespace $TEST_APP_NAMESPACE_NAME; then
 
   printf "Waiting for $TEST_APP_NAMESPACE_NAME namespace deletion to complete"
 
-  while : ; do
-    printf "."
+  while true; do
+    printf '.'
 
     if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
       sleep 5
