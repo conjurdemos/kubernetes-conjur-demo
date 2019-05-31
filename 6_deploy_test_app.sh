@@ -17,9 +17,7 @@ main() {
   fi
 
   deploy_app_backend
-  deploy_secretless_app
-  deploy_sidecar_app
-  deploy_init_container_app
+  #deploy_secretless_app
 }
 
 ###########################
@@ -77,120 +75,32 @@ init_connection_specs() {
 ###########################
 deploy_app_backend() {
   $cli delete --ignore-not-found \
-     service/test-summon-init-app-backend \
-     service/test-summon-sidecar-app-backend \
-     service/test-secretless-app-backend \
-     statefulset/summon-init-pg \
-     statefulset/summon-sidecar-pg \
+     service/test-secretless-app-mysql-backend \
+     service/test-secretless-app-postgresql-backend \
      statefulset/secretless-pg \
-     statefulset/summon-init-mysql \
-     statefulset/summon-sidecar-mysql \
      statefulset/secretless-mysql \
      secret/test-app-backend-certs
 
-  ensure_env_database
-  case "${TEST_APP_DATABASE}" in
-  postgres)
-    echo "Create secrets for test app backend"
-    $cli --namespace $TEST_APP_NAMESPACE_NAME \
-      create secret generic \
-      test-app-backend-certs \
-      --from-file=server.crt=./etc/ca.pem \
-      --from-file=server.key=./etc/ca-key.pem
+  echo "Create secrets for test app postgresql backend"
+  $cli --namespace $TEST_APP_NAMESPACE_NAME \
+    create secret generic \
+    test-app-backend-certs \
+    --from-file=server.crt=./etc/ca.pem \
+    --from-file=server.key=./etc/ca-key.pem
 
-    echo "Deploying test app backend"
+  echo "Deploying test app backend"
+  test_app_pg_docker_image=$(platform_image test-app-pg)
 
-    test_app_pg_docker_image=$(platform_image test-app-pg)
-
-    sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml |
-      sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-      $cli create -f -
-    ;;
-  mysql)
-    echo "Deploying test app backend"
-
-    test_app_mysql_docker_image="mysql/mysql-server:5.7"
-
-    sed "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml |
-     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-     $cli create -f -
-    ;;
-  esac
-
-}
-
-###########################
-deploy_sidecar_app() {
-  $cli delete --ignore-not-found \
-    deployment/test-app-summon-sidecar \
-    service/test-app-summon-sidecar \
-    serviceaccount/test-app-summon-sidecar \
-    serviceaccount/oc-test-app-summon-sidecar
-
-  if [[ "$PLATFORM" == "openshift" ]]; then
-    oc delete --ignore-not-found \
-      deploymentconfig/test-app-summon-sidecar \
-      route/test-app-summon-sidecar
-  fi
-
-  sleep 5
-
-  sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_sidecar_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
-    sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
-    sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
-    sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
-    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
-    sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
-    sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+  sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
-    sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
-  if [[ "$PLATFORM" == "openshift" ]]; then
-    oc expose service test-app-summon-sidecar
-  fi
+  echo "Deploying test app mysql backend"
+  test_app_mysql_docker_image="mysql/mysql-server:5.7"
 
-  echo "Test app/sidecar deployed."
-}
-
-###########################
-deploy_init_container_app() {
-  $cli delete --ignore-not-found \
-    deployment/test-app-summon-init \
-    service/test-app-summon-init \
-    serviceaccount/test-app-summon-init \
-    serviceaccount/oc-test-app-summon-init
-
-  if [[ "$PLATFORM" == "openshift" ]]; then
-    oc delete --ignore-not-found \
-      deploymentconfig/test-app-summon-init \
-      route/test-app-summon-init
-  fi
-
-  sleep 5
-
-  sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
-    sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
-    sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
-    sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
-    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
-    sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
-    sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+  sed "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
-    sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
-
-  if [[ "$PLATFORM" == "openshift" ]]; then
-    oc expose service test-app-summon-init
-  fi
-
-  echo "Test app/init-container deployed."
 }
 
 ###########################

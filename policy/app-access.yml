@@ -1,45 +1,11 @@
 - !policy
-  id: test-summon-init-app-db
-  owner: !group secrets_admin
-  annotations:
-    description: This policy contains the creds to access the summon init app DB
-
-  body:
-    - &init-variables
-      - !variable password
-      - !variable url
-      - !variable username
-
-    - !permit
-      role: !layer /test-app
-      privileges: [ read, execute ]
-      resources: *init-variables
-
-- !policy
-  id: test-summon-sidecar-app-db
-  owner: !group secrets_admin
-  annotations:
-    description: This policy contains the creds to access the summon sidecar app DB
-
-  body:
-    - &sidecar-variables
-      - !variable password
-      - !variable url
-      - !variable username
-
-    - !permit
-      role: !layer /test-app
-      privileges: [ read, execute ]
-      resources: *sidecar-variables
-
-- !policy
-  id: test-secretless-app-db
+  id: test-secretless-app-mysql-db
   owner: !group secrets_admin
   annotations:
     description: This policy contains the creds to access the secretless app DB
 
   body:
-    - &secretless-variables
+    - &secretless-mysql-variables
       - !variable password
       - !variable url
       - !variable port
@@ -49,4 +15,23 @@
     - !permit
       role: !layer /test-app
       privileges: [ read, execute ]
-      resources: *secretless-variables
+      resources: *secretless-mysql-variables
+
+- !policy
+  id: test-secretless-app-postgresql-db
+  owner: !group secrets_admin
+  annotations:
+    description: This policy contains the creds to access the secretless app DB
+
+  body:
+    - &secretless-postgresql-variables
+      - !variable password
+      - !variable url
+      - !variable port
+      - !variable host
+      - !variable username
+
+    - !permit
+      role: !layer /test-app
+      privileges: [ read, execute ]
+      resources: *secretless-postgresql-variables

@@ -2,122 +2,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: test-summon-init-app-backend
+  name: test-secretless-app-postgresql-backend
   namespace: {{ TEST_APP_NAMESPACE_NAME }}
 spec:
   selector:
-    app: test-summon-init-app-backend
-  ports:
-    - port: 5432
-      targetPort: 5432
-
----
-apiVersion: apps/v1beta1
-kind: StatefulSet
-metadata:
-  name: summon-init-pg
-  labels:
-    app: test-summon-init-app-backend
-spec:
-  serviceName: test-summon-init-app-backend
-  selector:
-    matchLabels:
-      app: test-summon-init-app-backend
-  template:
-    metadata:
-      labels:
-        app: test-summon-init-app-backend
-    spec:
-      securityContext:
-        fsGroup: 999
-      containers:
-      - name: test-summon-init-app-backend
-        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 5432
-        volumeMounts:
-          - name: backend-certs
-            mountPath: "/etc/certs/"
-            readOnly: true
-        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
-        env:
-          - name: POSTGRES_USER
-            value: test_app
-          - name: POSTGRES_PASSWORD
-            value: {{ TEST_APP_DB_PASSWORD }}
-          - name: POSTGRES_DB
-            value: test_app
-      volumes:
-        - name: backend-certs
-          secret:
-            secretName: test-app-backend-certs
-            defaultMode: 384
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: test-summon-sidecar-app-backend
-  namespace: {{ TEST_APP_NAMESPACE_NAME }}
-spec:
-  selector:
-    app: test-summon-sidecar-app-backend
-  ports:
-    - port: 5432
-      targetPort: 5432
-
----
-apiVersion: apps/v1beta1
-kind: StatefulSet
-metadata:
-  name: summon-sidecar-pg
-  labels:
-    app: test-summon-sidecar-app-backend
-spec:
-  serviceName: test-summon-sidecar-app-backend
-  selector:
-    matchLabels:
-      app: test-summon-sidecar-app-backend
-  template:
-    metadata:
-      labels:
-        app: test-summon-sidecar-app-backend
-    spec:
-      securityContext:
-        fsGroup: 999
-      containers:
-      - name: test-summon-sidecar-app-backend
-        image: {{ TEST_APP_PG_DOCKER_IMAGE }}
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 5432
-        volumeMounts:
-          - name: backend-certs
-            mountPath: "/etc/certs/"
-            readOnly: true
-        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
-        env:
-          - name: POSTGRES_USER
-            value: test_app
-          - name: POSTGRES_PASSWORD
-            value: {{ TEST_APP_DB_PASSWORD }}
-          - name: POSTGRES_DB
-            value: test_app
-      volumes:
-        - name: backend-certs
-          secret:
-            secretName: test-app-backend-certs
-            defaultMode: 384
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: test-secretless-app-backend
-  namespace: {{ TEST_APP_NAMESPACE_NAME }}
-spec:
-  selector:
-    app: test-secretless-app-backend
+    app: test-secretless-app-postgresql-backend
   ports:
     - port: 5432
       targetPort: 5432
@@ -128,21 +17,21 @@ kind: StatefulSet
 metadata:
   name: secretless-pg
   labels:
-    app: test-secretless-app-backend
+    app: test-secretless-app-postgresql-backend
 spec:
-  serviceName: test-secretless-app-backend
+  serviceName: test-secretless-app-postgresql-backend
   selector:
     matchLabels:
-      app: test-secretless-app-backend
+      app: test-secretless-app-postgresql-backend
   template:
     metadata:
       labels:
-        app: test-secretless-app-backend
+        app: test-secretless-app-postgresql-backend
     spec:
       securityContext:
         fsGroup: 999
       containers:
-      - name: test-secretless-app-backend
+      - name: test-secretless-app-postgresql-backend
         image: {{ TEST_APP_PG_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:

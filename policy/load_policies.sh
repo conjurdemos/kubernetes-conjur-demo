@@ -33,42 +33,40 @@ done
 
 # load secret values for each app
 readonly APPS=(
-  "test-summon-init-app"
-  "test-summon-sidecar-app"
   "test-secretless-app"
 )
 
+readonly TEST_APP_DATABASE=(
+  "postgresql"
+  "mysql"
+)
+
 for app_name in "${APPS[@]}"; do
-  echo "Loading secret values for $app_name"
-  conjur variable values add "$app_name-db/password" $DB_PASSWORD
-  conjur variable values add "$app_name-db/username" "test_app"
+  for database in "${TEST_APP_DATABASE[@]}"; do
+    echo "Loading secret values for $app_name and $database db"
+    conjur variable values add "$app_name-$database-db/password" $DB_PASSWORD
+    conjur variable values add "$app_name-$database-db/username" "test_app"
 
-  case "${TEST_APP_DATABASE}" in
-  postgres)
-    PORT=5432
-    PROTOCOL=postgresql
-    ;;
-  mysql)
-    PORT=3306
-    PROTOCOL=mysql
-    ;;
-  *)
-    echo "Expected TEST_APP_DATABASE to be 'mysql' or 'postgres', got '${TEST_APP_DATABASE}'"
-    exit 1
-    ;;
-  esac
-  db_host="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
-  db_url="$db_host:$PORT/test_app"
+    if [[ "$database" = "postgresql" ]]; then
+      PORT=5432
+    elif [[ "$database" = "mysql" ]]; then
+      PORT=3306
+    fi
 
-  if [[ "$app_name" = "test-secretless-app" ]]; then
-    # Secretless doesn't require the full connection URL, just the host/port
-    # and an optional database
-    conjur variable values add "$app_name-db/url" "$db_url"
-    conjur variable values add "$app_name-db/port" "$PORT"
-    conjur variable values add "$app_name-db/host" "$db_host"
-  else
-    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_url"
-  fi
+
+    db_host="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
+    db_url="$db_host:$PORT/test_app"
+
+    if [[ "$app_name" = "test-secretless-app" ]]; then
+      # Secretless doesn't require the full connection URL, just the host/port
+      # and an optional database
+      conjur variable values add "$app_name-db/url" "$db_url"
+      conjur variable values add "$app_name-db/port" "$PORT"
+      conjur variable values add "$app_name-db/host" "$db_host"
+    else
+      conjur variable values add "$app_name-db/url" "$database://$db_url"
+    fi
+  done
 done
 
 conjur authn logout

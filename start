@@ -19,4 +19,4 @@ fi
 ./4_store_conjur_cert.sh
 ./5_build_and_push_containers.sh
 ./6_deploy_test_app.sh
-./7_verify_authentication.sh
+#./7_verify_authentication.sh

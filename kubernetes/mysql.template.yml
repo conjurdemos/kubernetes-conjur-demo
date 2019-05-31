@@ -2,103 +2,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: test-summon-init-app-backend
+  name: test-secretless-app-mysql-backend
   namespace: {{ TEST_APP_NAMESPACE_NAME }}
 spec:
   selector:
-    app: test-summon-init-app-backend
-  ports:
-    - port: 3306
-      targetPort: 3306
-
----
-apiVersion: apps/v1beta1
-kind: StatefulSet
-metadata:
-  name: summon-init-mysql
-  labels:
-    app: test-summon-init-app-backend
-spec:
-  serviceName: test-summon-init-app-backend
-  selector:
-    matchLabels:
-      app: test-summon-init-app-backend
-  template:
-    metadata:
-      labels:
-        app: test-summon-init-app-backend
-    spec:
-      containers:
-      - name: test-summon-init-app-backend
-        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 3306
-        env:
-          - name: MYSQL_RANDOM_ROOT_PASSWORD
-            value: "yes"
-          - name: MYSQL_USER
-            value: test_app
-          - name: MYSQL_PASSWORD
-            value: {{ TEST_APP_DB_PASSWORD }}
-          - name: MYSQL_DATABASE
-            value: test_app
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: test-summon-sidecar-app-backend
-  namespace: {{ TEST_APP_NAMESPACE_NAME }}
-spec:
-  selector:
-    app: test-summon-sidecar-app-backend
-  ports:
-    - port: 3306
-      targetPort: 3306
-
----
-apiVersion: apps/v1beta1
-kind: StatefulSet
-metadata:
-  name: summon-sidecar-mysql
-  labels:
-    app: test-summon-sidecar-app-backend
-spec:
-  serviceName: test-summon-sidecar-app-backend
-  selector:
-    matchLabels:
-      app: test-summon-sidecar-app-backend
-  template:
-    metadata:
-      labels:
-        app: test-summon-sidecar-app-backend
-    spec:
-      containers:
-      - name: test-summon-sidecar-app-backend
-        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 3306
-        env:
-          - name: MYSQL_RANDOM_ROOT_PASSWORD
-            value: "yes"
-          - name: MYSQL_USER
-            value: test_app
-          - name: MYSQL_PASSWORD
-            value: {{ TEST_APP_DB_PASSWORD }}
-          - name: MYSQL_DATABASE
-            value: test_app
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: test-secretless-app-backend
-  namespace: {{ TEST_APP_NAMESPACE_NAME }}
-spec:
-  selector:
-    app: test-secretless-app-backend
+    app: test-secretless-app-mysql-backend
   ports:
     - port: 3306
       targetPort: 3306
@@ -109,19 +17,19 @@ kind: StatefulSet
 metadata:
   name: secretless-mysql
   labels:
-    app: test-secretless-app-backend
+    app: test-secretless-app-mysql-backend
 spec:
-  serviceName: test-secretless-app-backend
+  serviceName: test-secretless-app-mysql-backend
   selector:
     matchLabels:
-      app: test-secretless-app-backend
+      app: test-secretless-app-mysql-backend
   template:
     metadata:
       labels:
-        app: test-secretless-app-backend
+        app: test-secretless-app-mysql-backend
     spec:
       containers:
-      - name: test-secretless-app-backend
+      - name: test-secretless-app-mysql-backend
         image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
         imagePullPolicy: Always
         ports:

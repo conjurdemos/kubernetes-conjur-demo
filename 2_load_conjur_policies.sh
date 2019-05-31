@@ -63,4 +63,22 @@ pushd openshift
   sed "s#{{ TEST_APP_DB_PASSWORD }}#$password#g" ./mysql.template.yml > ./tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml
 popd
 
+# Add DB credentials to Kubernetes secret
+postgresql_port=5432
+mysql_port=3306
+
+pg_host="test-secretless-app-postgresql-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
+pg_url="$pg_host:$postgresql_port/test_app"
+
+mysql_host="test-secretless-app-mysql-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
+
+$cli delete --ignore-not-found=true secret "${TEST_APP_DATABASE}-backend-credentials"
+
+$cli create secret generic "backend-credentials" \
+  --from-literal postgresql-address="${pg_url}" \
+  --from-literal mysql-host="${mysql_host}" \
+  --from-literal mysql-port="${mysql_port}" \
+  --from-literal username="test_app" \
+  --from-literal password="${password}"
+
 announce "Added DB password value: $password"
