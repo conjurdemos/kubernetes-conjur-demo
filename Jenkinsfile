@@ -34,9 +34,9 @@ pipeline {
           }
         }
 
-        stage('OpenShift v3.9, v5 Conjur, Postgres') {
+        stage('OpenShift v3.10, v5 Conjur, Postgres') {
           steps {
-            sh 'cd ci && summon --environment oc ./test oc 5 postgres'
+            sh 'cd ci && summon --environment oc310 ./test oc 5 postgres'
           }
         }
       }
@@ -57,9 +57,9 @@ pipeline {
           }
         }
 
-        stage('OpenShift v3.9, v4 Conjur, MySQL') {
+        stage('OpenShift v3.11, v4 Conjur, MySQL') {
           steps {
-            sh 'cd ci && summon --environment oc ./test oc 4 mysql'
+            sh 'cd ci && summon --environment oc311 ./test oc 4 mysql'
           }
         }
 
