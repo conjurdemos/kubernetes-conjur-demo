@@ -13,7 +13,7 @@ pipeline {
   }
 
   stages {
-// Postgres Tests
+    // Postgres Tests
     stage('Deploy Demos Postgres') {
       parallel {
         stage('GKE, v4 Conjur, Postgres') {
@@ -33,10 +33,22 @@ pipeline {
             sh 'cd ci && summon --environment oc ./test oc 4 postgres'
           }
         }
-
+        
         stage('OpenShift v3.9, v5 Conjur, Postgres') {
           steps {
             sh 'cd ci && summon --environment oc ./test oc 5 postgres'
+          }
+        }
+
+        stage('OpenShift v3.10, v5 Conjur, Postgres') {
+          steps {
+            sh 'cd ci && summon --environment oc310 ./test oc 5 postgres'
+          }
+        }
+        
+        stage('OpenShift v3.11, v5 Conjur, Postgres') {
+          steps {
+            sh 'cd ci && summon --environment oc311 ./test oc 5 postgres'
           }
         }
       }
@@ -56,7 +68,7 @@ pipeline {
             sh 'cd ci && summon --environment gke ./test gke 5 mysql'
           }
         }
-
+        
         stage('OpenShift v3.9, v4 Conjur, MySQL') {
           steps {
             sh 'cd ci && summon --environment oc ./test oc 4 mysql'
@@ -66,6 +78,18 @@ pipeline {
         stage('OpenShift v3.9, v5 Conjur, MySQL') {
           steps {
             sh 'cd ci && summon --environment oc ./test oc 5 mysql'
+          }
+        }
+
+        stage('OpenShift v3.10, v5 Conjur, MySQL') {
+          steps {
+            sh 'cd ci && summon --environment oc310 ./test oc 5 mysql'
+          }
+        }
+        
+        stage('OpenShift v3.11, v5 Conjur, MySQL') {
+          steps {
+            sh 'cd ci && summon --environment oc311 ./test oc 5 mysql'
           }
         }
       }
