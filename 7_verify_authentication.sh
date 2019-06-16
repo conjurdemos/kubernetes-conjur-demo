@@ -58,8 +58,8 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
   SECRETLESS_PORT_FORWARD_PID=$!
 
-  init_url="localhost:8081"
-  sidecar_url="localhost:8082"
+  sidecar_url="localhost:8081"
+  init_url="localhost:8082"
   secretless_url="localhost:8083"
 else
   echo "Waiting for services to become available"
@@ -105,6 +105,7 @@ echo -e "Querying init app\n"
 curl "$init_url"/pets
 
 echo -e "\n\nQuerying sidecar app\n"
+echo $sidecar_url
 curl "$sidecar_url"/pets
 
 echo -e "\n\nQuerying secretless app\n"
