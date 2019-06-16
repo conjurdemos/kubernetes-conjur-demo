@@ -105,7 +105,6 @@ echo -e "Querying init app\n"
 curl "$init_url"/pets
 
 echo -e "\n\nQuerying sidecar app\n"
-echo $sidecar_url
 curl "$sidecar_url"/pets
 
 echo -e "\n\nQuerying secretless app\n"
