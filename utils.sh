@@ -132,11 +132,12 @@ function wait_for_it() {
 
     echo "Waiting for '$@' up to $timeout s"
     for i in $(seq $times_to_run); do
-      eval $@ > /dev/null && echo 'Success!' && break
+      eval $@ > /dev/null && echo 'Success!' && return true
       echo -n .
       sleep $spacer
     done
 
+    # Last run evaluated. If this fails we return an error exit code to caller
     eval $@
   else
     echo "Waiting for '$@' forever"
