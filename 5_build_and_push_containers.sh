@@ -46,7 +46,7 @@ pushd test_app_summon
     test_app_image=$(platform_image "test-$app_type-app")
     docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
 
-    if [[ is_minienv != true ]]; then
+    if ! is_minienv; then
       docker push $test_app_image
     fi
   done
@@ -59,7 +59,7 @@ if [[ "$PLATFORM" != "openshift" ]]; then
     test_app_pg_image=$(platform_image test-app-pg)
     docker tag test-app-pg:$CONJUR_NAMESPACE_NAME $test_app_pg_image
 
-    if [[ is_minienv != true ]]; then
+    if ! is_minienv; then
       docker push $test_app_pg_image
     fi
   popd
@@ -74,7 +74,7 @@ if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
   secretless_image=$(platform_image secretless-broker)
   docker tag secretless-broker:latest $secretless_image
 
-  if [[ is_minienv != true ]]; then
+  if ! is_minienv; then
     docker push $authn_image
     docker push $secretless_image
   fi

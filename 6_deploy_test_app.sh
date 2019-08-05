@@ -104,6 +104,7 @@ deploy_app_backend() {
 
     sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml |
       sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+      sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
       $cli create -f -
     ;;
   mysql)
@@ -112,8 +113,9 @@ deploy_app_backend() {
     test_app_mysql_docker_image="mysql/mysql-server:5.7"
 
     sed "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml |
-     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-     $cli create -f -
+      sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+      sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
+      $cli create -f -
     ;;
   esac
 
@@ -227,6 +229,7 @@ deploy_secretless_app() {
   secretless_db_url="$PROTOCOL://localhost:$PORT/test_app"
 
   sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
+    sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed "s#{{ SECRETLESS_IMAGE }}#$secretless_image#g" |
     sed "s#{{ SECRETLESS_DB_URL }}#$secretless_db_url#g" |
     sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
