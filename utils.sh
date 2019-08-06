@@ -151,6 +151,8 @@ function wait_for_it() {
 }
 
 function is_minienv() {
+  MINI_ENV="${MINI_ENV:-false}"
+
   if hash minishift 2>/dev/null; then
     # Check if Minishift is running too
     if [[ "$MINI_ENV" == "false" ]] && [[ "$(minishift status | grep Running)" = "" ]]; then
