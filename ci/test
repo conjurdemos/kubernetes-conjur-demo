@@ -94,7 +94,7 @@ function prepareTestEnvironment() {
 
   export DEPLOY_MASTER_CLUSTER=true
 
-  export MINIKUBE=false
+  export MINI_ENV=false
 
   export CONJUR_DEMO_TEST_IMAGE=conjur-demo-$CONJUR_VERSION-$UNIQUE_TEST_ID
 
@@ -146,7 +146,7 @@ function runDockerCommand() {
     -e PLATFORM \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \
-    -e MINIKUBE \
+    -e MINI_ENV \
     -e DEPLOY_MASTER_CLUSTER \
     -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
     -e GCLOUD_CLUSTER_NAME \

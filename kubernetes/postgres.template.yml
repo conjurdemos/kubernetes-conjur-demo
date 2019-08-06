@@ -33,7 +33,7 @@ spec:
       containers:
       - name: test-summon-init-app-backend
         image: {{ TEST_APP_PG_DOCKER_IMAGE }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         ports:
           - containerPort: 5432
         volumeMounts:
@@ -88,7 +88,7 @@ spec:
       containers:
       - name: test-summon-sidecar-app-backend
         image: {{ TEST_APP_PG_DOCKER_IMAGE }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         ports:
           - containerPort: 5432
         volumeMounts:
@@ -144,7 +144,7 @@ spec:
       containers:
       - name: test-secretless-app-backend
         image: {{ TEST_APP_PG_DOCKER_IMAGE }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         ports:
           - containerPort: 5432
         volumeMounts:

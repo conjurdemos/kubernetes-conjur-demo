@@ -41,7 +41,7 @@ announce() {
 platform_image() {
   if [ $PLATFORM = "openshift" ]; then
     echo "$DOCKER_REGISTRY_PATH/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
-  elif [ $MINIKUBE != true ]; then
+  elif ! is_minienv; then
     echo "$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
   else
     echo "$1:$CONJUR_NAMESPACE_NAME"
@@ -153,13 +153,13 @@ function wait_for_it() {
 function is_minienv() {
   if hash minishift 2>/dev/null; then
     # Check if Minishift is running too
-    if [[ $MINIKUBE == false && "$(minishift status | grep Running)" = "" ]]; then
+    if [[ "$MINI_ENV" == "false" ]] && [[ "$(minishift status | grep Running)" = "" ]]; then
       false
     else
       true
     fi
   else
-    if [[ $MINIKUBE == false ]]; then
+    if [[ "$MINI_ENV" == "false" ]]; then
       false
     else
       true
