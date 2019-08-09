@@ -58,16 +58,17 @@ for app_name in "${APPS[@]}"; do
     ;;
   esac
   db_host="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
-  db_url="$db_host:$PORT/test_app"
+  db_address="$db_host:$PORT"
 
   if [[ "$app_name" = "test-secretless-app" ]]; then
     # Secretless doesn't require the full connection URL, just the host/port
-    # and an optional database
-    conjur variable values add "$app_name-db/url" "$db_url"
+    conjur variable values add "$app_name-db/url" "$db_address"
     conjur variable values add "$app_name-db/port" "$PORT"
     conjur variable values add "$app_name-db/host" "$db_host"
   else
-    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_url"
+    # The authenticator sidecar injects the full pg connection string into the
+    # app environment using Summon
+    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_address/test_app"
   fi
 done
 
