@@ -8,6 +8,12 @@ elif [ $PLATFORM = 'openshift' ]; then
     cli=oc
 fi
 
+init_bash_lib() {
+  git submodule update --init --recursive
+  bash_lib="$(dirname "${BASH_SOURCE[0]}")/bash-lib"
+  . "${bash_lib}/init"
+}
+
 check_env_var() {
   if [[ -z "${!1+x}" ]]; then
 # where ${var+x} is a parameter expansion which evaluates to nothing if var is unset, and substitutes the string x otherwise.

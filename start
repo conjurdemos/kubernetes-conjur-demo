@@ -2,6 +2,8 @@
 set -xeuo pipefail
 
 . set_env_vars.sh
+. utils.sh
+init_bash_lib
 
 ./0_check_dependencies.sh
 

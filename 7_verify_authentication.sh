@@ -3,6 +3,11 @@ set -euo pipefail
 
 . utils.sh
 
+
+RETRIES=150
+# Seconds
+RETRY_WAIT=2
+
 function finish {
   readonly PIDS=(
     "SIDECAR_PORT_FORWARD_PID"
@@ -29,25 +34,24 @@ set_namespace "$TEST_APP_NAMESPACE_NAME"
 
 echo "Waiting for pods to become available"
 
-until pods_ready "test-app-summon-init" &&
-      pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
-      pods_ready "test-app-summon-sidecar" &&
-      pods_ready "test-app-secretless"; do
-  printf "."
-  sleep 1
-done
-echo ""
+check_pods(){
+  pods_ready "test-app-summon-init" &&
+  pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
+  pods_ready "test-app-summon-sidecar" &&
+  pods_ready "test-app-secretless"
+}
+bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_pods
 
 if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
 
-  while [[ "$(deployment_status "test-app-summon-init")" != "Complete" ]] ||
-        [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" != "Complete" ]] ||
-        [[ "$(deployment_status "test-app-summon-sidecar")" != "Complete" ]] ||
-        [[ "$(deployment_status "test-app-secretless")" != "Complete" ]]; do
-    printf "."
-    sleep 1
-  done
+  check_deployment_status(){
+    [[ "$(deployment_status "test-app-summon-init")" == "Complete" ]] &&
+    [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" == "Complete" ]] &&
+    [[ "$(deployment_status "test-app-summon-sidecar")" == "Complete" ]] &&
+    [[ "$(deployment_status "test-app-secretless")" == "Complete" ]]
+  }
+  bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_deployment_status
 
   sidecar_pod=$(get_pod_name test-app-summon-sidecar)
   init_pod=$(get_pod_name test-app-summon-init)
@@ -70,13 +74,13 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   init_url_with_host_outside_apps="localhost:8084"
 else
   echo "Waiting for services to become available"
-  while [[ -z "$(service_ip "test-app-summon-init")" ]] ||
-        [[ -z "$(service_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] ||
-        [[ -z "$(service_ip "test-app-summon-sidecar")" ]] ||
-        [[ -z "$(service_ip "test-app-secretless")" ]]; do
-    printf "."
-    sleep 3
-  done
+  check_services(){
+    [[ -n "$(service_ip "test-app-summon-init")" ]] &&
+    [[ -n "$(service_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] &&
+    [[ -n "$(service_ip "test-app-summon-sidecar")" ]] &&
+    [[ -n "$(service_ip "test-app-secretless")" ]]
+  }
+  bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_services
 
   init_url=$(service_ip test-app-summon-init):8080
   init_url_with_host_outside_apps=$(service_ip test-app-with-host-outside-apps-branch-summon-init):8080
@@ -85,13 +89,16 @@ else
 fi
 
 echo "Waiting for urls to be ready"
-until curl -s --connect-timeout 3 "$init_url" > /dev/null &&
-      curl -s --connect-timeout 3 "$init_url_with_host_outside_apps" > /dev/null &&
-      curl -s --connect-timeout 3 "$sidecar_url" > /dev/null &&
-      curl -s --connect-timeout 3 "$secretless_url" > /dev/null; do
-  printf "."
-  sleep 3
-done
+check_urls(){
+  (
+    curl -sS --connect-timeout 3 "$init_url" &&
+    curl -sS --connect-timeout 3 "$init_url_with_host_outside_apps" &&
+    curl -sS --connect-timeout 3 "$sidecar_url" &&
+    curl -sS --connect-timeout 3 "$secretless_url"
+  ) > /dev/null
+}
+
+bl_retry_constant "${RETRIES}" "${RETRY_WAIT}" check_urls
 
 echo -e "\nAdding entry to the init app\n"
 curl \
