@@ -76,7 +76,11 @@ get_pod_name() {
 }
 
 get_master_pod_name() {
-  pod_list=$($cli get pods --selector app=conjur-node,role=master --no-headers | awk '{ print $1 }')
+  app_name="conjur-cluster"
+  if [ $CONJUR_DEPLOYMENT == "dap" ]; then
+      app_name="conjur-node"
+  fi
+  pod_list=$($cli get pods --selector app=$app_name,role=master --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 

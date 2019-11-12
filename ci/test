@@ -70,10 +70,15 @@ function main() {
 
 function deployConjur() {
   pushd ..
-    git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    # TODO: change to master once it is merged
+    git clone --single-branch --branch deploy-oss git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
   popd
 
-  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+  cmd="./start"
+  if [ $CONJUR_DEPLOYMENT == "dap" ]; then
+      cmd="$cmd --dap"
+  fi
+  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && $cmd"
 }
 
 function deployDemo() {
@@ -140,6 +145,7 @@ function runDockerCommand() {
     -e CONJUR_NAMESPACE_NAME \
     -e CONJUR_ACCOUNT \
     -e CONJUR_ADMIN_PASSWORD \
+    -e CONJUR_DEPLOYMENT \
     -e AUTHENTICATOR_ID \
     -e TEST_APP_NAMESPACE_NAME \
     -e TEST_APP_DATABASE \
@@ -183,6 +189,8 @@ function checkArguments() {
     echo "The only valid platform values are 'gke' and 'oc'"
   elif [[ "$CONJUR_VERSION" != "4" && "$CONJUR_VERSION" != "5" ]]; then
     echo "The only valid Conjur version values are '4' and '5'."
+  elif [[ "$CONJUR_DEPLOYMENT" != "dap" &&  "$CONJUR_DEPLOYMENT" != "oss" ]]; then
+    echo "The only valid values for CONJUR_DEPLOYMENT are 'oss' and 'dap'."
   else
     return 0
   fi
@@ -191,7 +199,7 @@ function checkArguments() {
 }
 
 # Parse input arguments
-if [[ $# -ne 3 ]]; then
+if [[ $# -ne 4 ]]; then
   echo "Invalid number of arguments."
   printUsage
 fi
@@ -199,10 +207,12 @@ fi
 TEST_PLATFORM="$1"
 CONJUR_VERSION="$2"
 TEST_APP_DATABASE="$3"
+CONJUR_DEPLOYMENT="$4"
 
 export TEST_PLATFORM
 export CONJUR_VERSION
 export TEST_APP_DATABASE
+export CONJUR_DEPLOYMENT
 
 # sensible default for OPENSHIFT_URL port
 if [[ -n "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then

@@ -9,13 +9,26 @@ set_namespace $CONJUR_NAMESPACE_NAME
 
 echo "Retrieving Conjur certificate."
 
-if $cli get pods --selector role=follower --no-headers; then
-  follower_pod_name=$($cli get pods --selector role=follower --no-headers | awk '{ print $1 }' | head -1)
-  ssl_cert=$($cli exec $follower_pod_name -- cat /opt/conjur/etc/ssl/conjur.pem)
+role="master"
+selector="app=conjur-cli"
+cert_location="/root/conjur-${CONJUR_ACCOUNT}.pem"
+if [ $CONJUR_DEPLOYMENT == "dap" ]; then
+  role="follower"
+  selector="role=follower"
+  cert_location="/opt/conjur/etc/ssl/conjur.pem"
+fi
+
+if $cli get pods --selector role=$role --no-headers; then
+  conjur_pod_name=$($cli get pods \
+                      --selector=$selector \
+                      --no-headers | awk '{ print $1 }' | head -1)
+  ssl_cert=$($cli exec "${conjur_pod_name}" cat $cert_location)
 else
   echo "Regular follower not found. Trying to assume a decomposed follower..."
-  follower_pod_name=$($cli get pods --selector role=decomposed-follower --no-headers | awk '{ print $1 }' | head -1)
-  ssl_cert=$($cli exec -c "nginx" $follower_pod_name -- cat /opt/conjur/etc/ssl/cert/tls.crt)
+  conjur_pod_name=$($cli get pods \
+                      --selector role=decomposed-follower \
+                      --no-headers | awk '{ print $1 }' | head -1)
+  ssl_cert=$($cli exec -c "nginx" $conjur_pod_name -- cat /opt/conjur/etc/ssl/cert/tls.crt)
 fi
 
 set_namespace $TEST_APP_NAMESPACE_NAME

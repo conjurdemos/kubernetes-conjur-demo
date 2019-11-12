@@ -62,9 +62,15 @@ init_connection_specs() {
     secretless_image="cyberark/secretless-broker"
   fi
 
-  conjur_follower_name=${CONJUR_FOLLOWER_NAME:-conjur-follower}
-  conjur_appliance_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
-  conjur_authenticator_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
+  conjur_node_name="conjur-follower"
+  if [ $CONJUR_DEPLOYMENT == "oss" ]; then
+      conjur_node_name="conjur-cluster"
+  fi
+  conjur_appliance_url=https://$conjur_node_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local
+  if [ $CONJUR_DEPLOYMENT == "dap" ]; then
+    conjur_appliance_url="$conjur_appliance_url/api"
+  fi
+  conjur_authenticator_url=$conjur_appliance_url/authn-k8s/$AUTHENTICATOR_ID
 
   conjur_authn_login_prefix=""
   if [[ "$CONJUR_VERSION" == "4" ]]; then
