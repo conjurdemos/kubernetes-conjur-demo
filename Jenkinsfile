@@ -73,11 +73,11 @@ pipeline {
 
     stage('Deploy Demos Conjur OSS') {
       parallel {
-        stage('GKE, v5 Conjur, MySQL') {
-          steps {
-            sh 'cd ci && summon --environment gke ./test gke 5 mysql oss'
-          }
-        }
+//         stage('GKE, v5 Conjur, MySQL') {
+//           steps {
+//             sh 'cd ci && summon --environment gke ./test gke 5 mysql oss'
+//           }
+//         }
 
         stage('OpenShift v3.9, v5 Conjur, MySQL') {
           steps {
@@ -97,11 +97,11 @@ pipeline {
           }
         }
 
-        stage('GKE, v5 Conjur, Postgres') {
-          steps {
-            sh 'cd ci && summon --environment gke ./test gke 5 postgres oss'
-          }
-        }
+//         stage('GKE, v5 Conjur, Postgres') {
+//           steps {
+//             sh 'cd ci && summon --environment gke ./test gke 5 postgres oss'
+//           }
+//         }
 
         stage('OpenShift v3.9, v5 Conjur, Postgres') {
           steps {
