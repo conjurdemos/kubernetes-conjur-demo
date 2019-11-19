@@ -27,11 +27,10 @@ pipeline {
                 },
                 "OpenShift v3.11, v5 Conjur, Postgres, ${deployment}": {
                   sh "cd ci && summon --environment oc311 ./test oc 5 postgres ${deployment}"
+                },
+                "GKE, v5 Conjur, Postgres, ${deployment}": {
+                  sh "cd ci && summon --environment gke ./test gke 5 postgres ${deployment}"
                 }
-//                 },
-//                 "GKE, v5 Conjur, Postgres, ${deployment}": {
-//                   sh "cd ci && summon --environment gke ./test gke 5 postgres ${deployment}"
-//                 },
               }
 
               stage("Deploy demos with MySQL") {
@@ -43,11 +42,10 @@ pipeline {
                 },
                 "OpenShift v3.11, v5 Conjur, MySQL, ${deployment}": {
                   sh "cd ci && summon --environment oc311 ./test oc 5 mysql ${deployment}"
+                },
+                "GKE, v5 Conjur, MySQL, ${deployment}": {
+                  sh "cd ci && summon --environment gke ./test gke 5 mysql ${deployment}"
                 }
-//                 },
-//                 "GKE, v5 Conjur, MySQL, ${deployment}": {
-//                   sh "cd ci && summon --environment gke ./test gke 5 mysql ${deployment}"
-//                 }
               }
             }
           }
