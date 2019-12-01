@@ -1,0 +1,112 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-summon-init-with-host-outside-apps
+  labels:
+    app: test-app-summon-init-with-host-outside-apps
+spec:
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: test-app-summon-init-with-host-outside-apps
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-app-summon-init-with-host-outside-apps
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: test-app-summon-init-with-host-outside-apps
+  name: test-app-summon-init-with-host-outside-apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app-summon-init-with-host-outside-apps
+  template:
+    metadata:
+      labels:
+        app: test-app-summon-init-with-host-outside-apps
+    spec:
+      serviceAccountName: test-app-summon-init-with-host-outside-apps
+      containers:
+      - image: {{ TEST_APP_DOCKER_IMAGE }}
+        imagePullPolicy: {{ IMAGE_PULL_POLICY }}
+        name: test-app
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /pets
+            port: http
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        env:
+          - name: CONJUR_VERSION
+            value: '{{ CONJUR_VERSION }}'
+          - name: CONJUR_APPLIANCE_URL
+            value: "{{ CONJUR_APPLIANCE_URL }}"
+          - name: CONJUR_ACCOUNT
+            value: {{ CONJUR_ACCOUNT }}
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
+          - name: CONJUR_SSL_CERTIFICATE
+            valueFrom:
+              configMapKeyRef:
+                name: {{ CONFIG_MAP_NAME }}
+                key: ssl-certificate
+        volumeMounts:
+          - mountPath: /run/conjur
+            name: conjur-access-token
+            readOnly: true
+      initContainers:
+      - image: {{ AUTHENTICATOR_CLIENT_IMAGE }}
+        imagePullPolicy: Always
+        name: authenticator
+        env:
+          - name: CONTAINER_MODE
+            value: init
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: MY_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: CONJUR_VERSION
+            value: '{{ CONJUR_VERSION }}'
+          - name: CONJUR_APPLIANCE_URL
+            value: "{{ CONJUR_APPLIANCE_URL }}"
+          - name: CONJUR_AUTHN_URL
+            value: "{{ CONJUR_AUTHN_URL }}"
+          - name: CONJUR_ACCOUNT
+            value: {{ CONJUR_ACCOUNT }}
+          - name: CONJUR_AUTHN_LOGIN
+            value: "{{ CONJUR_AUTHN_LOGIN }}"
+          - name: CONJUR_SSL_CERTIFICATE
+            valueFrom:
+              configMapKeyRef:
+                name: {{ CONFIG_MAP_NAME }}
+                key: ssl-certificate
+        volumeMounts:
+          - mountPath: /run/conjur
+            name: conjur-access-token
+      imagePullSecrets:
+        - name: dockerpullsecret
+      volumes:
+        - name: conjur-access-token
+          emptyDir:
+            medium: Memory

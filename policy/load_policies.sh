@@ -19,6 +19,7 @@ readonly POLICY_FILES=(
   "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
   "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml"
   "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml"
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml"
   "$POLICY_DIR/app-access.yml"
 )
 
