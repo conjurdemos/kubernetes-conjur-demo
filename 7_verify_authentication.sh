@@ -23,6 +23,8 @@ function finish {
 }
 trap finish EXIT
 
+finish
+
 announce "Validating that the deployments are functioning as expected."
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
