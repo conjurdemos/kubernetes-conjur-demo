@@ -23,8 +23,6 @@ function finish {
 }
 trap finish EXIT
 
-finish
-
 announce "Validating that the deployments are functioning as expected."
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
@@ -32,7 +30,7 @@ set_namespace "$TEST_APP_NAMESPACE_NAME"
 echo "Waiting for pods to become available"
 
 until pods_ready "test-app-summon-init" &&
-      pods_ready "test-app-summon-init-with-host-outside-apps" &&
+      pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
       pods_ready "test-app-summon-sidecar" &&
       pods_ready "test-app-secretless"; do
   printf "."
@@ -44,7 +42,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
 
   while [[ "$(deployment_status "test-app-summon-init")" != "Complete" ]] ||
-        [[ "$(deployment_status "test-app-summon-init-with-host-outside-apps")" != "Complete" ]] ||
+        [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" != "Complete" ]] ||
         [[ "$(deployment_status "test-app-summon-sidecar")" != "Complete" ]] ||
         [[ "$(deployment_status "test-app-secretless")" != "Complete" ]]; do
     printf "."
@@ -53,7 +51,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
 
   sidecar_pod=$(get_pod_name test-app-summon-sidecar)
   init_pod=$(get_pod_name test-app-summon-init)
-  init_pod_with_host_outside_apps=$(get_pod_name test-app-summon-init-with-host-outside-apps)
+  init_pod_with_host_outside_apps=$(get_pod_name test-app-with-host-outside-apps-branch-summon-init)
   secretless_pod=$(get_pod_name test-app-secretless)
 
   # Routes are defined, but we need to do port-mapping to access them
@@ -73,7 +71,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
 else
   echo "Waiting for services to become available"
   while [[ -z "$(service_ip "test-app-summon-init")" ]] ||
-        [[ -z "$(service_ip "test-app-summon-init-with-host-outside-apps")" ]] ||
+        [[ -z "$(service_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] ||
         [[ -z "$(service_ip "test-app-summon-sidecar")" ]] ||
         [[ -z "$(service_ip "test-app-secretless")" ]]; do
     printf "."
@@ -81,7 +79,7 @@ else
   done
 
   init_url=$(service_ip test-app-summon-init):8080
-  init_url_with_host_outside_apps=$(service_ip test-app-summon-init-with-host-outside-apps):8080
+  init_url_with_host_outside_apps=$(service_ip test-app-with-host-outside-apps-branch-summon-init):8080
   sidecar_url=$(service_ip test-app-summon-sidecar):8080
   secretless_url=$(service_ip test-app-secretless):8080
 fi
