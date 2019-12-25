@@ -7,6 +7,7 @@ function finish {
   readonly PIDS=(
     "SIDECAR_PORT_FORWARD_PID"
     "INIT_PORT_FORWARD_PID"
+    "INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID"
     "SECRETLESS_PORT_FORWARD_PID"
   )
 
@@ -29,6 +30,7 @@ set_namespace "$TEST_APP_NAMESPACE_NAME"
 echo "Waiting for pods to become available"
 
 until pods_ready "test-app-summon-init" &&
+      pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
       pods_ready "test-app-summon-sidecar" &&
       pods_ready "test-app-secretless"; do
   printf "."
@@ -40,6 +42,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
 
   while [[ "$(deployment_status "test-app-summon-init")" != "Complete" ]] ||
+        [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" != "Complete" ]] ||
         [[ "$(deployment_status "test-app-summon-sidecar")" != "Complete" ]] ||
         [[ "$(deployment_status "test-app-secretless")" != "Complete" ]]; do
     printf "."
@@ -48,6 +51,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
 
   sidecar_pod=$(get_pod_name test-app-summon-sidecar)
   init_pod=$(get_pod_name test-app-summon-init)
+  init_pod_with_host_outside_apps=$(get_pod_name test-app-with-host-outside-apps-branch-summon-init)
   secretless_pod=$(get_pod_name test-app-secretless)
 
   # Routes are defined, but we need to do port-mapping to access them
@@ -57,13 +61,17 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   INIT_PORT_FORWARD_PID=$!
   oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
   SECRETLESS_PORT_FORWARD_PID=$!
+  oc port-forward "$init_pod_with_host_outside_apps" 8084:8080 > /dev/null 2>&1 &
+  INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID=$!
 
   sidecar_url="localhost:8081"
   init_url="localhost:8082"
   secretless_url="localhost:8083"
+  init_url_with_host_outside_apps="localhost:8084"
 else
   echo "Waiting for services to become available"
   while [[ -z "$(service_ip "test-app-summon-init")" ]] ||
+        [[ -z "$(service_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] ||
         [[ -z "$(service_ip "test-app-summon-sidecar")" ]] ||
         [[ -z "$(service_ip "test-app-secretless")" ]]; do
     printf "."
@@ -71,12 +79,14 @@ else
   done
 
   init_url=$(service_ip test-app-summon-init):8080
+  init_url_with_host_outside_apps=$(service_ip test-app-with-host-outside-apps-branch-summon-init):8080
   sidecar_url=$(service_ip test-app-summon-sidecar):8080
   secretless_url=$(service_ip test-app-secretless):8080
 fi
 
 echo "Waiting for urls to be ready"
 until curl -s --connect-timeout 3 "$init_url" > /dev/null &&
+      curl -s --connect-timeout 3 "$init_url_with_host_outside_apps" > /dev/null &&
       curl -s --connect-timeout 3 "$sidecar_url" > /dev/null &&
       curl -s --connect-timeout 3 "$secretless_url" > /dev/null; do
   printf "."
@@ -88,6 +98,12 @@ curl \
   -d '{"name": "Mr. Init"}' \
   -H "Content-Type: application/json" \
   "$init_url"/pet
+
+echo -e "\nAdding entry to the init app with host outside apps\n"
+curl \
+  -d '{"name": "Mr. Init"}' \
+  -H "Content-Type: application/json" \
+  "$init_url_with_host_outside_apps"/pet
 
 echo -e "Adding entry to the sidecar app\n"
 curl \
@@ -103,6 +119,9 @@ curl \
 
 echo -e "Querying init app\n"
 curl "$init_url"/pets
+
+echo -e "Querying init app with hosts outside apps\n"
+curl "$init_url_with_host_outside_apps"/pets
 
 echo -e "\n\nQuerying sidecar app\n"
 curl "$sidecar_url"/pets

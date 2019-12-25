@@ -20,6 +20,7 @@ main() {
   deploy_secretless_app
   deploy_sidecar_app
   deploy_init_container_app
+  deploy_init_container_app_with_host_outside_apps
 }
 
 ###########################
@@ -190,6 +191,45 @@ deploy_init_container_app() {
 
   if [[ "$PLATFORM" == "openshift" ]]; then
     oc expose service test-app-summon-init
+  fi
+
+  echo "Test app/init-container deployed."
+}
+
+###########################
+deploy_init_container_app_with_host_outside_apps() {
+  $cli delete --ignore-not-found \
+    deployment/test-app-with-host-outside-apps-branch-summon-init \
+    service/test-app-with-host-outside-apps-branch-summon-init \
+    serviceaccount/test-app-with-host-outside-apps-branch-summon-init \
+    serviceaccount/oc-test-app-with-host-outside-apps-branch-summon-init
+
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc delete --ignore-not-found \
+      deploymentconfig/test-app-with-host-outside-apps-branch-summon-init \
+      route/test-app-with-host-outside-apps-branch-summon-init
+  fi
+
+  sleep 5
+
+  conjur_authn_login="host/some-apps/$TEST_APP_NAMESPACE_NAME/*/*"
+
+  sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-with-host-outside-apps-branch-summon-init.yml |
+    sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
+    sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
+    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
+    sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
+    sed "s#{{ CONJUR_AUTHN_LOGIN }}#$conjur_authn_login#g" |
+    sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
+    sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
+    sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
+    $cli create -f -
+
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    oc expose service test-app-with-host-outside-apps-branch-summon-init
   fi
 
   echo "Test app/init-container deployed."
