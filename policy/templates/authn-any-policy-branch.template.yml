@@ -15,7 +15,7 @@
     - !host
       id: {{ TEST_APP_NAMESPACE_NAME }}/*/*
       annotations:
-        kubernetes/authentication-container-name: cyberark-secrets-provider
+        kubernetes/authentication-container-name: authenticator
         openshift: "true"
 
   - !grant
