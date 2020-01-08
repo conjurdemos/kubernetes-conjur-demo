@@ -99,7 +99,7 @@ curl \
   -H "Content-Type: application/json" \
   "$init_url"/pet
 
-echo -e "\nAdding entry to the init app with host outside apps\n"
+echo -e "Adding entry to the init app with host outside apps\n"
 curl \
   -d '{"name": "Mr. Init"}' \
   -H "Content-Type: application/json" \
@@ -120,7 +120,7 @@ curl \
 echo -e "Querying init app\n"
 curl "$init_url"/pets
 
-echo -e "Querying init app with hosts outside apps\n"
+echo -e "\n\nQuerying init app with hosts outside apps\n"
 curl "$init_url_with_host_outside_apps"/pets
 
 echo -e "\n\nQuerying sidecar app\n"
