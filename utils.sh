@@ -29,9 +29,10 @@ ensure_env_database() {
   'mysql'
   )
 
-  if ! printf '%s\n' "${valid_dbs[@]}" | grep -Fxq "${TEST_APP_DATABASE}"; then
-    echo "Got '${TEST_APP_DATABASE}', expected TEST_APP_DATABASE to be one of:";
-    printf "'%s'\n" "${valid_dbs[@]}";
+  if ! echo "${valid_dbs[@]}" | grep -Eq "\b${TEST_APP_DATABASE}\b"; then
+    printf "TEST_APP_DATABASE value not found in valid_dbs: '%s'\n" "${TEST_APP_DATABASE}"
+    printf "valid_dbs:\n"
+    printf "'%s'\n" "${valid_dbs[@]}"
     exit 1
   fi
 }
