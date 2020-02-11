@@ -12,7 +12,7 @@ spec:
       targetPort: 5432
 
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: summon-init-pg
@@ -69,7 +69,7 @@ spec:
       targetPort: 5432
 
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: summon-sidecar-pg
@@ -126,7 +126,7 @@ spec:
       targetPort: 5432
 
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: secretless-pg

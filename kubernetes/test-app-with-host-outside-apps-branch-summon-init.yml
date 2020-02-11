@@ -19,7 +19,7 @@ kind: ServiceAccount
 metadata:
   name: test-app-with-host-outside-apps-branch-summon-init
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
