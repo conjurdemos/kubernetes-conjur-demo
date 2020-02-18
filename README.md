@@ -4,20 +4,9 @@ This repo demonstrates an app retrieving secrets from a Conjur cluster running
 in Kubernetes or OpenShift. The numbered scripts perform the same steps that a
 user has to go through when setting up their own applications.
 
-**Note:** These demo scripts have only been tested with Conjur v4 and v5
-Enterprise. Conjur OSS is not yet supported.
+**Note:** These demo scripts have only been tested with Dynamic Access Provider v10+. Older versions of Conjur Enterprise v4 and Conjur OSS are not supported.
 
 # Setup
-
-### Conjur Version
-
-If you are working with Conjur v4, you will need to set:
-
-```
-export CONJUR_VERSION=4
-```
-
-Otherwise, this variable will default to `5`.
 
 ### Platform
 
@@ -121,7 +110,7 @@ $ docker run \
     -e CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
     -e CONJUR_AUTHN_LOGIN="admin" \
     -e CONJUR_ADMIN_PASSWORD=$CONJUR_ADMIN_PASSWORD \
-    -e CONJUR_VERSION=$CONJUR_VERSION \
+    -e CONJUR_VERSION=5 \
     -e TEST_APP_NAMESPACE_NAME=$TEST_APP_NAMESPACE_NAME \
     cyberark/conjur-cli:5
 

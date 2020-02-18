@@ -25,11 +25,7 @@ readonly POLICY_FILES=(
 
 for policy_file in "${POLICY_FILES[@]}"; do
   echo "Loading policy $policy_file..."
-  if [[ "$CONJUR_VERSION" == "4" ]]; then
-    conjur policy load --as-group security_admin $policy_file
-  elif [[ "$CONJUR_VERSION" == "5" ]]; then
-    conjur policy load root $policy_file
-  fi
+  conjur policy load root $policy_file
 done
 
 # load secret values for each app

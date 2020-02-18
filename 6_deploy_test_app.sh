@@ -67,12 +67,7 @@ init_connection_specs() {
   conjur_appliance_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
   conjur_authenticator_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
 
-  conjur_authn_login_prefix=""
-  if [[ "$CONJUR_VERSION" == "4" ]]; then
-    conjur_authn_login_prefix=$TEST_APP_NAMESPACE_NAME/service_account
-  elif [[ "$CONJUR_VERSION" == "5" ]]; then
-    conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
-  fi
+  conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
 }
 
 ###########################
@@ -141,7 +136,6 @@ deploy_sidecar_app() {
   sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_sidecar_app_docker_image#g" ./$PLATFORM/test-app-summon-sidecar.yml |
     sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
     sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
@@ -149,7 +143,6 @@ deploy_sidecar_app() {
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -178,7 +171,6 @@ deploy_init_container_app() {
   sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-summon-init.yml |
     sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
     sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
     sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
@@ -186,7 +178,6 @@ deploy_init_container_app() {
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -217,7 +208,6 @@ deploy_init_container_app_with_host_outside_apps() {
   sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-with-host-outside-apps-branch-summon-init.yml |
     sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
     sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" |
     sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed "s#{{ CONJUR_AUTHN_LOGIN }}#$conjur_authn_login#g" |
     sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
@@ -225,7 +215,6 @@ deploy_init_container_app_with_host_outside_apps() {
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-    sed "s#{{ CONJUR_VERSION }}#'$CONJUR_VERSION'#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -268,8 +257,7 @@ deploy_secretless_app() {
   esac
   secretless_db_url="$PROTOCOL://localhost:$PORT/test_app"
 
-  sed "s#{{ CONJUR_VERSION }}#$CONJUR_VERSION#g" ./$PLATFORM/test-app-secretless.yml |
-    sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
+  sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" ./$PLATFORM/test-app-secretless.yml |
     sed "s#{{ SECRETLESS_IMAGE }}#$secretless_image#g" |
     sed "s#{{ SECRETLESS_DB_URL }}#$secretless_db_url#g" |
     sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
