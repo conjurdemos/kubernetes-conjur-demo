@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/usr/bin/env bash
 
 # name of secret to retrieve from Conjur
 VAR_ID=test-summon-sidecar-app-db/password

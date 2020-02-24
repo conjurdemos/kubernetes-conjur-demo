@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 . utils.sh
@@ -41,7 +41,6 @@ if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
       DB_PASSWORD=${password} \
       TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
       TEST_APP_DATABASE=${TEST_APP_DATABASE} \
-      CONJUR_VERSION=${CONJUR_VERSION} \
       /policy/load_policies.sh
     "
 

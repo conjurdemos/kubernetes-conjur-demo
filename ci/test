@@ -1,17 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Usage:
-# ./test [platform] [conjur version] [database]
+# ./test [platform] [database]
 #
 # Note: This script expects several environment variables to be
 # defined and exported, some of which are sensitive/secret values.
 # It is for this that we recommend to always call this script using summon.
 #
 # Recommended usage:
-# summon --environment [platform] ./test [platform] [conjur version] [database]
+# summon --environment [platform] ./test [platform] [database]
 #
 # platform: gke or oc
-# conjur version: 4 or 5
 # database: postgres or mysql
 
 set -euo pipefail
@@ -40,15 +39,14 @@ trap finish EXIT
 function printUsage() {
   echo "---"
   echo "Usage:"
-  echo "./test [platform] [conjur version] [database]"
+  echo "./test [platform] [database]"
   echo ""
   echo "Note: This script expects several environment variables to be defined and exported, some of which are sensitive/secret values. It is for this that we recommend to always call this script using summon."
   echo ""
   echo "Recommended Usage:"
-  echo "summon --environment [platform] ./test [platform] [conjur version] [database]"
+  echo "summon --environment [platform] ./test [platform] [database]"
   echo ""
   echo "platform: gke or oc"
-  echo "conjur version: 4 or 5"
   echo "database: postgres or mysql"
 
   exit 1
@@ -88,21 +86,19 @@ function prepareTestEnvironment() {
 
   export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 
-  export CONJUR_NAMESPACE_NAME=conjur-$CONJUR_VERSION-$UNIQUE_TEST_ID-test
-  export AUTHENTICATOR_ID=conjur-$CONJUR_VERSION-$UNIQUE_TEST_ID-test
-  export TEST_APP_NAMESPACE_NAME=test-app-$CONJUR_VERSION-$UNIQUE_TEST_ID
+  export CONJUR_NAMESPACE_NAME=conjur-5-$UNIQUE_TEST_ID-test
+  export AUTHENTICATOR_ID=conjur-5-$UNIQUE_TEST_ID-test
+  export TEST_APP_NAMESPACE_NAME=test-app-5-$UNIQUE_TEST_ID
+
+  export CONJUR_VERSION=5 # still required by kubernetes-conjur-deploy
 
   export DEPLOY_MASTER_CLUSTER=true
 
   export MINI_ENV=false
 
-  export CONJUR_DEMO_TEST_IMAGE=conjur-demo-$CONJUR_VERSION-$UNIQUE_TEST_ID
+  export CONJUR_DEMO_TEST_IMAGE=conjur-demo-5-$UNIQUE_TEST_ID
 
-  if [[ "$CONJUR_VERSION" = "4" ]]; then
-    export CONJUR_APPLIANCE_IMAGE=$registry:4.9-stable
-  else
-    export CONJUR_APPLIANCE_IMAGE=$registry:5.0-stable
-  fi
+  export CONJUR_APPLIANCE_IMAGE=$registry:5.0-stable
 
   # Prepare Docker images
   docker pull $CONJUR_APPLIANCE_IMAGE
@@ -180,9 +176,7 @@ function announce() {
 # Check that the argument values are valid
 function checkArguments() {
   if [[ "$TEST_PLATFORM" != "gke" && "$TEST_PLATFORM" != "oc" ]]; then
-    echo "The only valid platform values are 'gke' and 'oc'"
-  elif [[ "$CONJUR_VERSION" != "4" && "$CONJUR_VERSION" != "5" ]]; then
-    echo "The only valid Conjur version values are '4' and '5'."
+   echo "The only valid platform values are 'gke' and 'oc'"
   else
     return 0
   fi
@@ -191,17 +185,15 @@ function checkArguments() {
 }
 
 # Parse input arguments
-if [[ $# -ne 3 ]]; then
+if [[ $# -ne 2 ]]; then
   echo "Invalid number of arguments."
   printUsage
 fi
 
 TEST_PLATFORM="$1"
-CONJUR_VERSION="$2"
-TEST_APP_DATABASE="$3"
+TEST_APP_DATABASE="$2"
 
 export TEST_PLATFORM
-export CONJUR_VERSION
 export TEST_APP_DATABASE
 
 # sensible default for OPENSHIFT_URL port
