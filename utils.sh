@@ -195,3 +195,21 @@ function pods_ready() {
 
   $cli describe pod --selector "app=$app_label" | awk '/Ready/{if ($2 != "True") exit 1}'
 }
+
+function urlencode() {
+    # urlencode <string>
+
+    # Run as a subshell so that we can indiscriminately set LC_COLLATE
+    (
+      LC_COLLATE=C
+
+      local length="${#1}"
+      for (( i = 0; i < length; i++ )); do
+          local c="${1:i:1}"
+          case $c in
+              [a-zA-Z0-9.~_-]) printf "$c" ;;
+              *) printf '%%%02X' "'$c" ;;
+          esac
+      done
+    )
+}

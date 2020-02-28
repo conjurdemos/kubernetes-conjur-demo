@@ -17,4 +17,5 @@ check_env_var "CONJUR_ACCOUNT"
 check_env_var "CONJUR_ADMIN_PASSWORD"
 check_env_var "AUTHENTICATOR_ID"
 check_env_var "TEST_APP_DATABASE"
+check_env_var "CONJUR_AUTHN_LOGIN_RESOURCE"
 ensure_env_database

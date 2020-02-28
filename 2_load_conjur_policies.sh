@@ -10,15 +10,26 @@ pushd policy
 
   # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    is_openshift=true
+    is_kubernetes=false
+  else
+    is_openshift=false
+    is_kubernetes=true
+  fi
+
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
+    sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
+    sed "s#{{ IS_KUBERNETES }}#$is_kubernetes#g" |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identity-def.template.yml |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/authn-any-policy-branch.template.yml |
+    sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml
 popd
 

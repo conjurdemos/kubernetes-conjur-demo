@@ -49,7 +49,18 @@ export CONJUR_ADMIN_PASSWORD=<admin-password>
 export AUTHENTICATOR_ID=<service-id>
 ```
 
-and optionally (if using a private Docker registry):
+If you would like your applications to use a deployment name as an
+authentication identity when authenticating with Kubernetes (as opposed to
+using service account name), then set the following:
+
+```
+export CONJUR_AUTHN_LOGIN_RESOURCE=deployment
+```
+Otherwise, this variable will default to `service_account`, and the service
+account name will be used when authenticating your application with
+Kubernetes.
+
+Also, if using a private Docker registry:
 
 ```
 export DOCKER_USERNAME=<your-username>
@@ -111,6 +122,7 @@ $ docker run \
     -e CONJUR_AUTHN_LOGIN="admin" \
     -e CONJUR_ADMIN_PASSWORD=$CONJUR_ADMIN_PASSWORD \
     -e CONJUR_VERSION=5 \
+    -e TEST_APP_DATABASE=$TEST_APP_DATABASE \
     -e TEST_APP_NAMESPACE_NAME=$TEST_APP_NAMESPACE_NAME \
     cyberark/conjur-cli:5
 

@@ -6,6 +6,8 @@ set -eo pipefail
 main() {
   announce "Deploying test apps for $TEST_APP_NAMESPACE_NAME."
 
+  URLENCODED_AUTHN_ID=$(urlencode $AUTHENTICATOR_ID)
+
   set_namespace $TEST_APP_NAMESPACE_NAME
   init_registry_creds
   init_connection_specs
@@ -65,9 +67,9 @@ init_connection_specs() {
 
   conjur_follower_name=${CONJUR_FOLLOWER_NAME:-conjur-follower}
   conjur_appliance_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
-  conjur_authenticator_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$AUTHENTICATOR_ID
+  conjur_authenticator_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$URLENCODED_AUTHN_ID
 
-  conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/service_account
+  conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/$CONJUR_AUTHN_LOGIN_RESOURCE
 }
 
 ###########################
