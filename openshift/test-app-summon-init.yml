@@ -24,7 +24,7 @@ kind: DeploymentConfig
 metadata:
   labels:
     app: test-app-summon-init
-  name: test-app-summon-init
+  name: oc-test-app-summon-init
 spec:
   replicas: 1
   selector:

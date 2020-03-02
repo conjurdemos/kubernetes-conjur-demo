@@ -24,7 +24,7 @@ kind: DeploymentConfig
 metadata:
   labels:
     app: test-app-summon-sidecar
-  name: test-app-summon-sidecar
+  name: oc-test-app-summon-sidecar
 spec:
   replicas: 1
   selector:

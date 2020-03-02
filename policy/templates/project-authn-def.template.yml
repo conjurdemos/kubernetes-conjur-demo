@@ -53,7 +53,7 @@
         kubernetes/authentication-container-name: authenticator
         openshift: "{{ IS_OPENSHIFT }}"
     - !host
-      id: {{ TEST_APP_NAMESPACE_NAME }}/deployment/oc-test-app-summon-sidecar
+      id: {{ TEST_APP_NAMESPACE_NAME }}/deployment_config/oc-test-app-summon-sidecar
       annotations:
         kubernetes/authentication-container-name: authenticator
         openshift: "{{ IS_OPENSHIFT }}"
@@ -63,7 +63,7 @@
         kubernetes/authentication-container-name: authenticator
         openshift: "{{ IS_OPENSHIFT }}"
     - !host
-      id: {{ TEST_APP_NAMESPACE_NAME }}/deployment/oc-test-app-summon-init
+      id: {{ TEST_APP_NAMESPACE_NAME }}/deployment_config/oc-test-app-summon-init
       annotations:
         kubernetes/authentication-container-name: authenticator
         openshift: "{{ IS_OPENSHIFT }}"
@@ -73,7 +73,7 @@
         kubernetes/authentication-container-name: secretless
         openshift: "{{ IS_OPENSHIFT }}"
     - !host
-      id: {{ TEST_APP_NAMESPACE_NAME }}/deployment/oc-test-app-secretless
+      id: {{ TEST_APP_NAMESPACE_NAME }}/deployment_config/oc-test-app-secretless
       annotations:
         kubernetes/authentication-container-name: secretless
         openshift: "{{ IS_OPENSHIFT }}"

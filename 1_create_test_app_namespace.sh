@@ -39,6 +39,15 @@ if [[ $PLATFORM == openshift ]]; then
 
   oc adm policy add-role-to-user admin $OSHIFT_CONJUR_ADMIN_USERNAME -n default
   oc adm policy add-role-to-user admin $OSHIFT_CONJUR_ADMIN_USERNAME -n $TEST_APP_NAMESPACE_NAME
+  #oc adm policy add-role-to-user \
+  #    conjur-authenticator-$CONJUR_NAMESPACE_NAME \
+  #    system:serviceaccount:$CONJUR_NAMESPACE_NAME:conjur-cluster \
+  #    --rolebinding-name=test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME \
+  #    -n $TEST_APP_NAMESPACE_NAME
+  #oc adm policy add-role-to-user \
+  #    conjur-authenticator-$CONJUR_NAMESPACE_NAME \
+  #    system:serviceaccount:$CONJUR_NAMESPACE_NAME:conjur-cluster \
+  #    --rolebinding-name=test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME
   echo "Logging in as Conjur Openshift admin. Provide password as needed."
   oc login -u $OSHIFT_CONJUR_ADMIN_USERNAME
 fi

@@ -24,7 +24,7 @@ kind: DeploymentConfig
 metadata:
   labels:
     app: test-app-with-host-outside-apps-branch-summon-init
-  name: test-app-with-host-outside-apps-branch-summon-init
+  name: oc-test-app-with-host-outside-apps-branch-summon-init
 spec:
   replicas: 1
   selector:

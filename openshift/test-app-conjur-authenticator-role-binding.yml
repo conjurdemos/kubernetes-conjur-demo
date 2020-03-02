@@ -8,6 +8,9 @@ subjects:
   - kind: ServiceAccount
     name: conjur-cluster
     namespace: {{ CONJUR_NAMESPACE_NAME }}
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: system:serviceaccount:{{ CONJUR_NAMESPACE_NAME }}:conjur-cluster
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

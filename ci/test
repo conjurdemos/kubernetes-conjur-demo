@@ -68,10 +68,11 @@ function main() {
 
 function deployConjur() {
   pushd ..
-    git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    #git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    git clone --single-branch --branch openshift_deploy_configs git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
   popd
 
-  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && CONJUR_LOG_LEVEL=debug ./start"
 }
 
 function deployDemo() {
@@ -99,6 +100,8 @@ function prepareTestEnvironment() {
   export CONJUR_DEMO_TEST_IMAGE=conjur-demo-5-$UNIQUE_TEST_ID
 
   export CONJUR_APPLIANCE_IMAGE=$registry:5.0-stable
+
+  export CONJUR_AUTHN_LOGIN_RESOURCE="${CONJUR_AUTHN_LOGIN_RESOURCE:-service_account}"
 
   # Prepare Docker images
   docker pull $CONJUR_APPLIANCE_IMAGE
@@ -136,6 +139,7 @@ function runDockerCommand() {
     -e CONJUR_NAMESPACE_NAME \
     -e CONJUR_ACCOUNT \
     -e CONJUR_ADMIN_PASSWORD \
+    -e CONJUR_AUTHN_LOGIN_RESOURCE \
     -e AUTHENTICATOR_ID \
     -e TEST_APP_NAMESPACE_NAME \
     -e TEST_APP_DATABASE \

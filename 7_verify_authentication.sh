@@ -32,9 +32,34 @@ announce "Validating that the deployments are functioning as expected."
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
 
+echo Conjur namespace: $CONJUR_NAMESPACE_NAME
+announce "Describing Service Accounts in Conjur Namespace"
+$cli describe sa -n $CONJUR_NAMESPACE_NAME
+announce "Get OC version"
+$cli version
+announce "Get users"
+$cli get users
+announce "Describing rolebinding.rbac test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME"
+$cli describe rolebinding.rbac test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME
+announce "Describing rolebinding test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME"
+$cli describe rolebinding test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME
+announce "Describing DeploymentConfigs in test app namespace"
+$cli describe deploymentconfigs
+
 echo "Waiting for pods to become available"
 
+retry_count=0
 check_pods(){
+  let "retry_count++"
+  if [[ $retry_count -eq 20 ]]; then
+    follower_pod_name=$($cli get pods -n $CONJUR_NAMESPACE_NAME --selector role=follower --no-headers | awk '{ print $1 }' | head -1)
+    announce "Checking for RBAC errors in follower pod logs."
+    echo Follower pod: $follower_pod_name
+    echo ================================
+    $cli logs -n $CONJUR_NAMESPACE_NAME $follower_pod_name | grep RBAC
+  else
+    echo Retry count: $retry_count
+  fi
   pods_ready "test-app-summon-init" &&
   pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
   pods_ready "test-app-summon-sidecar" &&
@@ -42,16 +67,27 @@ check_pods(){
 }
 bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_pods
 
+
+$cli describe pod --selector "app=test-app-summon-init"
+$cli describe pod --selector "test-app-with-host-outside-apps-branch-summon-init"
+$cli describe pod --selector "test-app-summon-sidecar"
+$cli describe pod --selector "test-app-secretless"
+
 if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
 
   check_deployment_status(){
-    [[ "$(deployment_status "test-app-summon-init")" == "Complete" ]] &&
-    [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" == "Complete" ]] &&
-    [[ "$(deployment_status "test-app-summon-sidecar")" == "Complete" ]] &&
-    [[ "$(deployment_status "test-app-secretless")" == "Complete" ]]
+    [[ "$(deployment_status "oc-test-app-summon-init")" == "Complete" ]] &&
+    [[ "$(deployment_status "oc-test-app-with-host-outside-apps-branch-summon-init")" == "Complete" ]] &&
+    [[ "$(deployment_status "oc-test-app-summon-sidecar")" == "Complete" ]] &&
+    [[ "$(deployment_status "oc-test-app-secretless")" == "Complete" ]]
   }
   bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_deployment_status
+
+  echo Deployment Status oc-test-app-summon-init: $(deployment_status "oc-test-app-summon-init")
+  echo Deployment Status oc-test-app-with-host-outside: $(deployment_status "oc-test-app-with-host-outside-apps-branch-summon-init")
+  echo Deployment Status oc-test-app-summon-sidecar: $(deployment_status "oc-test-app-summon-sidecar")
+  echo Deployment Status oc-test-app-secretless: $(deployment_status "oc-test-app-secretless")
 
   sidecar_pod=$(get_pod_name test-app-summon-sidecar)
   init_pod=$(get_pod_name test-app-summon-init)

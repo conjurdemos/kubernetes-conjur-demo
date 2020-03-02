@@ -11,6 +11,10 @@ echo "Retrieving Conjur certificate."
 
 if $cli get pods --selector role=follower --no-headers; then
   follower_pod_name=$($cli get pods --selector role=follower --no-headers | awk '{ print $1 }' | head -1)
+  $cli exec $follower_pod_name -- sed -i "s/:info/:debug/" /opt/conjur/possum/config/environments/appliance.rb
+  $cli exec $follower_pod_name -- sv restart conjur/possum
+  echo "****TEMP**** Sleep for 20 seconds to allow for possum restart"
+  sleep 20
   ssl_cert=$($cli exec $follower_pod_name -- cat /opt/conjur/etc/ssl/conjur.pem)
 else
   echo "Regular follower not found. Trying to assume a decomposed follower..."
