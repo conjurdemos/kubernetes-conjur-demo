@@ -9,7 +9,7 @@ assignees: ''
 
 ## Is your feature request related to a problem? Please describe.
 
-A clear and concise description of what the problem is. Ex. .
+A clear and concise description of what the problem is. Ex. `I would like to see [...] because [...]`.
 Please include the intended use case and what the feature would improve on so that we can prioritize
 the feature accordingly.
 
