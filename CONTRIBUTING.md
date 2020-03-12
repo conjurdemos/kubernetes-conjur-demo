@@ -14,3 +14,28 @@ For general contribution and community guidelines, please see the [community rep
 From here your pull request will be reviewed and once you've responded to all
 feedback it will be merged into the project. Congratulations, you're a
 contributor!
+
+# Development
+
+If you are using this repository for development
+purposes, there is some additional functionality that
+you may find useful.
+
+- Setting the `LOCAL_AUTHENTICATOR` environment
+  variable to `true` will push
+  the Conjur K8s authenticator client and Secretless
+  Broker from your local Docker registry to the
+  remote registry (if used), and will use that image
+  rather than the image from DockerHub.
+
+  This can be useful if you are working on changes to the
+  [authenticator client](https://github.com/cyberark/conjur-authn-k8s-client) and
+  [Secretless Broker](https://github.com/cyberark/secretless-broker).
+  - Run `./bin/build` in `conjur-authn-k8s-client` to
+    generate a local Docker image `conjur-authn-k8s-client:dev`
+  - Run `./bin/build` in `secretless-broker` to
+    generate a local Docker image `secretless-broker:latest`
+  - Set `LOCAL_AUTHENTICATOR=true`
+  - Run the `./start` script in this repo as usual,
+    and the demo apps will be deployed with your
+    local builds of the authenticator and Secretless.
