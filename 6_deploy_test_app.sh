@@ -59,9 +59,13 @@ init_connection_specs() {
 
   if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
     authenticator_client_image=$(platform_image conjur-authn-k8s-client)
+  else
+    authenticator_client_image="cyberark/conjur-authn-k8s-client"
+  fi
+
+  if [[ "$LOCAL_SECRETLESS_BROKER" == "true" ]]; then
     secretless_image=$(platform_image secretless-broker)
   else
-    authenticator_client_image="cyberark/conjur-kubernetes-authenticator"
     secretless_image="cyberark/secretless-broker"
   fi
 

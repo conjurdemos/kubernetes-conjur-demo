@@ -70,12 +70,17 @@ if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
   authn_image=$(platform_image conjur-authn-k8s-client)
   docker tag conjur-authn-k8s-client:dev $authn_image
 
+  if ! is_minienv; then
+    docker push $authn_image
+  fi
+fi
+
+if [[ "$LOCAL_SECRETLESS_BROKER" == "true" ]]; then
   # Re-tag the locally-built secretless-broker:latest image
   secretless_image=$(platform_image secretless-broker)
   docker tag secretless-broker:latest $secretless_image
 
   if ! is_minienv; then
-    docker push $authn_image
     docker push $secretless_image
   fi
 fi
