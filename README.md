@@ -4,7 +4,10 @@ This repo demonstrates an app retrieving secrets from a Conjur cluster running
 in Kubernetes or OpenShift. The numbered scripts perform the same steps that a
 user has to go through when setting up their own applications.
 
-**Note:** These demo scripts have only been tested with Dynamic Access Provider v10+. Older versions of Conjur Enterprise v4 and Conjur OSS are not supported.
+**Note:** These demo scripts have only been tested with the following products:
+  - Dynamic Access Provider v10+. Older versions of Conjur Enterprise v4 and Conjur OSS are not supported.
+  - cyberark/conjur-authn-k8s-client v0.11+
+  - cyberark/secretless-broker v1.0+
 
 # Setup
 
