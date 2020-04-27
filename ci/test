@@ -90,8 +90,6 @@ function prepareTestEnvironment() {
   export AUTHENTICATOR_ID=conjur-5-$UNIQUE_TEST_ID-test
   export TEST_APP_NAMESPACE_NAME=test-app-5-$UNIQUE_TEST_ID
 
-  export CONJUR_VERSION=5 # still required by kubernetes-conjur-deploy
-
   export DEPLOY_MASTER_CLUSTER=true
 
   export MINI_ENV=false
@@ -131,7 +129,6 @@ function deleteRegistryImage() {
 function runDockerCommand() {
   docker run --rm \
     -i \
-    -e CONJUR_VERSION \
     -e CONJUR_APPLIANCE_IMAGE \
     -e CONJUR_NAMESPACE_NAME \
     -e CONJUR_ACCOUNT \
