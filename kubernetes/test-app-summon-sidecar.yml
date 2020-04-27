@@ -49,8 +49,6 @@ spec:
           initialDelaySeconds: 15
           timeoutSeconds: 5
         env:
-          - name: CONJUR_VERSION
-            value: "5"
           - name: CONJUR_APPLIANCE_URL
             value: "{{ CONJUR_APPLIANCE_URL }}"
           - name: CONJUR_ACCOUNT
