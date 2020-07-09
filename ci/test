@@ -150,6 +150,7 @@ function runDockerCommand() {
     -e OPENSHIFT_PASSWORD \
     -e OSHIFT_CONJUR_ADMIN_USERNAME \
     -e OSHIFT_CLUSTER_ADMIN_USERNAME \
+    -e CONJUR_LOG_LEVEL \
     -v $GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v ~/.config:/root/.config \
