@@ -137,6 +137,7 @@ function runDockerCommand() {
     -e TEST_APP_NAMESPACE_NAME \
     -e TEST_APP_DATABASE \
     -e PLATFORM \
+    -e TEST_PLATFORM \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \
     -e MINI_ENV \
