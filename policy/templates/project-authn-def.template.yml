@@ -10,6 +10,59 @@
     annotations:
       description: Layer of authenticator identities permitted to call authn svc
   - &hosts
+    # Annotation-based authentication (host ID is an application name, and
+    # permitted application identities are listed as annotations)
+    - !host
+      id: test-app-summon-sidecar
+      annotations:
+        authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+        authn-k8s/service-account: test-app-summon-sidecar
+        authn-k8s/deployment: test-app-summon-sidecar
+        authn-k8s/authentication-container-name: authenticator
+        kubernetes: "{{ IS_KUBERNETES }}"
+    - !host
+      id: test-app-summon-init
+      annotations:
+        authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+        authn-k8s/service-account: test-app-summon-init
+        authn-k8s/deployment: test-app-summon-init
+        authn-k8s/authentication-container-name: authenticator
+        kubernetes: "{{ IS_KUBERNETES }}"
+    - !host
+      id: test-app-secretless
+      annotations:
+        authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+        authn-k8s/service-account: test-app-secretless
+        authn-k8s/deployment: test-app-secretless
+        authn-k8s/authentication-container-name: secretless
+        kubernetes: "{{ IS_KUBERNETES }}"
+
+    - !host
+      id: oc-test-app-summon-sidecar
+      annotations:
+        authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+        authn-k8s/service-account: oc-test-app-summon-sidecar
+        authn-k8s/deployment-config: test-app-summon-sidecar
+        authn-k8s/authentication-container-name: authenticator
+        openshift: "{{ IS_OPENSHIFT }}"
+    - !host
+      id: oc-test-app-summon-init
+      annotations:
+        authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+        authn-k8s/service-account: oc-test-app-summon-init
+        authn-k8s/deployment-config: test-app-summon-init
+        authn-k8s/authentication-container-name: authenticator
+        openshift: "{{ IS_OPENSHIFT }}"
+    - !host
+      id: oc-test-app-secretless
+      annotations:
+        authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+        authn-k8s/service-account: oc-test-app-secretless
+        authn-k8s/deployment-config: test-app-secretless
+        authn-k8s/authentication-container-name: secretless
+        openshift: "{{ IS_OPENSHIFT }}"
+
+    # Host-ID based authentication (application identity in the host itself)
     - !host
       id: {{ TEST_APP_NAMESPACE_NAME }}/*/*
       annotations:
