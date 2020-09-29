@@ -11,7 +11,7 @@ init_bash_lib
 
 ./1_create_test_app_namespace.sh
 
-if [[ "${DEPLOY_MASTER_CLUSTER}" = "true" ]]; then
+if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" || "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
   # Only automatically run these scripts for dev/demo envs deploying a master
   # cluster directly to k8s/oc
   ./2_load_conjur_policies.sh

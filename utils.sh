@@ -82,13 +82,33 @@ get_pod_name() {
   echo "$pod_name"
 }
 
+get_pods() {
+  $cli get pods --selector "$1" --no-headers | awk '{ print $1 }'
+}
+
+get_nodeport(){
+  svc_name="$1"
+  echo "$(kubectl get svc $svc_name -o jsonpath='{.spec.ports[0].nodePort}')"
+}
+
+app_service_type() {
+  if [[ "$TEST_APP_NODEPORT_SVCS" == "true" ]]; then
+    echo "NodePort"
+  else
+    echo "LoadBalancer"
+  fi
+}
+
 get_master_pod_name() {
-  pod_list=$($cli get pods --selector app=conjur-node,role=master --no-headers | awk '{ print $1 }')
+  pod_list=$(get_pods "app=conjur-node,role=master")
+  if [ -z "$pod_list" ]; then
+      pod_list=$(get_pods "app=conjur-oss")
+  fi
   echo $pod_list | awk '{print $1}'
 }
 
 get_conjur_cli_pod_name() {
-  pod_list=$($cli get pods --selector app=conjur-cli --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods -n "$CONJUR_NAMESPACE_NAME" --selector app=conjur-cli --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 
@@ -139,7 +159,7 @@ function wait_for_it() {
 
     echo "Waiting for '$@' up to $timeout s"
     for i in $(seq $times_to_run); do
-      eval $@ > /dev/null && echo 'Success!' && return true
+      eval $@ > /dev/null && echo 'Success!' && return 0
       echo -n .
       sleep $spacer
     done
@@ -176,11 +196,10 @@ function is_minienv() {
   fi
 }
 
-function service_ip() {
+function external_ip() {
   local service=$1
 
-  echo "$($cli describe service $service | grep 'LoadBalancer Ingress' |
-    awk '{ print $3 }')"
+  echo "$($cli get svc $service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
 }
 
 function deployment_status() {

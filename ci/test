@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Usage:
-# ./test [platform] [database]
+# ./test [platform] [database] [authn-mode]
 #
 # Note: This script expects several environment variables to be
 # defined and exported, some of which are sensitive/secret values.
@@ -12,6 +12,7 @@
 #
 # platform: gke or oc
 # database: postgres or mysql
+# authn-mode: annotation-based or host-id-based
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -39,15 +40,16 @@ trap finish EXIT
 function printUsage() {
   echo "---"
   echo "Usage:"
-  echo "./test [platform] [database]"
+  echo "./test [platform] [database] [authn-mode]"
   echo ""
   echo "Note: This script expects several environment variables to be defined and exported, some of which are sensitive/secret values. It is for this that we recommend to always call this script using summon."
   echo ""
   echo "Recommended Usage:"
-  echo "summon --environment [platform] ./test [platform] [database]"
+  echo "summon --environment [platform] ./test [platform] [database] [authn-mode]"
   echo ""
   echo "platform: gke or oc"
   echo "database: postgres or mysql"
+  echo "authn-mode: annotation-based or host-id-based"
 
   exit 1
 }
@@ -129,6 +131,7 @@ function deleteRegistryImage() {
 function runDockerCommand() {
   docker run --rm \
     -i \
+    -e ANNOTATION_BASED_AUTHN \
     -e CONJUR_APPLIANCE_IMAGE \
     -e CONJUR_NAMESPACE_NAME \
     -e CONJUR_ACCOUNT \
@@ -175,7 +178,9 @@ function announce() {
 # Check that the argument values are valid
 function checkArguments() {
   if [[ "$TEST_PLATFORM" != "gke" && "$TEST_PLATFORM" != "oc" ]]; then
-   echo "The only valid platform values are 'gke' and 'oc'"
+    echo "The only valid platform values are 'gke' and 'oc'"
+  elif [[ "$TEST_AUTHN_MODE" != "annotation-based" && "$TEST_AUTHN_MODE" != "host-id-based" ]]; then
+    echo "The only valid authentication modes are 'annotation-based' and 'host-id-based'"
   else
     return 0
   fi
@@ -184,16 +189,22 @@ function checkArguments() {
 }
 
 # Parse input arguments
-if [[ $# -ne 2 ]]; then
+if [[ $# -ne 3 ]]; then
   echo "Invalid number of arguments."
   printUsage
 fi
 
 TEST_PLATFORM="$1"
 TEST_APP_DATABASE="$2"
+TEST_AUTHN_MODE="$3"
 
 export TEST_PLATFORM
 export TEST_APP_DATABASE
+if [[ "$TEST_AUTHN_MODE" == "annotation-based" ]]; then
+    export ANNOTATION_BASED_AUTHN=true
+else
+    export ANNOTATION_BASED_AUTHN=false
+fi
 
 # sensible default for OPENSHIFT_URL port
 if [[ -n "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then

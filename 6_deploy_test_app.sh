@@ -65,11 +65,24 @@ init_connection_specs() {
     secretless_image="cyberark/secretless-broker"
   fi
 
-  conjur_follower_name=${CONJUR_FOLLOWER_NAME:-conjur-follower}
-  conjur_appliance_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
-  conjur_authenticator_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api/authn-k8s/$URLENCODED_AUTHN_ID
+  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+    conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
+  else
+    conjur_follower_name=${CONJUR_FOLLOWER_NAME:-conjur-follower}
+    conjur_appliance_url=https://$conjur_follower_name.$CONJUR_NAMESPACE_NAME.svc.cluster.local/api
+  fi
+  conjur_authenticator_url="$conjur_appliance_url/authn-k8s/$URLENCODED_AUTHN_ID"
 
-  conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/$CONJUR_AUTHN_LOGIN_RESOURCE
+  if [[ "$ANNOTATION_BASED_AUTHN" == "true" ]]; then
+    # For annotation-based Kubernetes authentication, the host ID to be used
+    # for authenticating is an application name.
+    conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps
+  else
+    # For host-ID-based Kubernetes authentication, the host ID to be used
+    # for authenticating is in the form:
+    #   <namespace-name>/<kubernetes-resource>/<resource-name>
+    conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/$CONJUR_AUTHN_LOGIN_RESOURCE
+  fi
 }
 
 ###########################
@@ -145,6 +158,7 @@ deploy_sidecar_app() {
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ SERVICE_TYPE }}#$(app_service_type)#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -180,6 +194,7 @@ deploy_init_container_app() {
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ SERVICE_TYPE }}#$(app_service_type)#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -217,6 +232,7 @@ deploy_init_container_app_with_host_outside_apps() {
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" |
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ SERVICE_TYPE }}#$(app_service_type)#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
@@ -267,6 +283,7 @@ deploy_secretless_app() {
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
+    sed "s#{{ SERVICE_TYPE }}#$(app_service_type)#g" |
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then

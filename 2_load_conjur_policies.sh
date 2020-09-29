@@ -5,6 +5,57 @@ set -euo pipefail
 
 announce "Generating Conjur policy."
 
+prepare_conjur_cli_image() {
+  announce "Pulling and pushing Conjur CLI image."
+
+  docker pull cyberark/conjur-cli:$CONJUR_VERSION-latest
+
+  cli_app_image=$(platform_image conjur-cli)
+  docker tag cyberark/conjur-cli:$CONJUR_VERSION-latest $cli_app_image
+
+  if ! is_minienv; then
+    docker push $cli_app_image
+  fi
+}
+
+deploy_conjur_cli() {
+  announce "Deploying Conjur CLI pod."
+
+  if is_minienv; then
+    IMAGE_PULL_POLICY='Never'
+  else
+    IMAGE_PULL_POLICY='Always'
+  fi
+  if [ "$CONJUR_OSS_HELM_INSTALLED" = "true" ]; then
+    service_account='conjur-oss'
+  else
+    service_account='conjur-cluster'
+  fi
+
+  cli_app_image=$(platform_image conjur-cli)
+  sed -e "s#{{ CONJUR_SERVICE_ACCOUNT }}#$service_account#g" ./$PLATFORM/conjur-cli.yml |
+    sed -e "s#{{ DOCKER_IMAGE }}#$cli_app_image#g" |
+    sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
+    $cli create -f -
+
+  conjur_cli_pod=$(get_conjur_cli_pod_name)
+  wait_for_it 300 "$cli get pod $conjur_cli_pod -o jsonpath='{.status.phase}'| grep -q Running"
+}
+
+configure_conjur_cli() {
+  announce "Configuring Conjur CLI pod."
+
+  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+    conjur_service='conjur-oss'
+  else
+    conjur_service='conjur-master'
+  fi
+  conjur_url=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
+
+  $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $conjur_url"
+  $cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
+}
+
 pushd policy
   mkdir -p ./generated
 
@@ -36,18 +87,29 @@ popd
 # Create the random database password
 password=$(openssl rand -hex 12)
 
-if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" ]]; then
-
-  announce "Loading Conjur policy."
+if [[ "${DEPLOY_MASTER_CLUSTER}" == "true" || "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
 
   set_namespace "$CONJUR_NAMESPACE_NAME"
+
+
+  announce "Finding or creating a Conjur CLI pod"
   conjur_cli_pod=$(get_conjur_cli_pod_name)
+  if [ -z "$conjur_cli_pod" ]; then
+    prepare_conjur_cli_image
+    deploy_conjur_cli
+    conjur_cli_pod=$(get_conjur_cli_pod_name)
+    configure_conjur_cli $conjur_cli_pod
+  fi
+
+  announce "Loading Conjur policy."
 
   $cli exec $conjur_cli_pod -- rm -rf /policy
   $cli cp ./policy $conjur_cli_pod:/policy
 
   $cli exec $conjur_cli_pod -- \
     bash -c "
+    conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
+      CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
       CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
       DB_PASSWORD=${password} \
       TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \

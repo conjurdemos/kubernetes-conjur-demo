@@ -11,7 +11,7 @@ spec:
     targetPort: 8080
   selector:
     app: test-app-summon-sidecar
-  type: LoadBalancer
+  type: {{ SERVICE_TYPE }}
 ---
 apiVersion: v1
 kind: ServiceAccount

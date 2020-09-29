@@ -3,10 +3,14 @@ set -euo pipefail
 
 . utils.sh
 
+init_bash_lib
 
 RETRIES=150
 # Seconds
 RETRY_WAIT=2
+
+# Dump some kubernetes resources if this script exits prematurely
+KUBE_RESOURCE_DUMP_ON_EXIT=true
 
 function finish {
   readonly PIDS=(
@@ -15,6 +19,23 @@ function finish {
     "INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID"
     "SECRETLESS_PORT_FORWARD_PID"
   )
+
+  if [[ "$KUBE_RESOURCE_DUMP_ON_EXIT" == "true" ]]; then
+    echo "Status of pods in namespace $TEST_APP_NAMESPACE_NAME:"
+    $cli get -n $TEST_APP_NAMESPACE_NAME pods
+    echo "Display pods in namespace $TEST_APP_NAMESPACE_NAME:"
+    $cli get -n $TEST_APP_NAMESPACE_NAME pods -o yaml
+    echo "Services:in namespace $TEST_APP_NAMESPACE_NAME:"
+    $cli get -n $TEST_APP_NAMESPACE_NAME svc
+    echo "ServiceAccounts:in namespace $TEST_APP_NAMESPACE_NAME:"
+    $cli get -n $TEST_APP_NAMESPACE_NAME serviceaccounts
+    echo "Deployments in namespace $TEST_APP_NAMESPACE_NAME:"
+    $cli get -n $TEST_APP_NAMESPACE_NAME deployments
+    if [[ "$PLATFORM" == "openshift" ]]; then
+      echo "DeploymentConfigs in namespace $TEST_APP_NAMESPACE_NAME:"
+      $cli get -n $TEST_APP_NAMESPACE_NAME deploymentconfigs
+    fi
+  fi
 
   set +u
 
@@ -73,22 +94,34 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   secretless_url="localhost:8083"
   init_url_with_host_outside_apps="localhost:8084"
 else
-  echo "Waiting for services to become available"
-  check_services(){
-    [[ -n "$(service_ip "test-app-summon-init")" ]] &&
-    [[ -n "$(service_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] &&
-    [[ -n "$(service_ip "test-app-summon-sidecar")" ]] &&
-    [[ -n "$(service_ip "test-app-secretless")" ]]
-  }
-  bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_services
+  if [[ "$TEST_APP_NODEPORT_SVCS" == "false" ]]; then
+    echo "Waiting for external IPs to become available"
+    check_services(){
+      [[ -n "$(external_ip "test-app-summon-init")" ]] &&
+      [[ -n "$(external_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] &&
+      [[ -n "$(external_ip "test-app-summon-sidecar")" ]] &&
+      [[ -n "$(external_ip "test-app-secretless")" ]]
+    }
+    bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_services
 
-  init_url=$(service_ip test-app-summon-init):8080
-  init_url_with_host_outside_apps=$(service_ip test-app-with-host-outside-apps-branch-summon-init):8080
-  sidecar_url=$(service_ip test-app-summon-sidecar):8080
-  secretless_url=$(service_ip test-app-secretless):8080
+    init_url=$(external_ip test-app-summon-init):8080
+    init_url_with_host_outside_apps=$(external_ip test-app-with-host-outside-apps-branch-summon-init):8080
+    sidecar_url=$(external_ip test-app-summon-sidecar):8080
+    secretless_url=$(external_ip test-app-secretless):8080
+  else
+    # Else assume NodePort service type. Use a URL of the form
+    #    <any-node-IP>:<service-node-port>
+    # The IP address of any node in the cluster will work for NodePort access.
+    node_ip="$($cli get nodes -o jsonpath='{.items[0].status.addresses[0].address}')"
+    init_url="$node_ip:$(get_nodeport test-app-summon-init)"
+    init_url_with_host_outside_apps="$node_ip:$(get_nodeport test-app-with-host-outside-apps-branch-summon-init)"
+    sidecar_url="$node_ip:$(get_nodeport test-app-summon-sidecar)"
+    secretless_url="$node_ip:$(get_nodeport test-app-secretless)"
+  fi
 fi
 
 echo "Waiting for urls to be ready"
+
 check_urls(){
   (
     curl -sS --connect-timeout 3 "$init_url" &&
@@ -135,3 +168,5 @@ curl "$sidecar_url"/pets
 
 echo -e "\n\nQuerying secretless app\n"
 curl "$secretless_url"/pets
+
+KUBE_RESOURCE_DUMP_ON_EXIT=false
