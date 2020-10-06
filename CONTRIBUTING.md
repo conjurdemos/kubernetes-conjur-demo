@@ -39,3 +39,7 @@ you may find useful.
   - Run the `./start` script in this repo as usual,
     and the demo apps will be deployed with your
     local builds of the authenticator and Secretless.
+
+- The `ANNOTATION_BASED_AUTHN` environment variable enables you to toggle whether
+  your deployment uses annotation-configured host identities or if the authentication
+  type is defined in the identity path.
