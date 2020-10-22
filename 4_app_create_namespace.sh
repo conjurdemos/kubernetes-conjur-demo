@@ -22,16 +22,18 @@ else
   set_namespace $TEST_APP_NAMESPACE_NAME
 fi
 
-# A Conjur OSS cluster that was deployed via cyberark/conjur-oss-helm-chart
-# includes a ClusterRoleBinding (that has cluster-wide scope), so there is no
-# need to create a RoleBinding for this namespace.
-if [[ $CONJUR_OSS_HELM_INSTALLED != true ]]; then
-  $cli delete --ignore-not-found rolebinding test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME
+$cli delete --ignore-not-found rolebinding test-app-conjur-authenticator-role-binding-$CONJUR_NAMESPACE_NAME
 
-  sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./$PLATFORM/test-app-conjur-authenticator-role-binding.yml |
-    sed "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
-    $cli create -f -
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+  conjur_authn_cluster_role="$HELM_RELEASE-conjur-authenticator"
+else
+  conjur_authn_cluster_role="conjur-authenticator-$CONJUR_NAMESPACE_NAME"
 fi
+sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" ./$PLATFORM/test-app-conjur-authenticator-role-binding.yml |
+  sed "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" |
+  sed "s#{{ CONJUR_AUTHN_CLUSTER_ROLE }}#$conjur_authn_cluster_role#g" |
+  sed "s#{{ CONJUR_SERVICE_ACCOUNT }}#$(conjur_service_account)#g" |
+  $cli create -f -
 
 if [[ $PLATFORM == openshift ]]; then
   # add permissions for Conjur admin user

@@ -6,9 +6,9 @@ metadata:
   namespace: {{ TEST_APP_NAMESPACE_NAME }}
 subjects:
   - kind: ServiceAccount
-    name: conjur-cluster
+    name: {{ CONJUR_SERVICE_ACCOUNT }}
     namespace: {{ CONJUR_NAMESPACE_NAME }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: conjur-authenticator-{{ CONJUR_NAMESPACE_NAME }}
+  name: {{ CONJUR_AUTHN_CLUSTER_ROLE }}
