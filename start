@@ -5,20 +5,22 @@ set -xeuo pipefail
 . utils.sh
 init_bash_lib
 
-./0_check_dependencies.sh
+./0_prep_check_dependencies.sh
 
 ./stop
 
-./1_create_test_app_namespace.sh
+./1_prep_platform_login.sh
 
-if [[ "${DEPLOY_MASTER_CLUSTER}" = "true" ]]; then
+if [[ "${CONFIGURE_CONJUR_MASTER}" == "true" || "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
   # Only automatically run these scripts for dev/demo envs deploying a master
   # cluster directly to k8s/oc
-  ./2_load_conjur_policies.sh
-  ./3_init_conjur_cert_authority.sh
+  ./2_admin_load_conjur_policies.sh
+  ./3_admin_init_conjur_cert_authority.sh
 fi
 
-./4_store_conjur_cert.sh
-./5_build_and_push_containers.sh
-./6_deploy_test_app.sh
-./7_verify_authentication.sh
+./4_app_create_namespace.sh
+./5_app_store_conjur_cert.sh
+./6_app_build_and_push_containers.sh
+./7_app_deploy.sh
+./8_app_verify_authentication.sh
+
