@@ -45,13 +45,29 @@ pipeline {
     // Postgres Tests with Annotation-based Authn
     stage('Deploy Demos Postgres with Annotation-based Authn') {
       parallel {
-        stage('GKE, v5 Conjur, Postgres, Annotation--based Authn') {
+        stage('GKE, v5 Conjur, Postgres, Annotation-based Authn') {
           steps {
             sh 'cd ci && summon --environment gke ./test gke postgres annotation-based'
           }
         }
 
-        // TODO: Add OpenShift Annotation-based authentication tests
+        stage('OpenShift v3.9, v5 Conjur, Postgres, Annotation-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc ./test oc postgres annotation-based'
+          }
+        }
+
+        stage('OpenShift v3.10, v5 Conjur, Postgres, Annotation-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc310 ./test oc postgres annotation-based'
+          }
+        }
+
+        stage('OpenShift v3.11, v5 Conjur, Postgres, Annotation-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc311 ./test oc postgres annotation-based'
+          }
+        }
       }
     }
 
