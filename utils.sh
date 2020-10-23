@@ -83,7 +83,8 @@ get_pod_name() {
 }
 
 get_pods() {
-  $cli get pods --selector "$1" --no-headers | awk '{ print $1 }'
+  # get_pods <namespace> <list-of-selectors>
+  $cli get pods -n "$1" --selector "$2" --no-headers | awk '{ print $1 }'
 }
 
 get_nodeport(){
@@ -101,15 +102,15 @@ app_service_type() {
 
 get_master_pod_name() {
   if [ "$CONJUR_OSS_HELM_INSTALLED" = "true" ]; then
-    pod_list=$(get_pods "app=conjur-oss")
+    pod_list=$(get_pods "$CONJUR_NAMESPACE_NAME" "app=conjur-oss")
   else
-    pod_list=$(get_pods "app=conjur-node,role=master")
+    pod_list=$(get_pods "$CONJUR_NAMESPACE_NAME" "app=conjur-node,role=master")
   fi
   echo $pod_list | awk '{print $1}'
 }
 
 get_conjur_cli_pod_name() {
-  pod_list=$($cli get pods -n "$CONJUR_NAMESPACE_NAME" --selector app=conjur-cli --no-headers | awk '{ print $1 }')
+  pod_list=$(get_pods "$CONJUR_NAMESPACE_NAME" "app=conjur-cli")
   echo $pod_list | awk '{print $1}'
 }
 
@@ -262,4 +263,13 @@ function dump_kubernetes_resources() {
 function dump_authentication_policy {
   announce "Authentication policy:"
   cat policy/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
+}
+
+function dump_conjur_logs {
+  conjur_master=$(get_master_pod_name)
+  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+    $cli logs -n $CONJUR_NAMESPACE_NAME $conjur_master conjur-oss
+  else
+    $cli logs -n $CONJUR_NAMESPACE_NAME $conjur_master
+  fi
 }

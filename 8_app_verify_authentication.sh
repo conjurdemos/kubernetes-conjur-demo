@@ -24,6 +24,7 @@ function finish {
   if [[ "$DETAILED_DUMP_ON_EXIT" == "true" ]]; then
     dump_kubernetes_resources
     dump_authentication_policy
+    dump_conjur_logs
   fi
 
   set +u

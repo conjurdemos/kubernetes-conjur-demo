@@ -70,10 +70,11 @@ function main() {
 
 function deployConjur() {
   pushd ..
-    git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    #git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    git clone --single-branch --branch add_oc_deploy_configs git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
   popd
 
-  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && CONJUR_LOG_LEVEL=debug ./start"
 }
 
 function deployDemo() {

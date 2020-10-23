@@ -14,54 +14,54 @@ pipeline {
 
   stages {
     // Postgres Tests with Host-ID-based Authn
-    stage('Deploy Demos Postgres with Host-ID-based Authn') {
-      parallel {
-        stage('GKE, v5 Conjur, Postgres, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment gke ./test gke postgres host-id-based'
-          }
-        }
+    //stage('Deploy Demos Postgres with Host-ID-based Authn') {
+    //  parallel {
+    //    stage('GKE, v5 Conjur, Postgres, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment gke ./test gke postgres host-id-based'
+    //      }
+    //    }
 
-        stage('OpenShift v3.9, v5 Conjur, Postgres, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc ./test oc postgres host-id-based'
-          }
-        }
+    //    stage('OpenShift v3.9, v5 Conjur, Postgres, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment oc ./test oc postgres host-id-based'
+    //      }
+    //    }
 
-        stage('OpenShift v3.10, v5 Conjur, Postgres, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc310 ./test oc postgres host-id-based'
-          }
-        }
+    //    stage('OpenShift v3.10, v5 Conjur, Postgres, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment oc310 ./test oc postgres host-id-based'
+    //      }
+    //    }
 
-        stage('OpenShift v3.11, v5 Conjur, Postgres, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc311 ./test oc postgres host-id-based'
-          }
-        }
-      }
-    }
+    //    stage('OpenShift v3.11, v5 Conjur, Postgres, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment oc311 ./test oc postgres host-id-based'
+    //      }
+    //    }
+    //  }
+    //}
 
     // Postgres Tests with Annotation-based Authn
     stage('Deploy Demos Postgres with Annotation-based Authn') {
       parallel {
-        stage('GKE, v5 Conjur, Postgres, Annotation-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment gke ./test gke postgres annotation-based'
-          }
-        }
+        //stage('GKE, v5 Conjur, Postgres, Annotation-based Authn') {
+        //  steps {
+        //    sh 'cd ci && summon --environment gke ./test gke postgres annotation-based'
+        //  }
+        //}
 
-        stage('OpenShift v3.9, v5 Conjur, Postgres, Annotation-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc ./test oc postgres annotation-based'
-          }
-        }
+        //stage('OpenShift v3.9, v5 Conjur, Postgres, Annotation-based Authn') {
+        //  steps {
+        //    sh 'cd ci && summon --environment oc ./test oc postgres annotation-based'
+        //  }
+        //}
 
-        stage('OpenShift v3.10, v5 Conjur, Postgres, Annotation-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc310 ./test oc postgres annotation-based'
-          }
-        }
+        //stage('OpenShift v3.10, v5 Conjur, Postgres, Annotation-based Authn') {
+        //  steps {
+        //    sh 'cd ci && summon --environment oc310 ./test oc postgres annotation-based'
+        //  }
+        //}
 
         stage('OpenShift v3.11, v5 Conjur, Postgres, Annotation-based Authn') {
           steps {
@@ -72,34 +72,34 @@ pipeline {
     }
 
     // MySQL Tests
-    stage('Deploy Demos MySQL') {
-      parallel {
-        stage('GKE, v5 Conjur, MySQL, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment gke ./test gke mysql host-id-based'
-          }
-        }
+    //stage('Deploy Demos MySQL') {
+    //  parallel {
+    //    stage('GKE, v5 Conjur, MySQL, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment gke ./test gke mysql host-id-based'
+    //      }
+    //    }
 
-        stage('OpenShift v3.9, v5 Conjur, MySQL, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc ./test oc mysql host-id-based'
-          }
-        }
+    //    stage('OpenShift v3.9, v5 Conjur, MySQL, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment oc ./test oc mysql host-id-based'
+    //      }
+    //    }
 
-        stage('OpenShift v3.10, v5 Conjur, MySQL, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc310 ./test oc mysql host-id-based'
-          }
-        }
+    //    stage('OpenShift v3.10, v5 Conjur, MySQL, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment oc310 ./test oc mysql host-id-based'
+    //      }
+    //    }
 
-        stage('OpenShift v3.11, v5 Conjur, MySQL, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc311 ./test oc mysql host-id-based'
-          }
-        }
+    //    stage('OpenShift v3.11, v5 Conjur, MySQL, Host-ID-based Authn') {
+    //      steps {
+    //        sh 'cd ci && summon --environment oc311 ./test oc mysql host-id-based'
+    //      }
+    //    }
 
-      }
-    }
+    //  }
+    //}
   }
 
   post {
