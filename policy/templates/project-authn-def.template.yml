@@ -42,7 +42,6 @@
       annotations:
         authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
         authn-k8s/service-account: oc-test-app-summon-sidecar
-        authn-k8s/deployment-config: test-app-summon-sidecar
         authn-k8s/authentication-container-name: authenticator
         openshift: "{{ IS_OPENSHIFT }}"
     - !host
@@ -50,7 +49,6 @@
       annotations:
         authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
         authn-k8s/service-account: oc-test-app-summon-init
-        authn-k8s/deployment-config: test-app-summon-init
         authn-k8s/authentication-container-name: authenticator
         openshift: "{{ IS_OPENSHIFT }}"
     - !host
@@ -58,7 +56,6 @@
       annotations:
         authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
         authn-k8s/service-account: oc-test-app-secretless
-        authn-k8s/deployment-config: test-app-secretless
         authn-k8s/authentication-container-name: secretless
         openshift: "{{ IS_OPENSHIFT }}"
 
