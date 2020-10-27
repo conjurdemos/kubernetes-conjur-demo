@@ -26,14 +26,9 @@ deploy_conjur_cli() {
   else
     IMAGE_PULL_POLICY='Always'
   fi
-  if [ "$CONJUR_OSS_HELM_INSTALLED" = "true" ]; then
-    service_account='conjur-oss'
-  else
-    service_account='conjur-cluster'
-  fi
 
   cli_app_image=$(platform_image conjur-cli)
-  sed -e "s#{{ CONJUR_SERVICE_ACCOUNT }}#$service_account#g" ./$PLATFORM/conjur-cli.yml |
+  sed -e "s#{{ CONJUR_SERVICE_ACCOUNT }}#$(conjur_service_account)#g" ./$PLATFORM/conjur-cli.yml |
     sed -e "s#{{ DOCKER_IMAGE }}#$cli_app_image#g" |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     $cli create -f -

@@ -100,7 +100,7 @@ app_service_type() {
 }
 
 get_master_pod_name() {
-  if [ "$CONJUR_OSS_HELM_INSTALLED" = "true" ]; then
+  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     pod_list=$(get_pods "app=conjur-oss")
   else
     pod_list=$(get_pods "app=conjur-node,role=master")
@@ -123,6 +123,14 @@ run_conjur_cmd_as_admin() {
 
   conjur authn logout > /dev/null
   echo "$output"
+}
+
+conjur_service_account() {
+  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+    echo "conjur-oss"
+  else
+    echo "conjur-cluster"
+  fi
 }
 
 set_namespace() {
