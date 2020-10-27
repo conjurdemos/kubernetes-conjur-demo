@@ -120,7 +120,7 @@ Set the following variables in your local environment:
 | `PLATFORM` | Set this variable to `kubernetes` or `openshift`, depending on which type of cluster you will be running the demo in. | No | `kubernetes` | `openshift` |
 | `TEST_APP_DATABASE` | The type of database to run with the pet store app. Supported values are `mysql`, `mssql`, and `postgres`. | Yes | - | `mysql` |
 | `TEST_APP_NAMESPACE_NAME` | The Kubernetes namespace in which your test app will be deployed. The demo scripts create this namespace for you if necessary. | Yes | - | `demo-namespace` |
-| `TEST_APP_NODEPORT_SVCS` | Boolean to determine whether to use NodePort type service instead of LoadBalancer services. When running MiniKube or Kubernetes-in-Docker, you may want to set this to `true`. | No | `false` | `true` |
+| `TEST_APP_LOADBALANCER_SVCS` | Boolean to determine whether to use LoadBalancer type service instead of NodePort services. When running MiniKube or Kubernetes-in-Docker, you may want to set this to `false`. | No | `true` | `false` |
 
 The demo scripts determine whether to use the `kubectl` or `oc` CLI
 based on your `PLATFORM` environment variable configuration.

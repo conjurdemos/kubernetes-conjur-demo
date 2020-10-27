@@ -42,6 +42,26 @@ announce "Validating that the deployments are functioning as expected."
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
 
+deploy_test_curl() {
+  $cli delete --ignore-not-found pod/test-curl
+  $cli create -f ./$PLATFORM/test-curl.yml
+}
+
+check_test_curl() {
+  pods_ready "test-curl"
+}
+
+pod_curl() {
+  kubectl exec test-curl -- curl "$@"
+}
+
+if [[ "$TEST_APP_LOADBALANCER_SVCS" == "false" ]]; then
+  echo "Deploying a test curl pod"
+  deploy_test_curl
+  echo "Waiting for test curl pod to become available"
+  bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_test_curl
+fi
+  
 echo "Waiting for pods to become available"
 
 check_pods(){
@@ -78,12 +98,13 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   oc port-forward "$init_pod_with_host_outside_apps" 8084:8080 > /dev/null 2>&1 &
   INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID=$!
 
+  curl_cmd=curl
   sidecar_url="localhost:8081"
   init_url="localhost:8082"
   secretless_url="localhost:8083"
   init_url_with_host_outside_apps="localhost:8084"
 else
-  if [[ "$TEST_APP_NODEPORT_SVCS" == "false" ]]; then
+  if [[ "$TEST_APP_LOADBALANCER_SVCS" == "true" ]]; then
     echo "Waiting for external IPs to become available"
     check_services(){
       [[ -n "$(external_ip "test-app-summon-init")" ]] &&
@@ -93,19 +114,20 @@ else
     }
     bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_services
 
+    curl_cmd=curl
     init_url=$(external_ip test-app-summon-init):8080
     init_url_with_host_outside_apps=$(external_ip test-app-with-host-outside-apps-branch-summon-init):8080
     sidecar_url=$(external_ip test-app-summon-sidecar):8080
     secretless_url=$(external_ip test-app-secretless):8080
+
   else
-    # Else assume NodePort service type. Use a URL of the form
-    #    <any-node-IP>:<service-node-port>
-    # The IP address of any node in the cluster will work for NodePort access.
-    node_ip="$($cli get nodes -o jsonpath='{.items[0].status.addresses[0].address}')"
-    init_url="$node_ip:$(get_nodeport test-app-summon-init)"
-    init_url_with_host_outside_apps="$node_ip:$(get_nodeport test-app-with-host-outside-apps-branch-summon-init)"
-    sidecar_url="$node_ip:$(get_nodeport test-app-summon-sidecar)"
-    secretless_url="$node_ip:$(get_nodeport test-app-secretless)"
+    # Apps don't have loadbalancer services, so test by curling from
+    # a pod that is inside the KinD cluster.
+    curl_cmd=pod_curl
+    init_url="test-app-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+    init_url_with_host_outside_apps="test-app-with-host-outside-apps-branch-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+    sidecar_url="test-app-summon-sidecar.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+    secretless_url="test-app-secretless.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   fi
 fi
 
@@ -113,49 +135,49 @@ echo "Waiting for urls to be ready"
 
 check_urls(){
   (
-    curl -sS --connect-timeout 3 "$init_url" &&
-    curl -sS --connect-timeout 3 "$init_url_with_host_outside_apps" &&
-    curl -sS --connect-timeout 3 "$sidecar_url" &&
-    curl -sS --connect-timeout 3 "$secretless_url"
+    $curl_cmd -sS --connect-timeout 3 "$init_url" &&
+    $curl_cmd -sS --connect-timeout 3 "$init_url_with_host_outside_apps" &&
+    $curl_cmd -sS --connect-timeout 3 "$sidecar_url" &&
+    $curl_cmd -sS --connect-timeout 3 "$secretless_url"
   ) > /dev/null
 }
 
 bl_retry_constant "${RETRIES}" "${RETRY_WAIT}" check_urls
 
 echo -e "\nAdding entry to the init app\n"
-curl \
+$curl_cmd \
   -d '{"name": "Mr. Init"}' \
   -H "Content-Type: application/json" \
   "$init_url"/pet
 
 echo -e "Adding entry to the init app with host outside apps\n"
-curl \
+$curl_cmd \
   -d '{"name": "Mr. Init"}' \
   -H "Content-Type: application/json" \
   "$init_url_with_host_outside_apps"/pet
 
 echo -e "Adding entry to the sidecar app\n"
-curl \
+$curl_cmd \
   -d '{"name": "Mr. Sidecar"}' \
   -H "Content-Type: application/json" \
   "$sidecar_url"/pet
 
 echo -e "Adding entry to the secretless app\n"
-curl \
+$curl_cmd \
   -d '{"name": "Mr. Secretless"}' \
   -H "Content-Type: application/json" \
   "$secretless_url"/pet
 
 echo -e "Querying init app\n"
-curl "$init_url"/pets
+$curl_cmd "$init_url"/pets
 
 echo -e "\n\nQuerying init app with hosts outside apps\n"
-curl "$init_url_with_host_outside_apps"/pets
+$curl_cmd "$init_url_with_host_outside_apps"/pets
 
 echo -e "\n\nQuerying sidecar app\n"
-curl "$sidecar_url"/pets
+$curl_cmd "$sidecar_url"/pets
 
 echo -e "\n\nQuerying secretless app\n"
-curl "$secretless_url"/pets
+$curl_cmd "$secretless_url"/pets
 
 DETAILED_DUMP_ON_EXIT=false

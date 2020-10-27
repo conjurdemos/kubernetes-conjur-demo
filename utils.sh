@@ -92,10 +92,10 @@ get_nodeport(){
 }
 
 app_service_type() {
-  if [[ "$TEST_APP_NODEPORT_SVCS" == "true" ]]; then
-    echo "NodePort"
-  else
+  if [[ "$TEST_APP_LOADBALANCER_SVCS" == "true" ]]; then
     echo "LoadBalancer"
+  else
+    echo "NodePort"
   fi
 }
 
