@@ -115,6 +115,7 @@ Set the following variables in your local environment:
 | `CONJUR_AUTHN_LOGIN_RESOURCE` | Type of Kubernetes resource to use as Conjur [application identity](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/Kubernetes_AppIdentity.htm). | No | `service_account` | `deployment` |
 | `CONJUR_NAMESPACE_NAME` | The namespace to which Conjur was deployed. | Yes | - | `conjur-namespace` |
 | `CONJUR_OSS_HELM_INSTALLED` | Set to `true` if you are using Conjur OSS. | No | `false` | `true` |
+| `USE_DOCKER_LOCAL_REGISTRY` | Set to `true` if you are using a local, insecure registry to push/pull pod images. | No | `false` | `true` |
 | `DOCKER_REGISTRY_URL` | Set to the Docker registry to use for your platform for pushing/pulling application images that get built by the script. Examples are `docker.io` for DockerHub or `us.gcr.io` for GKE. | Yes | - | `us.gcr.io` |
 | `DOCKER_REGISTRY_PATH` | Set to the Docker organization to use for your platform for pushing/pulling application images that get built by the script. | Yes | - | `myorganization` |
 | `PLATFORM` | Set this variable to `kubernetes` or `openshift`, depending on which type of cluster you will be running the demo in. | No | `kubernetes` | `openshift` |

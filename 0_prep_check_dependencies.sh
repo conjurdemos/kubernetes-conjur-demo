@@ -9,7 +9,8 @@ if [[ "$PLATFORM" == "kubernetes" ]] && ! is_minienv; then
   check_env_var "DOCKER_REGISTRY_URL"
 fi
 
-if ! ( [[ "$PLATFORM" == "kubernetes" ]] && is_minienv ); then
+if ! (( [[ "$PLATFORM" == "kubernetes" ]] && is_minienv ) \
+    || [[ "$USE_DOCKER_LOCAL_REGISTRY" == "true" ]]); then
   check_env_var "DOCKER_REGISTRY_PATH"
 fi
 
