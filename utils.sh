@@ -48,10 +48,12 @@ announce() {
 platform_image() {
   if [ $PLATFORM = "openshift" ]; then
     echo "$DOCKER_REGISTRY_PATH/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
-  elif ! is_minienv; then
-    echo "$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
-  else
+  elif is_minienv; then
     echo "$1:$CONJUR_NAMESPACE_NAME"
+  elif [ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]; then
+    echo "$DOCKER_REGISTRY_URL/$1:$CONJUR_NAMESPACE_NAME"
+  else
+    echo "$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
   fi
 }
 
@@ -61,17 +63,6 @@ has_namespace() {
   else
     false
   fi
-}
-
-docker_tag_and_push() {
-  if [ $PLATFORM = "kubernetes" ]; then
-    docker_tag="$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
-  else
-    docker_tag="$DOCKER_REGISTRY_PATH/$CONJUR_NAMESPACE_NAME/$1:$CONJUR_NAMESPACE_NAME"
-  fi
-
-  docker tag $1:$CONJUR_NAMESPACE_NAME $docker_tag
-  docker push $docker_tag
 }
 
 get_pod_name() {
