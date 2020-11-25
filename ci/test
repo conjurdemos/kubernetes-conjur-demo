@@ -209,7 +209,7 @@ else
 fi
 
 # sensible default for OPENSHIFT_URL port
-if [[ -n "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then
+if [[ -n "${OPENSHIFT_URL}" ]] && [[ ! "${OPENSHIFT_URL}" =~ .*:[0-9]*$ ]]; then
  OPENSHIFT_URL="${OPENSHIFT_URL}:8443"
 fi
 
