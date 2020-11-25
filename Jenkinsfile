@@ -68,6 +68,12 @@ pipeline {
             sh 'cd ci && summon --environment oc311 ./test oc postgres annotation-based'
           }
         }
+
+        stage('OpenShift v4.3, v5 Conjur, Postgres, Annotation-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc43 ./test oc postgres annotation-based'
+          }
+        }
       }
     }
 
