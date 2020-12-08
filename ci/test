@@ -151,6 +151,7 @@ function runDockerCommand() {
     -e GCLOUD_CLUSTER_NAME \
     -e GCLOUD_ZONE \
     -e GCLOUD_PROJECT_NAME \
+    -e OPENSHIFT_VERSION \
     -e OPENSHIFT_URL \
     -e OPENSHIFT_USERNAME \
     -e OPENSHIFT_PASSWORD \
