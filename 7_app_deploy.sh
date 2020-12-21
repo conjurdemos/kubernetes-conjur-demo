@@ -33,7 +33,7 @@ init_registry_creds() {
     kubectl delete --ignore-not-found secret dockerpullsecret
 
     kubectl create secret docker-registry dockerpullsecret \
-      --docker-server=$DOCKER_REGISTRY_URL \
+      --docker-server=${PULL_DOCKER_REGISTRY_URL} \
       --docker-username=$DOCKER_USERNAME \
       --docker-password=$DOCKER_PASSWORD \
       --docker-email=$DOCKER_EMAIL
@@ -43,7 +43,7 @@ init_registry_creds() {
     $cli delete --ignore-not-found secrets dockerpullsecret
 
     $cli secrets new-dockercfg dockerpullsecret \
-      --docker-server=${DOCKER_REGISTRY_PATH} \
+      --docker-server=${PULL_DOCKER_REGISTRY_URL} \
       --docker-username=_ \
       --docker-password=$($cli whoami -t) \
       --docker-email=_
@@ -54,12 +54,12 @@ init_registry_creds() {
 
 ###########################
 init_connection_specs() {
-  test_sidecar_app_docker_image=$(platform_image test-sidecar-app)
-  test_init_app_docker_image=$(platform_image test-init-app)
+  test_sidecar_app_docker_image=$(platform_image_for_pull test-sidecar-app)
+  test_init_app_docker_image=$(platform_image_for_pull test-init-app)
 
   if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
-    authenticator_client_image=$(platform_image conjur-authn-k8s-client)
-    secretless_image=$(platform_image secretless-broker)
+    authenticator_client_image=$(platform_image_for_pull conjur-authn-k8s-client)
+    secretless_image=$(platform_image_for_pull secretless-broker)
   else
     authenticator_client_image="cyberark/conjur-authn-k8s-client"
     secretless_image="cyberark/secretless-broker"
@@ -111,7 +111,7 @@ deploy_app_backend() {
 
     echo "Deploying test app backend"
 
-    test_app_pg_docker_image=$(platform_image test-app-pg)
+    test_app_pg_docker_image=$(platform_image_for_pull test-app-pg)
 
     sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml |
       sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |

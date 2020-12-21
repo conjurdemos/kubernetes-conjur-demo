@@ -145,6 +145,8 @@ function runDockerCommand() {
     -e TEST_PLATFORM \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \
+    -e PULL_DOCKER_REGISTRY_URL \
+    -e PULL_DOCKER_REGISTRY_PATH \
     -e MINI_ENV \
     -e DEPLOY_MASTER_CLUSTER \
     -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
@@ -210,7 +212,7 @@ else
 fi
 
 # sensible default for OPENSHIFT_URL port
-if [[ -n "${OPENSHIFT_URL}" ]] && [[ "${OPENSHIFT_URL}" != *: ]]; then
+if [[ -n "${OPENSHIFT_URL}" ]] && [[ ! "${OPENSHIFT_URL}" =~ :[[:digit:]] ]]; then
  OPENSHIFT_URL="${OPENSHIFT_URL}:8443"
 fi
 

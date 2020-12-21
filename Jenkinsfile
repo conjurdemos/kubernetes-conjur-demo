@@ -22,21 +22,21 @@ pipeline {
           }
         }
 
-        stage('OpenShift v3.9, v5 Conjur, Postgres, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc ./test oc postgres host-id-based'
-          }
-        }
-
-        stage('OpenShift v3.10, v5 Conjur, Postgres, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc310 ./test oc postgres host-id-based'
-          }
-        }
-
         stage('OpenShift v3.11, v5 Conjur, Postgres, Host-ID-based Authn') {
           steps {
             sh 'cd ci && summon --environment oc311 ./test oc postgres host-id-based'
+          }
+        }
+
+        stage('OpenShift v4.3, v5 Conjur, Postgres, Host-ID-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc43 ./test oc postgres host-id-based'
+          }
+        }
+
+        stage('OpenShift v4.5, v5 Conjur, Postgres, Host-ID-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc45 ./test oc postgres host-id-based'
           }
         }
       }
@@ -51,21 +51,21 @@ pipeline {
           }
         }
 
-        stage('OpenShift v3.9, v5 Conjur, Postgres, Annotation-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc ./test oc postgres annotation-based'
-          }
-        }
-
-        stage('OpenShift v3.10, v5 Conjur, Postgres, Annotation-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc310 ./test oc postgres annotation-based'
-          }
-        }
-
         stage('OpenShift v3.11, v5 Conjur, Postgres, Annotation-based Authn') {
           steps {
             sh 'cd ci && summon --environment oc311 ./test oc postgres annotation-based'
+          }
+        }
+
+        stage('OpenShift v4.3, v5 Conjur, Postgres, Annotation-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc43 ./test oc postgres annotation-based'
+          }
+        }
+
+        stage('OpenShift v4.5, v5 Conjur, Postgres, Annotation-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc45 ./test oc postgres annotation-based'
           }
         }
       }
@@ -80,24 +80,23 @@ pipeline {
           }
         }
 
-        stage('OpenShift v3.9, v5 Conjur, MySQL, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc ./test oc mysql host-id-based'
-          }
-        }
-
-        stage('OpenShift v3.10, v5 Conjur, MySQL, Host-ID-based Authn') {
-          steps {
-            sh 'cd ci && summon --environment oc310 ./test oc mysql host-id-based'
-          }
-        }
-
         stage('OpenShift v3.11, v5 Conjur, MySQL, Host-ID-based Authn') {
           steps {
             sh 'cd ci && summon --environment oc311 ./test oc mysql host-id-based'
           }
         }
 
+        stage('OpenShift v4.3, v5 Conjur, MySQL, Host-ID-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc43 ./test oc mysql host-id-based'
+          }
+        }
+
+        stage('OpenShift v4.5, v5 Conjur, MySQL, Host-ID-based Authn') {
+          steps {
+            sh 'cd ci && summon --environment oc45 ./test oc mysql host-id-based'
+          }
+        }
       }
     }
   }

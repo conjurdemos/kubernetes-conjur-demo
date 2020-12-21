@@ -45,15 +45,27 @@ announce() {
   echo "++++++++++++++++++++++++++++++++++++++"
 }
 
-platform_image() {
-  if [ $PLATFORM = "openshift" ]; then
-    echo "$DOCKER_REGISTRY_PATH/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
+platform_image_for_pull() {
+  if [[ ${PLATFORM} = "openshift" ]]; then
+    echo "${PULL_DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
   elif is_minienv; then
     echo "$1:$CONJUR_NAMESPACE_NAME"
-  elif [ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]; then
-    echo "$DOCKER_REGISTRY_URL/$1:$CONJUR_NAMESPACE_NAME"
+  elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
+    echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
   else
-    echo "$DOCKER_REGISTRY_PATH/$1:$CONJUR_NAMESPACE_NAME"
+    echo "${PULL_DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
+  fi
+}
+
+platform_image_for_push() {
+  if [[ ${PLATFORM} = "openshift" ]]; then
+    echo "${DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
+  elif is_minienv; then
+    echo "$1:$CONJUR_NAMESPACE_NAME"
+  elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
+    echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
+  else
+    echo "${DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
   fi
 }
 
@@ -238,6 +250,8 @@ function dump_kubernetes_resources() {
   $cli get -n $TEST_APP_NAMESPACE_NAME pods
   echo "Display pods in namespace $TEST_APP_NAMESPACE_NAME:"
   $cli get -n $TEST_APP_NAMESPACE_NAME pods -o yaml
+  echo "Describe pods in namespace $TEST_APP_NAMESPACE_NAME:"
+  $cli describe -n $TEST_APP_NAMESPACE_NAME pods
   echo "Services:in namespace $TEST_APP_NAMESPACE_NAME:"
   $cli get -n $TEST_APP_NAMESPACE_NAME svc
   echo "ServiceAccounts:in namespace $TEST_APP_NAMESPACE_NAME:"
