@@ -43,7 +43,7 @@ pushd test_app_summon
       --tag test-app:$CONJUR_NAMESPACE_NAME \
       --file $dockerfile .
 
-    test_app_image=$(platform_image "test-$app_type-app")
+    test_app_image=$(platform_image_for_push "test-$app_type-app")
     docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
 
     if ! is_minienv; then
@@ -56,7 +56,7 @@ popd
 if [[ "$PLATFORM" != "openshift" ]]; then
   pushd pg
     docker build -t test-app-pg:$CONJUR_NAMESPACE_NAME .
-    test_app_pg_image=$(platform_image test-app-pg)
+    test_app_pg_image=$(platform_image_for_push test-app-pg)
     docker tag test-app-pg:$CONJUR_NAMESPACE_NAME $test_app_pg_image
 
     if ! is_minienv; then
@@ -67,11 +67,11 @@ fi
 
 if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
   # Re-tag the locally-built conjur-authn-k8s-client:dev image
-  authn_image=$(platform_image conjur-authn-k8s-client)
+  authn_image=$(platform_image_for_push conjur-authn-k8s-client)
   docker tag conjur-authn-k8s-client:dev $authn_image
 
   # Re-tag the locally-built secretless-broker:latest image
-  secretless_image=$(platform_image secretless-broker)
+  secretless_image=$(platform_image_for_push secretless-broker)
   docker tag secretless-broker:latest $secretless_image
 
   if ! is_minienv; then
