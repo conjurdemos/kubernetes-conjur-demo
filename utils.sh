@@ -70,7 +70,7 @@ platform_image_for_push() {
 }
 
 has_namespace() {
-  if $cli get namespace  "$1" > /dev/null; then
+  if $cli get namespace  "$1" &>/dev/null; then
     true
   else
     false
