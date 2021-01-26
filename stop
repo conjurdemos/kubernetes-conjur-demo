@@ -3,17 +3,34 @@ set -euo pipefail
 
 . utils.sh
 
-set_namespace $TEST_APP_NAMESPACE_NAME
-$cli get pods
+KUBE_CLI_DELETE_TIMEOUT="10m"
+
+set_namespace "$TEST_APP_NAMESPACE_NAME"
+"$cli" get pods
 
 set_namespace default
 
-if [[ $PLATFORM == openshift ]]; then
-  oc login -u $OSHIFT_CLUSTER_ADMIN_USERNAME -p $OPENSHIFT_PASSWORD
+if [[ "$PLATFORM" == "openshift" ]]; then
+  oc login -u "$OSHIFT_CLUSTER_ADMIN_USERNAME" -p "$OPENSHIFT_PASSWORD"
 fi
 
-if has_namespace $TEST_APP_NAMESPACE_NAME; then
-  $cli delete namespace $TEST_APP_NAMESPACE_NAME
+if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
+  if [[ "$OPENSHIFT_VERSION" == "4.3" ]]; then
+    # Workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1798282
+    for svc in `$cli get svc -n "$TEST_APP_NAMESPACE_NAME" -o name`; do
+      echo "Deleting finalizers from Kubernetes service $svc"
+      "$cli" patch "$svc" \
+          --namespace "$TEST_APP_NAMESPACE_NAME" \
+          --type=json \
+          --patch='[{"op":"replace","path":"/metadata/finalizers","value":[]}]'
+    done
+  fi
+
+  "$cli" delete --timeout="$KUBE_CLI_DELETE_TIMEOUT" \
+      namespace "$TEST_APP_NAMESPACE_NAME" || \
+      echo "ERROR: Delete of namespace $TEST_APP_NAMESPACE_NAME failed"
+      echo "Showing residual resources in namespace:"
+      "$cli" describe all -n "$TEST_APP_NAMESPACE_NAME"
 
   printf "Waiting for $TEST_APP_NAMESPACE_NAME namespace deletion to complete"
 
