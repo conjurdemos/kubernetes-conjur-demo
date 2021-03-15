@@ -21,6 +21,22 @@ pipeline {
 
   stages {
     // Postgres Tests with Host-ID-based Authn
+    stage('Deploy Demos Postgres against OSS on Openshift') {
+      parallel {
+        stage('OpenShift v(current), v5 Conjur OSS, Postgres, Host-ID-based Authn') {
+          steps {
+            sh 'cd ci && CONJUR_OSS=true summon --environment current ./test oc postgres host-id-based'
+          }
+        }
+
+        stage('OpenShift v(current), v5 Conjur OSS, Postgres, Annotation-based Authn') {
+          steps {
+            sh 'cd ci && CONJUR_OSS=true summon --environment current ./test oc postgres annotation-based'
+          }
+        }
+      }
+    }
+
     stage('Deploy Demos Postgres with Host-ID-based Authn') {
       parallel {
         stage('GKE, v5 Conjur, Postgres, Host-ID-based Authn') {
