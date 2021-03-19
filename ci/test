@@ -188,6 +188,10 @@ function checkArguments() {
   elif [[ "$TEST_AUTHN_MODE" != "annotation-based" && "$TEST_AUTHN_MODE" != "host-id-based" ]]; then
     echo "The only valid authentication modes are 'annotation-based' and 'host-id-based'"
   else
+    if [[ "$TEST_PLATFORM" == "oc" ]]; then
+      version="${OPENSHIFT_VERSION:-UNKNOWN}"
+      announce "Test OpenShift Version $version"
+    fi
     return 0
   fi
 

@@ -12,6 +12,13 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  parameters { 
+    booleanParam(
+      name: 'TEST_OCP_NEXT',
+      description: 'Whether or not to run the pipeline against the next OCP version',
+      defaultValue: false) 
+  }
+
   stages {
     // Postgres Tests with Host-ID-based Authn
     stage('Deploy Demos Postgres with Host-ID-based Authn') {
@@ -28,15 +35,30 @@ pipeline {
           }
         }
 
-        stage('OpenShift v4.3, v5 Conjur, Postgres, Host-ID-based Authn') {
+        stage('OpenShift v(oldest), v5 Conjur, Postgres, Host-ID-based Authn') {
           steps {
-            sh 'cd ci && summon --environment oc43 ./test oc postgres host-id-based'
+            sh 'cd ci && summon --environment oldest ./test oc postgres host-id-based'
           }
         }
 
-        stage('OpenShift v4.5, v5 Conjur, Postgres, Host-ID-based Authn') {
+        stage('OpenShift v(current), v5 Conjur, Postgres, Host-ID-based Authn') {
           steps {
-            sh 'cd ci && summon --environment oc45 ./test oc postgres host-id-based'
+            sh 'cd ci && summon --environment current ./test oc postgres host-id-based'
+          }
+        }
+
+        stage('OpenShift v(next)') {
+          when { 
+            expression { params.TEST_OCP_NEXT } 
+          }
+
+          stages {
+
+            stage('OpenShift v(next), v5 Conjur, Postgres, Host-ID-based Authn') {
+              steps {
+                sh 'cd ci && summon --environment next ./test oc postgres host-id-based'
+              }
+            }
           }
         }
       }
@@ -45,7 +67,7 @@ pipeline {
     // Postgres Tests with Annotation-based Authn
     stage('Deploy Demos Postgres with Annotation-based Authn') {
       parallel {
-        stage('GKE, v5 Conjur, Postgres, Annotation-based Authn') {
+      stage('GKE, v5 Conjur, Postgres, Annotation-based Authn') {
           steps {
             sh 'cd ci && summon --environment gke ./test gke postgres annotation-based'
           }
@@ -57,15 +79,30 @@ pipeline {
           }
         }
 
-        stage('OpenShift v4.3, v5 Conjur, Postgres, Annotation-based Authn') {
+        stage('OpenShift v(oldest), v5 Conjur, Postgres, Annotation-based Authn') {
           steps {
-            sh 'cd ci && summon --environment oc43 ./test oc postgres annotation-based'
+            sh 'cd ci && summon --environment oldest ./test oc postgres annotation-based'
           }
         }
 
-        stage('OpenShift v4.5, v5 Conjur, Postgres, Annotation-based Authn') {
+        stage('OpenShift v(current), v5 Conjur, Postgres, Annotation-based Authn') {
           steps {
-            sh 'cd ci && summon --environment oc45 ./test oc postgres annotation-based'
+            sh 'cd ci && summon --environment current ./test oc postgres annotation-based'
+          }
+        }
+
+        stage('OpenShift v(next)') {
+          when {
+            expression { params.TEST_OCP_NEXT }
+          }
+
+          stages {
+
+            stage('OpenShift v(next), v5 Conjur, Postgres, Annotation-based Authn') {
+              steps {
+                sh 'cd ci && summon --environment next ./test oc postgres annotation-based'
+              }
+            }
           }
         }
       }
@@ -86,15 +123,28 @@ pipeline {
           }
         }
 
-        stage('OpenShift v4.3, v5 Conjur, MySQL, Host-ID-based Authn') {
+        stage('OpenShift v(oldest), v5 Conjur, MySQL, Host-ID-based Authn') {
           steps {
-            sh 'cd ci && summon --environment oc43 ./test oc mysql host-id-based'
+            sh 'cd ci && summon --environment oldest ./test oc mysql host-id-based'
           }
         }
 
-        stage('OpenShift v4.5, v5 Conjur, MySQL, Host-ID-based Authn') {
+        stage('OpenShift v(current), v5 Conjur, MySQL, Host-ID-based Authn') {
           steps {
-            sh 'cd ci && summon --environment oc45 ./test oc mysql host-id-based'
+            sh 'cd ci && summon --environment current ./test oc mysql host-id-based'
+          }
+        }
+        stage('OpenShift v(next)') {
+          when {
+            expression { params.TEST_OCP_NEXT }
+          }
+
+          stages {
+            stage('OpenShift v(next), v5 Conjur, MySQL, Host-ID-based Authn') {
+              steps {
+                sh 'cd ci && summon --environment next ./test oc mysql host-id-based'
+              }
+            }
           }
         }
       }
