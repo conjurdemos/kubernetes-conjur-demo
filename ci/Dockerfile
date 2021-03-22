@@ -24,3 +24,9 @@ RUN mkdir -p ocbin && \
     tar xvf oc.tar.gz --strip-components=1 -C ocbin && \
     mv ocbin/oc /usr/local/bin/oc && \
     rm -rf ocbin oc.tar.gz
+
+# Install Helm CLI
+ARG HELM_CLI_VERSION
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+RUN chmod 700 get_helm.sh
+RUN ./get_helm.sh --no-sudo --version ${HELM_CLI_VERSION:-v3.5.2}

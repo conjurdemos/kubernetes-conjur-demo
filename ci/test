@@ -16,23 +16,38 @@
 
 set -euo pipefail
 IFS=$'\n\t'
+export CONJUR_OSS="${CONJUR_OSS:-false}"
+export KUBE_CLI_DELETE_TIMEOUT="${KUBE_CLI_DELETE_TIMEOUT:-120s}"
 
 # Clean up when script completes
 function finish {
   announce 'Wrapping up and removing test environment'
 
-  # Stop the running processes
-  runDockerCommand "
-    ./stop
-    cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop
-  "
+  if [[ "$CONJUR_OSS" == "true" ]]; then
+    runDockerCommand "
+./stop
+helm --namespace '$CONJUR_NAMESPACE_NAME' delete '${CONJUR_OSS_HELM_RELEASE_NAME}'
+kubectl delete --timeout='$KUBE_CLI_DELETE_TIMEOUT' \
+  namespace $CONJUR_NAMESPACE_NAME || \
+  (echo 'ERROR: Delete of namespace $CONJUR_NAMESPACE_NAME failed' && \
+   echo 'Showing residual resources in namespace:' && \
+   kubectl --namespace '$CONJUR_NAMESPACE_NAME' describe all)
+    "
+  else
+    # Stop the running processes
+    runDockerCommand "
+./stop
+cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop
+    "
 
-  # Remove the deploy directory
-  rm -rf ../kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    # Remove the deploy directory
+    rm -rf ../kubernetes-conjur-deploy-$UNIQUE_TEST_ID
 
-  # Delete registry images that were used
-  deleteRegistryImage "$DOCKER_REGISTRY_PATH/haproxy:$CONJUR_NAMESPACE_NAME"
-  deleteRegistryImage "$DOCKER_REGISTRY_PATH/conjur-appliance:$CONJUR_NAMESPACE_NAME"
+    # Delete registry images that were used
+    deleteRegistryImage "$DOCKER_REGISTRY_PATH/haproxy:$CONJUR_NAMESPACE_NAME"
+    deleteRegistryImage "$DOCKER_REGISTRY_PATH/conjur-appliance:$CONJUR_NAMESPACE_NAME"
+  fi
+
 }
 trap finish EXIT
 
@@ -69,11 +84,97 @@ function main() {
 }
 
 function deployConjur() {
-  pushd ..
-    git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
-  popd
+  if [[ "$CONJUR_OSS" == "true" ]]; then
+    cd ..
+    local workdir=kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    mkdir -p "${workdir}"
+    cd "${workdir}"
 
-  runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+    export CONJUR_OSS_HELM_CHART_VERSION=2.0.3
+    export CONJUR_OSS_HELM_INSTALLED=true
+    export CONJUR_OSS_HELM_RELEASE_NAME="${CONJUR_NAMESPACE_NAME}"
+
+    export CONJUR_ADMIN_PASSWORD # set below
+
+    # TODO: figure out why the cli can't be auto-created by kubernetes-conjur-demo
+    local cliManifest='
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conjur-cli
+  labels:
+    app: conjur-cli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conjur-cli
+  template:
+    metadata:
+      name: conjur-cli
+      labels:
+        app: conjur-cli
+    spec:
+      serviceAccountName: conjur-oss
+      containers:
+      - name: conjur-cli
+        image: cyberark/conjur-cli:5
+        imagePullPolicy: Always
+        command: ["sleep"]
+        args: ["infinity"]
+'
+    # TODO: move this whole script into its own file
+    runDockerCommand "
+set -xeuo pipefail
+
+cd '${workdir}'
+
+kubectl create namespace '${CONJUR_NAMESPACE_NAME}'
+
+helm --namespace '${CONJUR_NAMESPACE_NAME}' install \
+   --wait \
+   --timeout 120s \
+   --set account.name=${CONJUR_ACCOUNT} \
+   --set account.create=true \
+   --set fullnameOverride=conjur-oss \
+   --set authenticators='authn-k8s/${AUTHENTICATOR_ID}\,authn' \
+   --set image.repository=registry.connect.redhat.com/cyberark/conjur \
+   --set image.tag=latest \
+   --set nginx.image.repository=registry.connect.redhat.com/cyberark/conjur-nginx \
+   --set nginx.image.tag=latest \
+   --set postgres.image.repository=registry.redhat.io/rhscl/postgresql-10-rhel7 \
+   --set postgres.image.tag=latest \
+   --set openshift.enabled=true \
+   --set service.external.enabled=false \
+   --set postgres.persistentVolume.create=false \
+   --set rbac.create=true \
+   --set 'dataKey=To7gsAFQOm7NlVnBWA3gFYlZIHC25pGwm/pMxlcHLUY=' \
+   '${CONJUR_OSS_HELM_RELEASE_NAME}' \
+   'https://github.com/cyberark/conjur-oss-helm-chart/releases/download/v${CONJUR_OSS_HELM_CHART_VERSION}/conjur-oss-${CONJUR_OSS_HELM_CHART_VERSION}.tgz'
+
+POD_NAME=\$(kubectl get pods --namespace '${CONJUR_NAMESPACE_NAME}' \
+   -l 'app=conjur-oss' \
+   -o jsonpath='{.items[0].metadata.name}')
+kubectl exec --namespace '${CONJUR_NAMESPACE_NAME}' \
+   \${POD_NAME} \
+   --container=conjur-oss \
+   -- conjurctl role retrieve-key ${CONJUR_ACCOUNT}:user:admin | tail -1 > conjur-admin-api-key
+export CONJUR_ADMIN_PASSWORD=\$(cat conjur-admin-api-key)
+# Allow pods with conjur-oss serviceaccount to run as root
+oc adm policy add-scc-to-user anyuid 'system:serviceaccount:${CONJUR_NAMESPACE_NAME}:conjur-oss'
+
+echo '${cliManifest}' | kubectl --namespace '${CONJUR_NAMESPACE_NAME}' apply -f -
+kubectl --namespace '${CONJUR_NAMESPACE_NAME}' wait --for=condition=available --timeout=60s deployment/conjur-cli
+"
+     CONJUR_ADMIN_PASSWORD=$(cat conjur-admin-api-key)
+  else
+    pushd ..
+      git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    popd
+
+    runDockerCommand "cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+  fi
 }
 
 function deployDemo() {
@@ -122,9 +223,9 @@ function deleteRegistryImage() {
 
   if [[ "$PLATFORM" = "kubernetes" ]]; then
     runDockerCommand "
-      if gcloud container images list-tags $image | grep $tag; then
-        gcloud container images delete --force-delete-tags -q $image_and_tag
-      fi
+if gcloud container images list-tags $image | grep $tag; then
+  gcloud container images delete --force-delete-tags -q $image_and_tag
+fi
     "
   fi
 }
@@ -133,6 +234,8 @@ function runDockerCommand() {
   docker run --rm \
     -i \
     -e ANNOTATION_BASED_AUTHN \
+    -e CONJUR_OSS_HELM_INSTALLED \
+    -e CONJUR_OSS_HELM_RELEASE_NAME \
     -e CONJUR_APPLIANCE_IMAGE \
     -e CONJUR_NAMESPACE_NAME \
     -e CONJUR_ACCOUNT \
