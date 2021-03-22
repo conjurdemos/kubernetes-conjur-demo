@@ -17,6 +17,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 export CONJUR_OSS="${CONJUR_OSS:-false}"
+export KUBE_CLI_DELETE_TIMEOUT="${KUBE_CLI_DELETE_TIMEOUT:-120s}"
 
 # Clean up when script completes
 function finish {
@@ -24,15 +25,19 @@ function finish {
 
   if [[ "$CONJUR_OSS" == "true" ]]; then
     runDockerCommand "
-      ./stop
-      helm --namespace '$CONJUR_NAMESPACE_NAME' delete '${CONJUR_OSS_HELM_RELEASE_NAME}'
-      kubectl delete namespace $CONJUR_NAMESPACE_NAME
+./stop
+helm --namespace '$CONJUR_NAMESPACE_NAME' delete '${CONJUR_OSS_HELM_RELEASE_NAME}'
+kubectl delete --timeout='$KUBE_CLI_DELETE_TIMEOUT' \
+  namespace $CONJUR_NAMESPACE_NAME || \
+  (echo 'ERROR: Delete of namespace $CONJUR_NAMESPACE_NAME failed' && \
+   echo 'Showing residual resources in namespace:' && \
+   kubectl --namespace '$CONJUR_NAMESPACE_NAME' describe all)
     "
   else
     # Stop the running processes
     runDockerCommand "
-      ./stop
-      cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop
+./stop
+cd kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop
     "
 
     # Remove the deploy directory
@@ -218,9 +223,9 @@ function deleteRegistryImage() {
 
   if [[ "$PLATFORM" = "kubernetes" ]]; then
     runDockerCommand "
-      if gcloud container images list-tags $image | grep $tag; then
-        gcloud container images delete --force-delete-tags -q $image_and_tag
-      fi
+if gcloud container images list-tags $image | grep $tag; then
+  gcloud container images delete --force-delete-tags -q $image_and_tag
+fi
     "
   fi
 }
