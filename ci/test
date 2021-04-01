@@ -26,7 +26,7 @@ function finish {
   if [[ "$CONJUR_OSS" == "true" ]]; then
     runDockerCommand "
 ./stop
-helm --namespace '$CONJUR_NAMESPACE_NAME' delete '${CONJUR_OSS_HELM_RELEASE_NAME}'
+helm --namespace '$CONJUR_NAMESPACE_NAME' delete '${HELM_RELEASE}'
 kubectl delete --timeout='$KUBE_CLI_DELETE_TIMEOUT' \
   namespace $CONJUR_NAMESPACE_NAME || \
   (echo 'ERROR: Delete of namespace $CONJUR_NAMESPACE_NAME failed' && \
@@ -92,7 +92,7 @@ function deployConjur() {
 
     export CONJUR_OSS_HELM_CHART_VERSION=2.0.3
     export CONJUR_OSS_HELM_INSTALLED=true
-    export CONJUR_OSS_HELM_RELEASE_NAME="${CONJUR_NAMESPACE_NAME}"
+    export HELM_RELEASE="${CONJUR_NAMESPACE_NAME}"
 
     export CONJUR_ADMIN_PASSWORD # set below
 
@@ -150,7 +150,7 @@ helm --namespace '${CONJUR_NAMESPACE_NAME}' install \
    --set postgres.persistentVolume.create=false \
    --set rbac.create=true \
    --set 'dataKey=To7gsAFQOm7NlVnBWA3gFYlZIHC25pGwm/pMxlcHLUY=' \
-   '${CONJUR_OSS_HELM_RELEASE_NAME}' \
+   '${HELM_RELEASE}' \
    'https://github.com/cyberark/conjur-oss-helm-chart/releases/download/v${CONJUR_OSS_HELM_CHART_VERSION}/conjur-oss-${CONJUR_OSS_HELM_CHART_VERSION}.tgz'
 
 POD_NAME=\$(kubectl get pods --namespace '${CONJUR_NAMESPACE_NAME}' \
@@ -235,7 +235,7 @@ function runDockerCommand() {
     -i \
     -e ANNOTATION_BASED_AUTHN \
     -e CONJUR_OSS_HELM_INSTALLED \
-    -e CONJUR_OSS_HELM_RELEASE_NAME \
+    -e HELM_RELEASE \
     -e CONJUR_APPLIANCE_IMAGE \
     -e CONJUR_NAMESPACE_NAME \
     -e CONJUR_ACCOUNT \
