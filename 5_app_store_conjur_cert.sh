@@ -11,7 +11,7 @@ echo "Retrieving Conjur certificate."
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   master_pod_name=$(get_master_pod_name)
-  ssl_cert=$($cli exec -c "${CONJUR_OSS_HELM_RELEASE_NAME}-nginx" $master_pod_name -- cat /opt/conjur/etc/ssl/cert/tls.crt)
+  ssl_cert=$($cli exec -c "${HELM_RELEASE}-nginx" $master_pod_name -- cat /opt/conjur/etc/ssl/cert/tls.crt)
 else
   if $cli get pods --selector role=follower --no-headers; then
     follower_pod_name=$($cli get pods --selector role=follower --no-headers | awk '{ print $1 }' | head -1)
