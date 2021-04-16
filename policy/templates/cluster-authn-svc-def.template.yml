@@ -10,6 +10,12 @@
     annotations:
       description: authn service for cluster
 
+  - !host
+    id: validator
+    annotations:
+      description: Validation host used when configuring a cluster
+      authn-k8s/namespace: {{ CONJUR_NAMESPACE_NAME }}
+
   - !policy
     id: ca 
     body:
@@ -34,3 +40,4 @@
   role: !layer conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/users
   members:
     - !layer conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/validator

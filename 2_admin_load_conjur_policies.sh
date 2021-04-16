@@ -64,7 +64,8 @@ pushd policy
     is_kubernetes=true
   fi
 
-  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml |
+    sed "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
