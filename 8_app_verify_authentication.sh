@@ -66,7 +66,7 @@ echo "Waiting for pods to become available"
 
 check_pods(){
   pods_ready "test-app-summon-init" &&
-  pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
+  pods_ready "test-app-with-outside-host-summon-init" &&
   pods_ready "test-app-summon-sidecar" &&
   pods_ready "test-app-secretless"
 }
@@ -77,7 +77,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
 
   check_deployment_status(){
     [[ "$(deployment_status "test-app-summon-init")" == "Complete" ]] &&
-    [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" == "Complete" ]] &&
+    [[ "$(deployment_status "test-app-with-outside-host-summon-init")" == "Complete" ]] &&
     [[ "$(deployment_status "test-app-summon-sidecar")" == "Complete" ]] &&
     [[ "$(deployment_status "test-app-secretless")" == "Complete" ]]
   }
@@ -85,7 +85,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
 
   sidecar_pod=$(get_pod_name test-app-summon-sidecar)
   init_pod=$(get_pod_name test-app-summon-init)
-  init_pod_with_host_outside_apps=$(get_pod_name test-app-with-host-outside-apps-branch-summon-init)
+  init_pod_with_host_outside_apps=$(get_pod_name test-app-with-outside-host-summon-init)
   secretless_pod=$(get_pod_name test-app-secretless)
 
   # Routes are defined, but we need to do port-mapping to access them
@@ -108,7 +108,7 @@ else
     echo "Waiting for external IPs to become available"
     check_services(){
       [[ -n "$(external_ip "test-app-summon-init")" ]] &&
-      [[ -n "$(external_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] &&
+      [[ -n "$(external_ip "test-app-with-outside-host-summon-init")" ]] &&
       [[ -n "$(external_ip "test-app-summon-sidecar")" ]] &&
       [[ -n "$(external_ip "test-app-secretless")" ]]
     }
@@ -116,7 +116,7 @@ else
 
     curl_cmd=curl
     init_url=$(external_ip test-app-summon-init):8080
-    init_url_with_host_outside_apps=$(external_ip test-app-with-host-outside-apps-branch-summon-init):8080
+    init_url_with_host_outside_apps=$(external_ip test-app-with-outside-host-summon-init):8080
     sidecar_url=$(external_ip test-app-summon-sidecar):8080
     secretless_url=$(external_ip test-app-secretless):8080
 
@@ -125,7 +125,7 @@ else
     # a pod that is inside the KinD cluster.
     curl_cmd=pod_curl
     init_url="test-app-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
-    init_url_with_host_outside_apps="test-app-with-host-outside-apps-branch-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+    init_url_with_host_outside_apps="test-app-with-outside-host-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
     sidecar_url="test-app-summon-sidecar.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
     secretless_url="test-app-secretless.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   fi

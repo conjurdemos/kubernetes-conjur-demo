@@ -2,40 +2,40 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: test-app-with-host-outside-apps-branch-summon-init
+  name: test-app-with-outside-host-summon-init
   labels:
-    app: test-app-with-host-outside-apps-branch-summon-init
+    app: test-app-with-outside-host-summon-init
 spec:
   ports:
   - protocol: TCP
     port: 8080
     targetPort: 8080
   selector:
-    app: test-app-with-host-outside-apps-branch-summon-init
+    app: test-app-with-outside-host-summon-init
   type: {{ SERVICE_TYPE }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: test-app-with-host-outside-apps-branch-summon-init
+  name: test-app-with-outside-host-summon-init
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: test-app-with-host-outside-apps-branch-summon-init
-  name: test-app-with-host-outside-apps-branch-summon-init
+    app: test-app-with-outside-host-summon-init
+  name: test-app-with-outside-host-summon-init
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-app-with-host-outside-apps-branch-summon-init
+      app: test-app-with-outside-host-summon-init
   template:
     metadata:
       labels:
-        app: test-app-with-host-outside-apps-branch-summon-init
+        app: test-app-with-outside-host-summon-init
     spec:
-      serviceAccountName: test-app-with-host-outside-apps-branch-summon-init
+      serviceAccountName: test-app-with-outside-host-summon-init
       containers:
       - image: {{ TEST_APP_DOCKER_IMAGE }}
         imagePullPolicy: {{ IMAGE_PULL_POLICY }}
