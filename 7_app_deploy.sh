@@ -207,22 +207,22 @@ deploy_init_container_app() {
 ###########################
 deploy_init_container_app_with_host_outside_apps() {
   $cli delete --ignore-not-found \
-    deployment/test-app-with-host-outside-apps-branch-summon-init \
-    service/test-app-with-host-outside-apps-branch-summon-init \
-    serviceaccount/test-app-with-host-outside-apps-branch-summon-init \
-    serviceaccount/oc-test-app-with-host-outside-apps-branch-summon-init
+    deployment/test-app-with-outside-host-summon-init \
+    service/test-app-with-outside-host-summon-init \
+    serviceaccount/test-app-with-outside-host-summon-init \
+    serviceaccount/oc-test-app-with-outside-host-summon-init
 
   if [[ "$PLATFORM" == "openshift" ]]; then
     oc delete --ignore-not-found \
-      deploymentconfig/test-app-with-host-outside-apps-branch-summon-init \
-      route/test-app-with-host-outside-apps-branch-summon-init
+      deploymentconfig/test-app-with-outside-host-summon-init \
+      route/test-app-with-outside-host-summon-init
   fi
 
   sleep 5
 
   conjur_authn_login="host/some-apps/$TEST_APP_NAMESPACE_NAME/*/*"
 
-  sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-with-host-outside-apps-branch-summon-init.yml |
+  sed "s#{{ TEST_APP_DOCKER_IMAGE }}#$test_init_app_docker_image#g" ./$PLATFORM/test-app-with-outside-host-summon-init.yml |
     sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
     sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
@@ -236,7 +236,7 @@ deploy_init_container_app_with_host_outside_apps() {
     $cli create -f -
 
   if [[ "$PLATFORM" == "openshift" ]]; then
-    oc expose service test-app-with-host-outside-apps-branch-summon-init
+    oc expose service test-app-with-outside-host-summon-init
   fi
 
   echo "Test app/init-container deployed."
