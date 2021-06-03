@@ -231,6 +231,11 @@ fi
 }
 
 function runDockerCommand() {
+  GCLOUD_INCLUDES=""
+  if [[ ! -z "${GCLOUD_SERVICE_KEY}" ]]; then
+    GCLOUD_INCLUDES="-v$GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY"
+  fi
+
   docker run --rm \
     -i \
     -e ANNOTATION_BASED_AUTHN \
@@ -252,7 +257,6 @@ function runDockerCommand() {
     -e PULL_DOCKER_REGISTRY_PATH \
     -e MINI_ENV \
     -e DEPLOY_MASTER_CLUSTER \
-    -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
     -e GCLOUD_CLUSTER_NAME \
     -e GCLOUD_ZONE \
     -e GCLOUD_PROJECT_NAME \
@@ -264,7 +268,8 @@ function runDockerCommand() {
     -e OSHIFT_CLUSTER_ADMIN_USERNAME \
     -e CONJUR_LOG_LEVEL \
     -e TEST_APP_LOADBALANCER_SVCS \
-    -v $GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY \
+    -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
+    $GCLOUD_INCLUDES \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v ~/.config:/root/.config \
     -v "$PWD/..":/src \
