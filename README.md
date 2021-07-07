@@ -1,21 +1,21 @@
 # kubernetes-conjur-demo
 
-This repo demonstrates an app retrieving secrets from Conjur or a Dynamic Access
-Provider (DAP) follower running in Kubernetes or OpenShift.
+This repo demonstrates an app retrieving secrets from Conjur Open Source
+or a Conjur Enterprise follower running in Kubernetes or OpenShift.
 
 **Note:** These demo scripts have been tested with the following products:
-  - Dynamic Access Provider v11+ or Conjur OSS v1.5+.
+  - Conjur Enterprise (formerly DAP) v11+ or Conjur Open Source v1.5+.
     - Older versions of Conjur Enterprise v4 are not supported.
   - cyberark/conjur-authn-k8s-client v0.18+
   - cyberark/secretless-broker v1.0+
 
 ## Demo Workflow
 
-This demo works with both Conjur OSS and DAP. You can tailor the specific
+This demo works with both Conjur Open Source and Enterprise. You can tailor the specific
 steps that the demo scripts perform using environment variable settings,
 based on your specific needs (e.g. do you want the scripts to load policy
 into Conjur master, or will you be doing that independently) and whether
-you are using Conjur OSS or DAP.
+you are using Conjur Open Source or Enterprise.
 
 The steps, or workflow, that the scripts perform can be categorized into
 three phases (the `Security Admin Steps` phase being optional):
@@ -59,7 +59,7 @@ in Conjur.
 
 ## Requirements
 
-This demo works with both Conjur OSS and DAP, but the requirements vary depending
+This demo works with both Conjur Open Source and Enterprise, but the requirements vary depending
 on which you are using.
 
 To run this demo, you must load policy. You may want to **set up a separate
@@ -68,33 +68,33 @@ to load demo policy in your production environment.
 
 There are a couple of options available for deploying a Conjur cluster:
 
-- You can deploy a demo Conjur DAP cluster, including a Conjur master node
+- You can deploy a demo Conjur Enterprise cluster, including a Conjur master node
   and several Conjur follower nodes using the
   [Kubernetes Conjur deploy scripts](https://github.com/cyberark/kubernetes-conjur-deploy).
   See the [demo guide to deploying a master cluster](https://github.com/cyberark/kubernetes-conjur-deploy/blob/master/CONTRIBUTING.md#deploying-conjur-master-and-followers-test-and-demo-only)
   for more information.
-- You can deploy a Conjur OSS cluster using the  
-  [Conjur OSS Helm Chart](https://github.com/cyberark/conjur-oss-helm-chart).
+- You can deploy a Conjur Open Source cluster using the
+  [Conjur Open Source Helm Chart](https://github.com/cyberark/conjur-oss-helm-chart).
 
-### Requirements for Conjur OSS
+### Requirements for Conjur Open Source
 
 Supported platforms:
 - Kubernetes v1.16+
 
-- To run this demo with Conjur OSS, you must have deployed Conjur OSS to your
+- To run this demo with Conjur Open Source, you must have deployed Conjur Open Source to your
   Kubernetes cluster using the [helm chart](https://github.com/cyberark/conjur-oss-helm-chart).
 - You must have credentials for a Conjur user that can load policy
 
-### Requirements for Dynamic Access Provider
+### Requirements for Conjur Enterprise
 
 Supported platforms:
 - Kubernetes v1.16+
 - OpenShift 3.11
 
-To run this demo with DAP, you must have deployed a DAP follower to your
+To run this demo with Conjur Enterprise, you must have deployed a Conjur Enterprise follower to your
 Kubernetes cluster following the [documentation](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/ConjurDeployFollowers.htm).
 
-*Note: if you have been following the [DAP documentation](https://docs.conjur.org/Latest/en/Content/Integrations/Kubernetes_deployConjur.htm),
+*Note: if you have been following the [Conjur Enterprise documentation](https://docs.conjur.org/Latest/en/Content/Integrations/Kubernetes_deployConjur.htm),
 you may have completed this step while you were already logged into the Conjur
 master. If not, you will need to do so now.*
 
@@ -109,12 +109,12 @@ Set the following variables in your local environment:
 | Environment Variable | Definition | Mandatory | Default | Example |
 |--|--|--|--|--|
 | `AUTHENTICATOR_ID` | The Conjur Kubernetes authenticator ID to use in Conjur policy (refer to the [documentation on enabling Conjur authenticators](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/Kubernetes_deployApplicationCluster.htm?tocpath=Integrations%7COpenShift%252C%20Kubernetes%7C_____5)). | Yes | - | `my-authn-id` |
-| `CONFIGURE_CONJUR_MASTER` | Boolean to determine if security admin steps described above (initialize Conjur CA, configure Conjur policy) should be performed by the scripts. NOTE: This setting only applies when running the scripts with DAP. When running with Conjur OSS (i.e. when `CONJUR_OSS_HELM_INSTALLED` is set to `true`), then security admin steps are performed regardless of this setting. | No | `false` | `true` |
-| `CONJUR_ACCOUNT` | The account your Conjur / DAP cluster is configured to use. | Yes | - | `myConjurAccount` |
-| `CONJUR_ADMIN_PASSWORD` | The `admin` user password that was created when you created the account on your Conjur / DAP cluster. | Yes | - | |
+| `CONFIGURE_CONJUR_MASTER` | Boolean to determine if security admin steps described above (initialize Conjur CA, configure Conjur policy) should be performed by the scripts. NOTE: This setting only applies when running the scripts with Conjur Enterprise. When running with Conjur Open Source (i.e. when `CONJUR_OSS_HELM_INSTALLED` is set to `true`), then security admin steps are performed regardless of this setting. | No | `false` | `true` |
+| `CONJUR_ACCOUNT` | The account your Conjur cluster is configured to use. | Yes | - | `myConjurAccount` |
+| `CONJUR_ADMIN_PASSWORD` | The `admin` user password that was created when you created the account on your Conjur cluster. | Yes | - | |
 | `CONJUR_AUTHN_LOGIN_RESOURCE` | Type of Kubernetes resource to use as Conjur [application identity](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/Kubernetes_AppIdentity.htm). | No | `service_account` | `deployment` |
 | `CONJUR_NAMESPACE_NAME` | The namespace to which Conjur was deployed. | Yes | - | `conjur-namespace` |
-| `CONJUR_OSS_HELM_INSTALLED` | Set to `true` if you are using Conjur OSS. | No | `false` | `true` |
+| `CONJUR_OSS_HELM_INSTALLED` | Set to `true` if you are using Conjur Open Source. | No | `false` | `true` |
 | `USE_DOCKER_LOCAL_REGISTRY` | Set to `true` if you are using a local, insecure registry to push/pull pod images. | No | `false` | `true` |
 | `DOCKER_REGISTRY_URL` | Set to the Docker registry to use for your platform for pushing/pulling application images that get built by the script. This value is mainly used for authentication. Examples are `docker.io` for DockerHub or `us.gcr.io` for GKE. | Yes | - | `us.gcr.io` |
 | `PULL_DOCKER_REGISTRY_URL` | This value represents the same as `DOCKER_REGISTRY_URL` above. In general, it need not be set and will default to the same value as `DOCKER_REGISTRY_URL`. However, it is useful when, say, `DOCKER_REGISTRY_URL` is an external endpoint that is used for pushing and `PULL_DOCKER_REGISTRY_URL` is the endpoint used for pulling. This value is also mainly used for authentication. | Yes | `${DOCKER_REGISTRY_URL}` | `image-registry.openshift-image-registry.svc:5000` |
@@ -136,7 +136,7 @@ export DOCKER_EMAIL=<your-email>
 ```
 
 Once you have:
-- Reviewed the [requirements](#requirements) to ensure your Conjur / DAP server is set up correctly
+- Reviewed the [requirements](#requirements) to ensure your Conjur server is set up correctly
 - Logged into your Kubernetes cluster via the local command line
 - Set your local environment as defined above
 
