@@ -64,7 +64,15 @@ pushd policy
     is_kubernetes=true
   fi
 
+  validator_id="${VALIDATOR_ID:-validator}"
+  validator_namespace="${VALIDATOR_NAMESPACE_NAME:-$CONJUR_NAMESPACE_NAME}"
+  app_validator_id="${APP_VALIDATOR_ID:-app-validator}"
+  app_validator_namespace="${APP_VALIDATOR_NAMESPACE_NAME:-$TEST_APP_NAMESPACE_NAME}"
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml |
+    sed "s#{{ VALIDATOR_ID }}#$validator_id#g" |
+    sed "s#{{ VALIDATOR_NAMESPACE_NAME }}#$validator_namespace#g" |
+    sed "s#{{ APP_VALIDATOR_ID }}#$app_validator_id#g" |
+    sed "s#{{ APP_VALIDATOR_NAMESPACE_NAME }}#$app_validator_namespace#g" |
     sed "s#{{ CONJUR_NAMESPACE_NAME }}#$CONJUR_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
