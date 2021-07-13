@@ -114,6 +114,10 @@ Set the following variables in your local environment:
 | `CONJUR_ADMIN_PASSWORD` | The `admin` user password that was created when you created the account on your Conjur cluster. | Yes | - | |
 | `CONJUR_AUTHN_LOGIN_RESOURCE` | Type of Kubernetes resource to use as Conjur [application identity](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/Kubernetes_AppIdentity.htm). | No | `service_account` | `deployment` |
 | `CONJUR_NAMESPACE_NAME` | The namespace to which Conjur was deployed. | Yes | - | `conjur-namespace` |
+| `VALIDATOR_ID` | Optional host ID to include in Conjur policy for testing basic authentication following Kubernetes cluster configuration. | No | `validator` | `my-validator-id` |
+| `VALIDATOR_NAMESPACE_NAME` | The namespace from which basic authentication will be tested using VALIDATOR_ID. | No | CONJUR_NAMESPACE_NAME | `my-conjur-namespace` |
+| `APP_VALIDATOR_ID` | Optional host ID to include in Conjur policy for testing basic authentication following application Namespace configuration. | No | `app-validator` | `my-app-validator-id` |
+| `APP_VALIDATOR_NAMESPACE_NAME` | The namespace from which basic authentication will be tested using APP_VALIDATOR_ID. | No | TEST_APP_NAMESPACE_NAME | `my-app-namespace` |
 | `CONJUR_OSS_HELM_INSTALLED` | Set to `true` if you are using Conjur Open Source. | No | `false` | `true` |
 | `USE_DOCKER_LOCAL_REGISTRY` | Set to `true` if you are using a local, insecure registry to push/pull pod images. | No | `false` | `true` |
 | `DOCKER_REGISTRY_URL` | Set to the Docker registry to use for your platform for pushing/pulling application images that get built by the script. This value is mainly used for authentication. Examples are `docker.io` for DockerHub or `us.gcr.io` for GKE. | Yes | - | `us.gcr.io` |

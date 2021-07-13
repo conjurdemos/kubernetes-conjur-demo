@@ -10,11 +10,21 @@
     annotations:
       description: authn service for cluster
 
+  # The VALIDATOR_ID and APP_VALIDATOR_ID host IDs can be used to validate basic
+  # authentication after a cluster or application Namespace (respectively) have
+  # been configured for authn-k8s. These host IDs do not have access to secrets
+  # (i.e. they are authenticate-only).
   - !host
-    id: validator
+    id: {{ VALIDATOR_ID }}
     annotations:
       description: Validation host used when configuring a cluster
-      authn-k8s/namespace: {{ CONJUR_NAMESPACE_NAME }}
+      authn-k8s/namespace: {{ VALIDATOR_NAMESPACE_NAME }}
+
+  - !host
+    id: {{ APP_VALIDATOR_ID }}
+    annotations:
+      description: Validation host used when configuring an application namespace
+      authn-k8s/namespace: {{ APP_VALIDATOR_NAMESPACE_NAME }}
 
   - !policy
     id: ca 
@@ -40,4 +50,5 @@
   role: !layer conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/users
   members:
     - !layer conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
-    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/validator
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/{{ VALIDATOR_ID }}
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/{{ APP_VALIDATOR_ID }}
