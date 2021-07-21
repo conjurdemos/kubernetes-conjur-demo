@@ -90,7 +90,7 @@ function deployConjur() {
     mkdir -p "${workdir}"
     cd "${workdir}"
 
-    export CONJUR_OSS_HELM_CHART_VERSION=2.0.3
+    export CONJUR_OSS_HELM_CHART_VERSION=2.0.4
     export CONJUR_OSS_HELM_INSTALLED=true
     export HELM_RELEASE="${CONJUR_NAMESPACE_NAME}"
 
