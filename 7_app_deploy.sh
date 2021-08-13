@@ -62,7 +62,7 @@ init_connection_specs() {
     secretless_image=$(platform_image_for_pull secretless-broker)
   else
     authenticator_client_image="cyberark/conjur-authn-k8s-client"
-    secretless_image="cyberark/secretless-broker"
+    secretless_image="docker.io/cyberark/secretless-broker"
   fi
 
   if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
