@@ -39,16 +39,29 @@ init_registry_creds() {
       --docker-email=$DOCKER_EMAIL
   elif [[ "$PLATFORM" == "openshift" ]]; then
     announce "Creating image pull secret."
+    echo "oc cli version: $(get_oc_version)"
 
     $cli delete --ignore-not-found secrets dockerpullsecret
 
-    $cli secrets new-dockercfg dockerpullsecret \
-      --docker-server=${PULL_DOCKER_REGISTRY_URL} \
-      --docker-username=_ \
-      --docker-password=$($cli whoami -t) \
-      --docker-email=_
+    if [[ $(is_oc_major_version 3) == true ]]; then
+      echo "Using older oc secrets api (v3)"
+      $cli secrets new-dockercfg dockerpullsecret \
+        --docker-server=${PULL_DOCKER_REGISTRY_URL} \
+        --docker-username=_ \
+        --docker-password=$($cli whoami -t) \
+        --docker-email=_
 
-    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull
+      $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull
+    else
+      echo "Using newer oc secrets else (v4+)"
+      $cli create secret docker-registry dockerpullsecret \
+          --docker-server=${PULL_DOCKER_REGISTRY_URL} \
+          --docker-username=_ \
+          --docker-password=$($cli whoami -t) \
+          --docker-email=_
+
+      $cli secrets link default dockerpullsecret --for=pull
+    fi
   fi
 }
 

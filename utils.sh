@@ -276,3 +276,32 @@ function dump_authentication_policy {
   announce "Authentication policy:"
   cat policy/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
 }
+
+function get_oc_version {
+  # `oc version` output differs between v3 and v4
+  local PATTERN="oc v([0-9]+.[0-9]+.[0-9]+).+"
+
+  # match `oc v3.7.2+282e43f` -> `3.7.2`
+  local ver=$($cli version | head -n 1 | grep -E "${PATTERN}" | sed -r "s/${PATTERN}/\1/")
+  if [ -z "$ver" ]
+  then
+    # match `Client Version: 4.8.2` -> `4.8.2`
+    PATTERN="Client Version: ([0-9]+\.[0-9]+\.[0-9]+)"
+    $cli version | head -n 1 | grep -E "${PATTERN}" | sed -r "s/${PATTERN}/\1/"
+  fi
+  echo $ver
+}
+
+# is_oc_major_version determines if the oc cli major version matches the given major version
+# ex) oc version -> 4.8.2; is_oc_major_version 4 -> true
+# ex) oc version -> 4.8.2; is_oc_major_version 3 -> false
+function is_oc_major_version(){
+  local major_version=$1
+  local cli_version=$(get_oc_version)
+  
+  if [[ ${cli_version:0:1} == $major_version ]]; then
+    echo true
+  else
+    echo false
+  fi
+}
