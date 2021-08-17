@@ -252,6 +252,13 @@ function dump_kubernetes_resources() {
   $cli get -n $TEST_APP_NAMESPACE_NAME pods -o yaml
   echo "Describe pods in namespace $TEST_APP_NAMESPACE_NAME:"
   $cli describe -n $TEST_APP_NAMESPACE_NAME pods
+  echo "Logging pods in namespace $TEST_APP_NAMESPACE_NAME (summon init): ***"
+  $cli logs -n "$TEST_APP_NAMESPACE_NAME" test-app-summon-init-1
+  echo "Logging pods in namespace $TEST_APP_NAMESPACE_NAME (summon sidecar): ***"
+  $cli logs -n "$TEST_APP_NAMESPACE_NAME" test-app-summon-sidecar-1
+  echo "Logging pods in namespace $TEST_APP_NAMESPACE_NAME (test app with outside host summon init): ***"
+  $cli logs -n "$TEST_APP_NAMESPACE_NAME" test-app-with-outside-host-summon-init-1
+  echo "Logging pods in namespace $TEST_APP_NAMESPACE_NAME: ***"
   echo "Services:in namespace $TEST_APP_NAMESPACE_NAME:"
   $cli get -n $TEST_APP_NAMESPACE_NAME svc
   echo "ServiceAccounts:in namespace $TEST_APP_NAMESPACE_NAME:"
