@@ -16,7 +16,7 @@ pipeline {
     booleanParam(
       name: 'TEST_OCP_NEXT',
       description: 'Whether or not to run the pipeline against the next OCP version',
-      defaultValue: false) 
+      defaultValue: true) 
   }
 
   stages {
