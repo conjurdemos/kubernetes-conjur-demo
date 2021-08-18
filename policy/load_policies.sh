@@ -65,7 +65,7 @@ for app_name in "${APPS[@]}"; do
   else
     # The authenticator sidecar injects the full pg connection string into the
     # app environment using Summon
-    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_address/test_app"
+    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_address/test_app?enabledTLSProtocols=TLSv1,TLSv1.1,TLSv1.2"
   fi
 done
 
