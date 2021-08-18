@@ -100,7 +100,7 @@ pipeline {
     // Postgres Tests with Annotation-based Authn
     stage('Deploy Demos Postgres with Annotation-based Authn') {
       parallel {
-      stage('GKE, v5 Conjur, Postgres, Annotation-based Authn') {
+        stage('GKE, v5 Conjur, Postgres, Annotation-based Authn') {
           steps {
             sh 'cd ci && summon --environment gke ./test gke postgres annotation-based'
           }

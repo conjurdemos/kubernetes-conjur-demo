@@ -63,6 +63,19 @@ if [[ "$PLATFORM" != "openshift" ]]; then
       docker push $test_app_pg_image
     fi
   popd
+else
+  # If in Openshift, build and store mysql in openshift registry to circumvent
+  # rate-limiting when pulling from docker-hub.
+  docker pull centos/mysql-57-centos7
+  docker tag centos/mysql-57-centos7 $(platform_image_for_push mysql-57-centos7)
+
+  docker pull centos/mysql-80-centos7:latest
+  docker tag centos/mysql-80-centos7:latest $(platform_image_for_push mysql-80-centos7)
+
+  if ! is_minienv; then
+    docker push $(platform_image_for_push mysql-57-centos7)
+    docker push $(platform_image_for_push mysql-80-centos7)
+  fi
 fi
 
 if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
