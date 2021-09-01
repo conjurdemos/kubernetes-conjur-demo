@@ -39,16 +39,15 @@ init_registry_creds() {
       --docker-email=$DOCKER_EMAIL
   elif [[ "$PLATFORM" == "openshift" ]]; then
     announce "Creating image pull secret."
-
+    
     $cli delete --ignore-not-found secrets dockerpullsecret
 
-    $cli secrets new-dockercfg dockerpullsecret \
-      --docker-server=${PULL_DOCKER_REGISTRY_URL} \
-      --docker-username=_ \
-      --docker-password=$($cli whoami -t) \
-      --docker-email=_
-
-    $cli secrets add serviceaccount/default secrets/dockerpullsecret --for=pull
+    $cli create secret docker-registry dockerpullsecret \
+        --docker-server=${PULL_DOCKER_REGISTRY_URL} \
+        --docker-username=_ \
+        --docker-password=$($cli whoami -t) \
+        --docker-email=_
+    $cli secrets link default dockerpullsecret --for=pull
   fi
 }
 
@@ -62,7 +61,7 @@ init_connection_specs() {
     secretless_image=$(platform_image_for_pull secretless-broker)
   else
     authenticator_client_image="cyberark/conjur-authn-k8s-client"
-    secretless_image="cyberark/secretless-broker"
+    secretless_image="docker.io/cyberark/secretless-broker"
   fi
 
   if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
@@ -120,10 +119,21 @@ deploy_app_backend() {
     ;;
   mysql)
     echo "Deploying test app backend"
+    
+    # See the ./${PLATFORM}/mysql.template.yml file for details about
+    # differing mysql versions (for specifically openshift)
 
-    test_app_mysql_docker_image="mysql/mysql-server:5.7"
+    if [[ "${PLATFORM}" == "openshift" ]]; then
+      test_summon_mysql_image=$(platform_image_for_pull mysql-80-centos7)
+      test_secretless_mysql_image=$(platform_image_for_pull mysql-57-centos7)
+    else
+      test_summon_mysql_image="mysql/mysql-server:5.7"
+      test_secretless_mysql_image=$test_summon_mysql_image
+    fi
 
-    sed "s#{{ TEST_APP_DATABASE_DOCKER_IMAGE }}#$test_app_mysql_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml |
+    sed -e "s#{{ TEST_SUMMON_MYSQL_IMAGE }}#$test_summon_mysql_image#g" \
+      -e "s#{{ TEST_SECRETLESS_MYSQL_IMAGE }}#$test_secretless_mysql_image#g" \
+      ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.mysql.yml |
       sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
       sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
       $cli create -f -

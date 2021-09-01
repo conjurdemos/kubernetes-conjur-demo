@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: test-summon-init-app-backend
-        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
+        image: {{ TEST_SUMMON_MYSQL_IMAGE }}
         imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         ports:
           - containerPort: 3306
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
       - name: test-summon-sidecar-app-backend
-        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
+        image: {{ TEST_SUMMON_MYSQL_IMAGE }}
         imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         ports:
           - containerPort: 3306
@@ -122,7 +122,7 @@ spec:
     spec:
       containers:
       - name: test-secretless-app-backend
-        image: {{ TEST_APP_DATABASE_DOCKER_IMAGE }}
+        image: {{ TEST_SECRETLESS_MYSQL_IMAGE }}
         imagePullPolicy: {{ IMAGE_PULL_POLICY }}
         ports:
           - containerPort: 3306

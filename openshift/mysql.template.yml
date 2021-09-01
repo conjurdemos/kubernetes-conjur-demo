@@ -30,7 +30,8 @@ spec:
     spec:
       containers:
       - name: test-summon-init-app-backend
-        image: centos/mysql-57-centos7
+        # Use 8.0 over 5.7 to resolve TLS version mismatch in OpenShift/RHEL.
+        image: {{ TEST_SUMMON_MYSQL_IMAGE }}
         imagePullPolicy: Always
         ports:
           - containerPort: 3306
@@ -74,7 +75,8 @@ spec:
     spec:
       containers:
       - name: test-summon-sidecar-app-backend
-        image: centos/mysql-57-centos7
+        # Use 8.0 over 5.7 to resolve TLS version mismatch in OpenShift/RHEL.
+        image: {{ TEST_SUMMON_MYSQL_IMAGE }}
         imagePullPolicy: Always
         ports:
           - containerPort: 3306
@@ -118,7 +120,11 @@ spec:
     spec:
       containers:
       - name: test-secretless-app-backend
-        image: centos/mysql-57-centos7
+        # Use over 5.7 over 8.0 as this does not have the TLS version mismatch
+        # issue in OpenShift/RHEL. This does have an issue with
+        # centos/mysql-80-centos8 due to lack of support for new auth mechanisms
+        # from 8.0
+        image: {{ TEST_SECRETLESS_MYSQL_IMAGE }}
         imagePullPolicy: Always
         ports:
           - containerPort: 3306
