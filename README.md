@@ -89,7 +89,7 @@ Supported platforms:
 
 Supported platforms:
 - Kubernetes v1.16+
-- OpenShift 3.11
+- OpenShift v4.6+
 
 To run this demo with Conjur Enterprise, you must have deployed a Conjur Enterprise follower to your
 Kubernetes cluster following the [documentation](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/ConjurDeployFollowers.htm).
