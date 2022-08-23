@@ -19,7 +19,7 @@ kind: ServiceAccount
 metadata:
   name: oc-test-app-summon-init
 ---
-apiVersion: v1
+apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
   labels:
