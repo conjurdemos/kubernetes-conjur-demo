@@ -31,3 +31,8 @@ ARG HELM_CLI_VERSION
 RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 RUN chmod 700 get_helm.sh
 RUN ./get_helm.sh --no-sudo --version ${HELM_CLI_VERSION:-v3.5.2}
+
+# Add the WORKDIR as a safe directory so git commands
+# can be run in containers using this image
+RUN git config --global --add safe.directory /src
+RUN git config --global --add safe.directory /src/bash-lib
