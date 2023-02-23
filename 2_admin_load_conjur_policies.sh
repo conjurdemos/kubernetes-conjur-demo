@@ -8,10 +8,10 @@ announce "Generating Conjur policy."
 prepare_conjur_cli_image() {
   announce "Pulling and pushing Conjur CLI image."
 
-  docker pull cyberark/conjur-cli:$CONJUR_VERSION-latest
+  docker pull cyberark/conjur-cli:8
 
   cli_app_image=$(platform_image_for_push conjur-cli)
-  docker tag cyberark/conjur-cli:$CONJUR_VERSION-latest $cli_app_image
+  docker tag cyberark/conjur-cli:8 $cli_app_image
 
   if ! is_minienv; then
     docker push $cli_app_image
@@ -47,8 +47,8 @@ ensure_conjur_cli_initialized() {
   fi
   conjur_url=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
 
-  $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $conjur_url"
-  $cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
+  $cli exec $1 -- sh -c "echo y | conjur init -a $CONJUR_ACCOUNT -u $conjur_url --self-signed --force"
+  $cli exec $1 -- conjur login -i admin -p $CONJUR_ADMIN_PASSWORD
 }
 
 pushd policy
@@ -109,7 +109,7 @@ $cli exec $conjur_cli_pod -- rm -rf /policy
 $cli cp ./policy $conjur_cli_pod:/policy
 
 $cli exec $conjur_cli_pod -- \
-  bash -c "
+  sh -c "
   conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
     CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
     CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
