@@ -1,4 +1,4 @@
-FROM ruby:2.4
+FROM ruby:3.1
 MAINTAINER CyberArk
 
 #---some useful tools for interactive usage---#

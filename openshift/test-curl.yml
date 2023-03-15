@@ -11,3 +11,9 @@ spec:
     image: radial/busyboxplus:curl
     imagePullPolicy: Always
     command: ["sh", "-c", "tail -f /dev/null"]
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      capabilities:
+        drop: [ "ALL" ]
+      readOnlyRootFilesystem: true
