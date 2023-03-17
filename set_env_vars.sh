@@ -7,8 +7,6 @@ export PULL_DOCKER_REGISTRY_PATH=${PULL_DOCKER_REGISTRY_PATH:-${DOCKER_REGISTRY_
 PLATFORM="${PLATFORM:-kubernetes}"  # default to kubernetes if env var not set
 CONJUR_AUTHN_LOGIN_RESOURCE="${CONJUR_AUTHN_LOGIN_RESOURCE:-service_account}" # default to service_account
 
-CONJUR_VERSION="${CONJUR_VERSION:-5}"
-
 MINIKUBE="${MINIKUBE:-false}"
 MINISHIFT="${MINISHIFT:-false}"
 

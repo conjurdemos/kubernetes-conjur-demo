@@ -1,44 +1,38 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -eo pipefail
+set -eo
 
 if [ "$CONJUR_APPLIANCE_URL" != "" ]; then
-  conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT
+  echo y | conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT --self-signed --force
 fi
 
 # check for unset vars after checking for appliance url
 set -u
 
-conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
+conjur login -i admin -p $CONJUR_ADMIN_PASSWORD
 
 readonly POLICY_DIR="/policy"
 
 # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
-readonly POLICY_FILES=(
-  "$POLICY_DIR/users.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml"
+set -- "$POLICY_DIR/users.yml" \
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml" \
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml" \
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml" \
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml" \
   "$POLICY_DIR/app-access.yml"
-)
 
-for policy_file in "${POLICY_FILES[@]}"; do
+for policy_file in "$@"; do
   echo "Loading policy $policy_file..."
-  conjur policy load root $policy_file
+  conjur policy load -b root -f $policy_file
 done
 
 # load secret values for each app
-readonly APPS=(
-  "test-summon-init-app"
-  "test-summon-sidecar-app"
-  "test-secretless-app"
-)
+set -- "test-summon-init-app" "test-summon-sidecar-app" "test-secretless-app"
 
-for app_name in "${APPS[@]}"; do
+for app_name in "$@"; do
   echo "Loading secret values for $app_name"
-  conjur variable values add "$app_name-db/password" $DB_PASSWORD
-  conjur variable values add "$app_name-db/username" "test_app"
+  conjur variable set -i "$app_name-db/password" -v $DB_PASSWORD
+  conjur variable set -i "$app_name-db/username" -v "test_app"
 
   case "${TEST_APP_DATABASE}" in
   postgres)
@@ -57,16 +51,16 @@ for app_name in "${APPS[@]}"; do
   db_host="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
   db_address="$db_host:$PORT"
 
-  if [[ "$app_name" = "test-secretless-app" ]]; then
+  if [ "$app_name" = "test-secretless-app" ]; then
     # Secretless doesn't require the full connection URL, just the host/port
-    conjur variable values add "$app_name-db/url" "$db_address"
-    conjur variable values add "$app_name-db/port" "$PORT"
-    conjur variable values add "$app_name-db/host" "$db_host"
+    conjur variable set -i "$app_name-db/url" -v "$db_address"
+    conjur variable set -i "$app_name-db/port" -v "$PORT"
+    conjur variable set -i "$app_name-db/host" -v "$db_host"
   else
     # The authenticator sidecar injects the full pg connection string into the
     # app environment using Summon
-    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_address/test_app"
+    conjur variable set -i "$app_name-db/url" -v "$PROTOCOL://$db_address/test_app"
   fi
 done
 
-conjur authn logout
+conjur logout
