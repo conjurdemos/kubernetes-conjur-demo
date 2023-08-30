@@ -90,7 +90,7 @@ function deployConjur() {
     mkdir -p "${workdir}"
     cd "${workdir}"
 
-    export CONJUR_OSS_HELM_CHART_VERSION=2.0.6
+    export CONJUR_OSS_HELM_CHART_VERSION=2.0.7
     export CONJUR_OSS_HELM_INSTALLED=true
     export HELM_RELEASE="${CONJUR_NAMESPACE_NAME}"
 
@@ -143,7 +143,7 @@ helm --namespace '${CONJUR_NAMESPACE_NAME}' install \
    --set image.tag=latest \
    --set nginx.image.repository=registry.connect.redhat.com/cyberark/conjur-nginx \
    --set nginx.image.tag=latest \
-   --set postgres.image.repository=registry.redhat.io/rhscl/postgresql-10-rhel7 \
+   --set postgres.image.repository=registry.redhat.io/rhel8/postgresql-15 \
    --set postgres.image.tag=latest \
    --set openshift.enabled=true \
    --set service.external.enabled=false \
