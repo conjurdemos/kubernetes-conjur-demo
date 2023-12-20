@@ -1,4 +1,4 @@
-FROM postgres:9.6
+FROM postgres:15
 
 RUN mkdir -p /docker-entrypoint-initdb.d
 
