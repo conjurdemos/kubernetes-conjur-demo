@@ -1,15 +1,15 @@
-FROM google/cloud-sdk
+FROM ubuntu:latest
 
 RUN mkdir -p /src
 WORKDIR /src
 
 # Install Docker client
 RUN apt-get update -y && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common wget && \
+    apt-get install -yq apt-transport-https ca-certificates curl gnupg2 software-properties-common wget && \
     curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - && \
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" && \
     apt-get update && \
-    apt-get install -y docker-ce && \
+    apt-get install -yq docker-ce && \
     rm -rf /var/lib/apt/lists/*
 
 # Install kubectl CLI
@@ -31,6 +31,14 @@ ARG HELM_CLI_VERSION
 RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 RUN chmod 700 get_helm.sh
 RUN ./get_helm.sh --no-sudo --version ${HELM_CLI_VERSION:-v3.5.2}
+
+# Install Google Cloud CLI
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+    | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+    gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    apt-get update -y && \
+    apt-get install -yq google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin
 
 # Add the WORKDIR as a safe directory so git commands
 # can be run in containers using this image
