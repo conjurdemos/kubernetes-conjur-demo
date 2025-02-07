@@ -185,7 +185,7 @@ function deployDemo() {
 # secrets.yml file, and performs other preparatory steps
 function prepareTestEnvironment() {
   # Set environment variables
-  local registry='registry2.itci.conjur.net/conjur-appliance'
+  local registry='registry.tld/conjur-appliance'
 
   export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 

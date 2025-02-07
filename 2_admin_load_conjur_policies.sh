@@ -106,7 +106,21 @@ ensure_conjur_cli_initialized $conjur_cli_pod
 announce "Loading Conjur policy."
 
 $cli exec $conjur_cli_pod -- rm -rf /policy
-$cli cp ./policy $conjur_cli_pod:/policy
+$cli exec $conjur_cli_pod -- mkdir -p /policy/generated
+
+set -- "app-access.yml" \
+  "generated/$APP_NAMESPACE_NAME.app-identity.yml" \
+  "generated/$APP_NAMESPACE_NAME.authn-any-policy-branch.yml" \
+  "generated/$APP_NAMESPACE_NAME.cluster-authn-svc.yml" \
+  "generated/$APP_NAMESPACE_NAME.project-authn.yml" \
+  "load_policies.sh" \
+  "users.yml"
+
+for policy_file in "$@"; do
+  "$cli" exec -i "$conjur_cli_pod" -- sh -c "cat - > /policy/$policy_file" < "./$policy_file"
+done
+
+"$cli" exec "$conjur_cli_pod" -- chmod +x /policy/load_policies.sh
 
 $cli exec $conjur_cli_pod -- \
   sh -c "
