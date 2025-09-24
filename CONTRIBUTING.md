@@ -23,7 +23,7 @@ you may find useful.
 
 - Setting the `LOCAL_AUTHENTICATOR` environment
   variable to `true` will push
-  the Conjur K8s authenticator client and Secretless
+  the Secrets Manager K8s authenticator client and Secretless
   Broker from your local Docker registry to the
   remote registry (if used), and will use that image
   rather than the image from DockerHub.
