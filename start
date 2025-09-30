@@ -12,7 +12,7 @@ init_bash_lib
 ./1_prep_platform_login.sh
 
 if [[ "${CONFIGURE_CONJUR_MASTER}" == "true" || "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
-  # Only automatically run these scripts for dev/demo envs deploying a master
+  # Only automatically run these scripts for dev/demo envs deploying a leader
   # cluster directly to k8s/oc
   ./2_admin_load_conjur_policies.sh
   ./3_admin_init_conjur_cert_authority.sh
